@@ -1,0 +1,6 @@
+{
+  "name": "PortfolioHub AI",
+  "description": "A curated directory and live creation platform for modern developer portfolios with zero build setup, clean typography, and instant static ZIP export.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

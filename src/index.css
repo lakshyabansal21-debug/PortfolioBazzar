@@ -1,0 +1,132 @@
+@import "tailwindcss";
+
+:root {
+  --bg-page: #FAF8F5;
+  --bg-surface: #FFFFFF;
+  --bg-muted: #F3EFE6;
+  --text-primary: #18181B;
+  --text-secondary: #52525B;
+  --text-muted: #71717A;
+  --border-subtle: #E6E1D6;
+  --border-hover: #D1CBC0;
+  --accent-amber: #F59E0B;
+  --accent-amber-dark: #D97706;
+  --accent-blue: #2563EB;
+  --accent-green: #059669;
+  --accent-coral: #EA580C;
+  --accent-purple: #7C3AED;
+}
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #FAF8F5;
+    color: #18181B;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* Product Card - Clean, Human, Editorial */
+.ph-card,
+.bento-card {
+  background: #FFFFFF;
+  border: 1px solid #E6E1D6;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(24, 24, 27, 0.03);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.ph-card:hover,
+.bento-card:hover {
+  border-color: #D1CBC0;
+  box-shadow: 0 4px 12px rgba(24, 24, 27, 0.06);
+}
+
+.bento-card-gradient {
+  background: #FFFFFF;
+  border: 1px solid #E6E1D6;
+  border-radius: 10px;
+}
+
+.bento-card-dark {
+  background: #F3EFE6;
+  border: 1px solid #E6E1D6;
+  border-radius: 10px;
+}
+
+/* Form Input - Crisp, High Readability */
+.ph-input,
+.glass-input {
+  background: #FFFFFF;
+  border: 1px solid #E6E1D6;
+  color: #18181B;
+  border-radius: 8px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ph-input:focus,
+.glass-input:focus {
+  border-color: #D97706;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+  outline: none;
+}
+
+/* Button Utilities */
+.btn-primary {
+  background-color: #18181B;
+  color: #FFFFFF;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+.btn-primary:hover {
+  background-color: #27272A;
+}
+
+.btn-secondary {
+  background-color: #FFFFFF;
+  color: #18181B;
+  border: 1px solid #E6E1D6;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.btn-secondary:hover {
+  background-color: #F3EFE6;
+  border-color: #D1CBC0;
+}
+
+.btn-accent {
+  background-color: #F59E0B;
+  color: #18181B;
+  font-weight: 700;
+  border-radius: 8px;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-accent:hover {
+  background-color: #D97706;
+  color: #FFFFFF;
+}
+
+/* Custom Clean Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FAF8F5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D1CBC0;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #B8B2A5;
+}
+
+
+
