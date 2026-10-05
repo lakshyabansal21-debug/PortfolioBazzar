@@ -126,7 +126,7 @@ export default function Navbar() {
               </kbd>
             </button>
 
-            {/* Supabase status indicator */}
+            {/* Supabase status indicator
             <button 
               onClick={() => { setAuthMode('login'); setIsAuthModalOpen(true); }}
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono text-[#52525B] bg-[#F3EFE6] border border-[#E6E1D6] hover:border-[#D97706] hover:bg-[#FAF8F5] transition-colors cursor-pointer"
@@ -134,7 +134,7 @@ export default function Navbar() {
             >
               <span className={`w-1.5 h-1.5 rounded-full ${isSupabaseConfigured ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
               <span className="font-medium">{isSupabaseConfigured ? 'Supabase' : 'Local'}</span>
-            </button>
+            </button> */}
 
             {/* User or Sign In */}
             {user ? (
