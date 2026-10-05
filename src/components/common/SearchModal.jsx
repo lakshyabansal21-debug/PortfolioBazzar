@@ -83,9 +83,7 @@ export default function SearchModal({ isOpen, onClose }) {
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Escape') {
-      onClose();
-    } else if (e.key === 'ArrowDown') {
+    if (e.key === 'ArrowDown') {
       e.preventDefault();
       if (results.length > 0) {
         setSelectedIndex((prev) => (prev + 1) % results.length);
@@ -104,6 +102,19 @@ export default function SearchModal({ isOpen, onClose }) {
       }
     }
   };
+
+  // Close on Esc from anywhere (works even if the input loses focus)
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -128,17 +139,18 @@ export default function SearchModal({ isOpen, onClose }) {
             placeholder="Search templates, styles, keywords (e.g. Developer, Minimal, Terminal)..."
             className="w-full ml-3 text-sm text-[#18181B] placeholder-[#71717A] bg-transparent focus:outline-none"
           />
-          {query && (
-            <button
-              onClick={() => setQuery('')}
-              className="p-1 text-[#71717A] hover:text-[#18181B] rounded cursor-pointer mr-1"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          )}
-          <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono text-[#71717A] bg-[#FAF8F5] border border-[#E6E1D6] rounded">
-            ESC
-          </kbd>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close search"
+            title="Close (Esc)"
+            className="group relative shrink-0 ml-2 flex items-center justify-center w-10 h-6 rounded border border-[#E6E1D6] bg-[#FAF8F5] text-[#71717A] cursor-pointer transition-all duration-200 hover:bg-red-50 hover:border-red-300 hover:text-red-500 hover:scale-110 active:scale-95"
+          >
+            <span className="absolute text-[10px] font-mono transition-all duration-200 group-hover:opacity-0 group-hover:scale-50">
+              ESC
+            </span>
+            <X className="absolute w-3.5 h-3.5 opacity-0 scale-50 transition-all duration-200 group-hover:opacity-100 group-hover:scale-100" />
+          </button>
         </div>
 
         {/* Dynamic Content Area */}
