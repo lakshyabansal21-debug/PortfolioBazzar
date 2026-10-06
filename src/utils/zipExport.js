@@ -1,16 +1,18 @@
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import { buildSingleFileHtml } from './portfolioReader.js';
+import { stripFieldDefs } from './editableFields.js';
 
 /**
  * Generates and downloads a complete, offline-ready portfolio ZIP file
  * containing index.html, style.css, script.js, and documentation.
  */
-export async function downloadPortfolioZip({ html, css, js, templateName = 'portfolio', authorName = 'Developer' }) {
+export async function downloadPortfolioZip({ html, css, js, templateName = 'portfolio', authorName = 'Developer', zipName }) {
   try {
     const zip = new JSZip();
 
     // 1. Add core files
-    zip.file('index.html', html);
+    zip.file('index.html', stripFieldDefs(html));
     zip.file('style.css', css);
     zip.file('script.js', js);
 
@@ -45,7 +47,7 @@ Created on PortfolioHub AI (https://portfoliohub.ai)
     });
 
     // 5. Trigger download
-    const cleanFilename = `${authorName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${templateName.toLowerCase()}-portfolio.zip`;
+    const cleanFilename = zipName || `${authorName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${templateName.toLowerCase()}-portfolio.zip`;
     saveAs(content, cleanFilename);
 
     return { success: true, filename: cleanFilename };
@@ -53,4 +55,16 @@ Created on PortfolioHub AI (https://portfoliohub.ai)
     console.error('Error generating portfolio zip:', error);
     throw error;
   }
+}
+
+/**
+ * Downloads the portfolio as ONE self-contained .html file
+ * (CSS and JS are inlined, so it opens by double-click and can be uploaded anywhere).
+ */
+export function downloadSingleHtml({ html, css, js, fileName = 'portfolio' }) {
+  const output = buildSingleFileHtml(html, css, js);
+  const clean = fileName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'portfolio';
+  const filename = `${clean}.html`;
+  saveAs(new Blob([output], { type: 'text/html;charset=utf-8' }), filename);
+  return { success: true, filename };
 }
