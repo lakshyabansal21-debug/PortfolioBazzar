@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Upload, 
@@ -19,6 +19,8 @@ import { dbService } from '../services/dbService.js';
 import { assemblePreviewHtml } from '../utils/previewHelper.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
+import EditableFieldsBuilder from '../components/portfolio/EditableFieldsBuilder.jsx';
+import { embedFieldDefs, readFieldDefs } from '../utils/editableFields.js';
 
 export default function UploadPage() {
   const navigate = useNavigate();
@@ -127,6 +129,7 @@ body {
 
   const [jsCode, setJsCode] = useState(`console.log('Portfolio engine mounted successfully.');`);
   const [codeTab, setCodeTab] = useState('html');
+  const [editableFields, setEditableFields] = useState([]);
   const [showPreview, setShowPreview] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -136,6 +139,41 @@ body {
       fallbackCategory: category
     });
   }, [htmlCode, cssCode, jsCode, category]);
+
+  const fileInputRef = useRef(null);
+
+  // Import .html / .css / .js files straight from the user's computer
+  const handleFileImport = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    let imported = 0;
+    for (const file of files) {
+      const name = file.name.toLowerCase();
+      const text = await file.text();
+      if (name.endsWith('.html') || name.endsWith('.htm')) {
+        setHtmlCode(text);
+        setCodeTab('html');
+        const existing = readFieldDefs(text);
+        if (existing.length > 0) setEditableFields(existing);
+        if (!title.trim()) {
+          const m = text.match(/<title>([\s\S]*?)<\/title>/i);
+          if (m && m[1].trim()) setTitle(m[1].trim());
+        }
+        imported++;
+      } else if (name.endsWith('.css')) {
+        setCssCode(text);
+        imported++;
+      } else if (name.endsWith('.js')) {
+        setJsCode(text);
+        imported++;
+      }
+    }
+    addToast(
+      imported > 0 ? `Imported ${imported} file${imported > 1 ? 's' : ''}` : 'Please choose .html, .css or .js files',
+      imported > 0 ? 'success' : 'error'
+    );
+    e.target.value = '';
+  };
 
   const handleAddTag = () => {
     const trimmed = tagInput.trim().replace(/,/g, '');
@@ -160,6 +198,12 @@ body {
       return;
     }
 
+    const incomplete = editableFields.find((f) => !f.label.trim() || !f.old.trim());
+    if (incomplete) {
+      addToast('Every editable field needs a label and its current text (or remove the empty row)', 'error');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const newTemplate = await dbService.createTemplate({
@@ -169,7 +213,7 @@ body {
         description: description.trim() || 'A bespoke community-crafted developer portfolio template.',
         thumbnail_url: thumbnailUrl.trim(),
         tags: tags,
-        html_code: htmlCode,
+        html_code: embedFieldDefs(htmlCode, editableFields),
         css_code: cssCode,
         js_code: jsCode,
         creator_id: user?.id || 'guest-creator',
@@ -345,9 +389,27 @@ body {
         {/* 3. CODE INPUT SECTION */}
         <div className="bg-white border border-[#E6E1D6] rounded-xl p-6 sm:p-7 space-y-3 shadow-2xs">
           <div className="flex items-center justify-between border-b border-[#E6E1D6] pb-3">
-            <h2 className="text-sm font-bold text-[#18181B]">
-              Source Architecture
-            </h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-sm font-bold text-[#18181B]">
+                Source Architecture
+              </h2>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept=".html,.htm,.css,.js"
+                onChange={handleFileImport}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-[#FAF8F5] hover:bg-[#F3EFE6] border border-[#E6E1D6] text-[#18181B] cursor-pointer transition-colors"
+              >
+                <Upload className="w-3.5 h-3.5 text-[#D97706]" />
+                Import files
+              </button>
+            </div>
             <div className="flex items-center gap-1 bg-[#F3EFE6] p-0.5 rounded-lg border border-[#E6E1D6]">
               {['html', 'css', 'js'].map((tab) => (
                 <button
@@ -393,6 +455,17 @@ body {
               />
             )}
           </div>
+        </div>
+
+        {/* 3b. EDITABLE FIELDS */}
+        <div className="bg-white border border-[#E6E1D6] rounded-xl p-6 sm:p-7 space-y-3 shadow-2xs">
+          <div className="border-b border-[#E6E1D6] pb-3">
+            <h2 className="text-sm font-bold text-[#18181B]">Editable Details</h2>
+            <p className="text-xs text-[#71717A] mt-0.5">
+              Optional. Decide what the next person can personalize with one simple form.
+            </p>
+          </div>
+          <EditableFieldsBuilder html={htmlCode} fields={editableFields} onChange={setEditableFields} />
         </div>
 
         {/* 4. OPTIONAL LIVE TEST MODAL / EXPAND */}
