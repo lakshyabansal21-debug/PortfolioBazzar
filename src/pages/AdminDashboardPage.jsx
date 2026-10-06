@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { 
   ShieldCheck, 
   Layers, 
@@ -22,7 +22,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { CATEGORY_BADGE_STYLES } from '../components/common/TemplateCard.jsx';
 
-export default function AdminDashboardPage() {
+function AdminDashboardContent() {
   const { isSupabaseConfigured } = useAuth();
   const { addToast } = useToast();
 
@@ -315,4 +315,19 @@ export default function AdminDashboardPage() {
 
     </div>
   );
+}
+
+/**
+ * Gate for the admin page: only a signed-in admin can see the dashboard
+ * (and therefore the delete / feature buttons). Everyone else goes back home.
+ */
+export default function AdminDashboardPage() {
+  const { isAdmin, loading } = useAuth();
+
+  if (loading) {
+    return <div className="max-w-6xl mx-auto px-4 py-20 text-center text-xs text-[#71717A]">Checking access…</div>;
+  }
+  if (!isAdmin) return <Navigate to="/" replace />;
+
+  return <AdminDashboardContent />;
 }
