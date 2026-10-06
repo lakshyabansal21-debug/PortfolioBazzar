@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { 
   Code2, 
@@ -29,7 +29,9 @@ import {
   Mail,
   Github,
   Linkedin,
-  Twitter
+  Twitter,
+  FileText,
+  Pencil
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { 
@@ -39,7 +41,19 @@ import {
 } from '../services/templateEngines.js';
 import { dbService } from '../services/dbService.js';
 import { assemblePreviewHtml } from '../utils/previewHelper.js';
-import { downloadPortfolioZip } from '../utils/zipExport.js';
+import { downloadPortfolioZip, downloadSingleHtml } from '../utils/zipExport.js';
+import ContentEditor from '../components/portfolio/ContentEditor.jsx';
+import FillDetailsForm from '../components/portfolio/FillDetailsForm.jsx';
+import { readFieldDefs } from '../utils/editableFields.js';
+import {
+  readPortfolio,
+  tagForEditing,
+  updateText,
+  duplicateItem,
+  removeItem,
+  moveItem
+} from '../utils/portfolioReader.js';
+import { injectInlineEditor } from '../utils/inlineEditor.js';
 import { extractProfileFromHtml, personalizeHtml, getInitials } from '../utils/templatePersonalizer.js';
 import { useToast } from '../context/ToastContext.jsx';
 
@@ -166,6 +180,12 @@ export default function LiveEditorPage() {
   const activeCss = customCss !== null ? customCss : baseCode.css;
   const activeJs = customJs !== null ? customJs : baseCode.js;
 
+  // Fields the template's creator marked as editable (stored inside the template html)
+  const hasCreatorFields = useMemo(
+    () => !!loadedCustomTemplate && readFieldDefs(activeHtml).length > 0,
+    [loadedCustomTemplate, activeHtml]
+  );
+
   // Apply personalization to the current active code
   const handleApplyPersonalization = (overrideForm) => {
     const currentForm = overrideForm || profileForm;
@@ -245,14 +265,82 @@ export default function LiveEditorPage() {
     }
   };
 
-  // Render document
-  const iframeSrcDoc = useMemo(() => {
-    return assemblePreviewHtml(activeHtml, activeCss, activeJs, {
+  // ---- Live preview document -------------------------------------------------
+  // "Edit on page": click text directly inside the preview (see utils/inlineEditor.js)
+  const [editOnPage, setEditOnPage] = useState(false);
+  const iframeRef = useRef(null);
+  const scrollRef = useRef(0);
+  const skipUntilRef = useRef(0);
+  const activeHtmlRef = useRef(activeHtml);
+  activeHtmlRef.current = activeHtml;
+
+  const computedSrcDoc = useMemo(() => {
+    const isStub = !activeHtml || activeHtml.trim().length < 35;
+    const source = editOnPage && !isStub ? tagForEditing(activeHtml) : activeHtml;
+    const doc = assemblePreviewHtml(source, activeCss, activeJs, {
       fallbackCategory: template,
       accentColor,
       customFont
     });
-  }, [activeHtml, activeCss, activeJs, template, accentColor, customFont]);
+    return editOnPage ? injectInlineEditor(doc) : doc;
+  }, [activeHtml, activeCss, activeJs, template, accentColor, customFont, editOnPage]);
+
+  // The iframe reloads whenever the document changes, EXCEPT right after an on-page text edit
+  // (the text is already updated inside the iframe, so a reload would only cause a flicker).
+  // The scroll position is kept across reloads.
+  const [iframeSrcDoc, setIframeSrcDoc] = useState(computedSrcDoc);
+  useEffect(() => {
+    if (Date.now() < skipUntilRef.current) return;
+    try {
+      scrollRef.current = iframeRef.current?.contentWindow?.scrollY || 0;
+    } catch {
+      scrollRef.current = 0;
+    }
+    setIframeSrcDoc(computedSrcDoc);
+  }, [computedSrcDoc]);
+
+  const handleIframeLoad = () => {
+    try {
+      if (scrollRef.current) iframeRef.current.contentWindow.scrollTo(0, scrollRef.current);
+    } catch {
+      /* cross-origin or detached: ignore */
+    }
+  };
+
+  // Messages from the on-page editor running inside the iframe
+  useEffect(() => {
+    if (!editOnPage) return undefined;
+    const onMessage = (e) => {
+      const d = e.data;
+      if (!d || d.source !== 'ph-editor') return;
+      if (e.source !== iframeRef.current?.contentWindow) return;
+      const current = (prev) => (prev !== null ? prev : activeHtmlRef.current);
+
+      if (d.type === 'text') {
+        skipUntilRef.current = Date.now() + 500; // no reload: the iframe already shows the new text
+        setCustomHtml((prev) => updateText(current(prev), d.index, d.value));
+      } else if (d.type === 'item') {
+        const ops = {
+          dup: (h, i) => duplicateItem(h, i),
+          del: (h, i) => removeItem(h, i),
+          up: (h, i) => moveItem(h, i, -1),
+          down: (h, i) => moveItem(h, i, 1)
+        };
+        const op = ops[d.action];
+        if (!op) return;
+        skipUntilRef.current = 0; // structure changed: reload the preview
+        setCustomHtml((prev) => op(current(prev), d.index));
+      }
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, [editOnPage]);
+
+  // How much text can be clicked on the page (0 = content is built by JavaScript)
+  const clickableTextCount = useMemo(
+    () => (editOnPage ? readPortfolio(activeHtml).fields.length : -1),
+    [editOnPage, activeHtml]
+  );
 
   const handleDownload = async () => {
     setIsExporting(true);
@@ -277,6 +365,17 @@ export default function LiveEditorPage() {
       addToast('Export error: ' + err.message, 'error');
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  const handleDownloadHtml = () => {
+    try {
+      const fileName = loadedCustomTemplate?.title || profileForm.name || userData.personal.name || 'portfolio';
+      downloadSingleHtml({ html: activeHtml, css: activeCss, js: activeJs, fileName });
+      confetti({ particleCount: 50, spread: 50 });
+      addToast('Single index.html downloaded (CSS & JS inlined)', 'success');
+    } catch (err) {
+      addToast('Export error: ' + err.message, 'error');
     }
   };
 
@@ -414,6 +513,15 @@ export default function LiveEditorPage() {
           </button>
 
           <button
+            onClick={handleDownloadHtml}
+            className="px-3.5 py-1.5 rounded-lg bg-white hover:bg-[#F3EFE6] text-[#18181B] border border-[#E6E1D6] font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            title="Download one self-contained index.html"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>Download HTML</span>
+          </button>
+
+          <button
             onClick={handleDownload}
             disabled={isExporting}
             className="px-3.5 py-1.5 rounded-lg bg-[#F59E0B] hover:bg-[#D97706] text-[#18181B] hover:text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-2xs"
@@ -442,6 +550,15 @@ export default function LiveEditorPage() {
               >
                 <UserCheck className="w-3.5 h-3.5 text-[#F59E0B]" />
                 <span>Personalize Info</span>
+              </button>
+
+              <button
+                onClick={() => setActiveSidebarTab('content')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  activeSidebarTab === 'content' ? 'bg-[#18181B] text-white shadow-2xs' : 'text-[#71717A] hover:text-[#18181B]'
+                }`}
+              >
+                Content & Skills
               </button>
 
               <button
@@ -490,7 +607,11 @@ export default function LiveEditorPage() {
           <div className="flex-1 overflow-y-auto p-5 space-y-4">
             
             {/* PERSONALIZE TAB */}
-            {activeSidebarTab === 'personalize' && (
+            {activeSidebarTab === 'personalize' && hasCreatorFields && (
+              <FillDetailsForm html={activeHtml} onChange={setCustomHtml} />
+            )}
+
+            {activeSidebarTab === 'personalize' && !hasCreatorFields && (
               <div className="space-y-4">
                 <div className="p-3 bg-[#FAF8F5] border border-[#E6E1D6] rounded-xl">
                   <div className="flex items-center gap-3">
@@ -817,6 +938,16 @@ export default function LiveEditorPage() {
               </div>
             )}
 
+            {/* CONTENT & SKILLS TAB (reads any uploaded portfolio) */}
+            {activeSidebarTab === 'content' && (
+              <ContentEditor
+                html={activeHtml}
+                js={activeJs}
+                onChangeHtml={setCustomHtml}
+                onChangeJs={setCustomJs}
+              />
+            )}
+
             {/* SECTIONS REORDERING TAB */}
             {activeSidebarTab === 'sections' && (
               <div className="space-y-3">
@@ -937,10 +1068,41 @@ export default function LiveEditorPage() {
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="font-mono text-[11px] text-[#18181B] font-semibold">Live Split Preview</span>
             </div>
-            <span className="text-[11px] font-mono text-[#52525B]">
-              VIEWPORT: {viewport.toUpperCase()}
-            </span>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setEditOnPage((v) => !v)}
+                title="Click any text in the preview to edit it right there"
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
+                  editOnPage
+                    ? 'bg-[#F59E0B] border-[#D97706] text-[#18181B] shadow-2xs'
+                    : 'bg-white border-[#E6E1D6] text-[#18181B] hover:bg-[#F3EFE6]'
+                }`}
+              >
+                <Pencil className="w-3 h-3" />
+                {editOnPage ? 'Editing on page — Done' : 'Edit on page'}
+              </button>
+              <span className="text-[11px] font-mono text-[#52525B] hidden sm:inline">
+                VIEWPORT: {viewport.toUpperCase()}
+              </span>
+            </div>
           </div>
+
+          {editOnPage && (
+            <div className="px-4 py-2 border-b border-[#F59E0B]/40 bg-[#FEF3C7] text-[11px] text-[#78350F] leading-relaxed">
+              {clickableTextCount === 0 ? (
+                <>
+                  No clickable text found in the HTML: this page builds its content with JavaScript. Use{' '}
+                  <b>Content &amp; Skills → Data in your JavaScript</b> to edit it.
+                </>
+              ) : (
+                <>
+                  <b>Click any text</b> to edit it · <b>Enter</b> saves · <b>Esc</b> cancels · hover a skill, project or
+                  entry to <b>move, duplicate or delete</b> it.
+                </>
+              )}
+            </div>
+          )}
 
           {/* Iframe Stage */}
           <div className="flex-1 bg-[#F3EFE6] p-4 flex justify-center items-center overflow-hidden">
@@ -952,6 +1114,8 @@ export default function LiveEditorPage() {
               }`}
             >
               <iframe
+                ref={iframeRef}
+                onLoad={handleIframeLoad}
                 title="Live Editor Preview"
                 srcDoc={iframeSrcDoc}
                 className="w-full h-full border-0 bg-white"
