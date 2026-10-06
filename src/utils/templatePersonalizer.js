@@ -1,3 +1,5 @@
+import { suggestFields, replaceInHtml } from './editableFields.js';
+
 /**
  * Utility for detecting, extracting, and personalizing information (Name, Title, Bio, Email, Socials)
  * inside any uploaded or custom HTML/CSS portfolio template.
@@ -11,6 +13,28 @@ export function getInitials(name) {
   const parts = name.trim().split(/\s+/);
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+/**
+ * Reads name / role / bio / email / socials from the page structure (DOM),
+ * so it works even when the template uses unusual class names.
+ */
+function profileFromDom(html) {
+  if (typeof DOMParser === 'undefined') return {};
+  try {
+    const byId = Object.fromEntries(suggestFields(html).map((f) => [f.id, f.old]));
+    return {
+      name: byId.name,
+      title: byId.headline,
+      bio: byId.bio,
+      email: byId.email,
+      github: byId.github,
+      linkedin: byId.linkedin,
+      twitter: byId.twitter
+    };
+  } catch {
+    return {};
+  }
 }
 
 /**
@@ -49,6 +73,9 @@ export function extractProfileFromHtml(html, fallback = {}) {
     }
   }
 
+  const dom = profileFromDom(html);
+  if (!name) name = dom.name || '';
+
   if (!name) {
     name = fallback.name || fallback.creator_name || 'Your Name';
   }
@@ -69,6 +96,8 @@ export function extractProfileFromHtml(html, fallback = {}) {
     }
   }
 
+  if (!title) title = dom.title || '';
+
   if (!title) {
     title = fallback.title || 'Creative Developer & Software Engineer';
   }
@@ -88,6 +117,8 @@ export function extractProfileFromHtml(html, fallback = {}) {
       break;
     }
   }
+
+  if (!bio) bio = dom.bio || '';
 
   if (!bio) {
     bio = fallback.bio || '';
@@ -117,10 +148,10 @@ export function extractProfileFromHtml(html, fallback = {}) {
     name,
     title,
     bio,
-    email: email || fallback.email || '',
-    github: github || fallback.github || '',
-    linkedin: linkedin || fallback.linkedin || '',
-    twitter: twitter || fallback.twitter || '',
+    email: email || dom.email || fallback.email || '',
+    github: github || dom.github || fallback.github || '',
+    linkedin: linkedin || dom.linkedin || fallback.linkedin || '',
+    twitter: twitter || dom.twitter || fallback.twitter || '',
     initials: getInitials(name)
   };
 }
@@ -128,7 +159,7 @@ export function extractProfileFromHtml(html, fallback = {}) {
 /**
  * Injects new personal details into HTML code, replacing old detected values
  */
-export function personalizeHtml(html, {
+function personalizeHtmlLegacy(html, {
   oldProfile = {},
   newProfile = {}
 }) {
@@ -253,5 +284,58 @@ export function personalizeHtml(html, {
     );
   }
 
+  return result;
+}
+
+/**
+ * Injects new personal details into the HTML.
+ * Replaces only visible text (and link/email attributes that match), never class names
+ * or other attributes. Anything the DOM pass cannot find falls back to the older
+ * pattern-based replacement.
+ */
+export function personalizeHtml(html, { oldProfile = {}, newProfile = {} }) {
+  if (!html || typeof html !== 'string') return html;
+  if (typeof DOMParser === 'undefined') return personalizeHtmlLegacy(html, { oldProfile, newProfile });
+
+  const spec = [
+    { id: 'name', type: 'text' },
+    { id: 'title', type: 'text' },
+    { id: 'bio', type: 'text' },
+    { id: 'email', type: 'email' },
+    { id: 'github', type: 'link' },
+    { id: 'linkedin', type: 'link' },
+    { id: 'twitter', type: 'link' }
+  ];
+  const defs = spec
+    .filter((f) => (oldProfile[f.id] || '').trim())
+    .map((f) => ({ ...f, label: f.id, old: oldProfile[f.id].trim() }));
+  const values = Object.fromEntries(spec.map((f) => [f.id, newProfile[f.id] || '']));
+
+  const r = replaceInHtml(html, defs, values);
+  let result = r.html;
+
+  // Avatar initials (e.g. <div class="avatar">AR</div>)
+  const oldName = oldProfile.name?.trim();
+  const newName = newProfile.name?.trim();
+  if (r.applied.includes('name') && oldName && newName) {
+    const oi = getInitials(oldName);
+    const ni = getInitials(newName);
+    if (oi !== ni) {
+      result = result.replace(
+        new RegExp(`(<(?:div|span|p)[^>]*class=["'][^"']*avatar[^"']*["'][^>]*>)\\s*${oi}\\s*(<\\/)`, 'gi'),
+        `$1${ni}$2`
+      );
+    }
+  }
+
+  // Fields the DOM pass could not locate: try the older pattern-based approach for just those
+  const unresolved = spec.filter((f) => {
+    const wanted = (newProfile[f.id] || '').trim();
+    return wanted && wanted !== (oldProfile[f.id] || '').trim() && !r.applied.includes(f.id);
+  });
+  if (unresolved.length > 0) {
+    const only = Object.fromEntries(unresolved.map((f) => [f.id, newProfile[f.id]]));
+    result = personalizeHtmlLegacy(result, { oldProfile, newProfile: only });
+  }
   return result;
 }
