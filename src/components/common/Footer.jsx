@@ -1,8 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Github, Twitter, Linkedin } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext.jsx';
 
 export default function Footer() {
+  const { isAdmin } = useAuth();
+
   return (
     <footer className="border-t border-[#E9E7E1] bg-white text-[#777777] text-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -87,7 +90,9 @@ export default function Footer() {
               <li><a href="https://github.com" target="_blank" rel="noreferrer" className="hover:text-[#111111] transition-colors">GitHub Repository</a></li>
               <li><Link to="/explore" className="hover:text-[#111111] transition-colors">Export Guide</Link></li>
               <li><Link to="/explore" className="hover:text-[#111111] transition-colors">Documentation</Link></li>
-              <li><Link to="/admin" className="hover:text-[#111111] transition-colors">Admin Portal</Link></li>
+              {isAdmin && (
+                <li><Link to="/admin" className="hover:text-[#111111] transition-colors">Admin Portal</Link></li>
+              )}
             </ul>
           </div>
 
