@@ -184,15 +184,12 @@ export default function GeneratorPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       
       {/* 1. TOP HEADER & WORKSPACE TITLE */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E6E1D6] pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-line pb-5">
         <div>
-          <div className="text-xs font-mono font-semibold uppercase tracking-wider text-[#D97706] mb-1">
-            WORKSPACE / BUILDER
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#18181B]">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink">
             Portfolio Generator
           </h1>
-          <p className="text-xs text-[#52525B] mt-1">
+          <p className="text-xs text-soft mt-1">
             Step-by-step guided creator with real-time responsive preview and instant static download.
           </p>
         </div>
@@ -200,25 +197,25 @@ export default function GeneratorPage() {
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={handleReset}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium text-[#52525B] hover:text-[#18181B] hover:bg-[#F3EFE6] border border-[#E6E1D6] transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium text-soft hover:text-ink hover:bg-paper-2 border border-line transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
             title="Reset to default sample content"
           >
-            <RotateCcw className="w-3.5 h-3.5 text-[#71717A]" />
+            <RotateCcw className="w-3.5 h-3.5 text-pencil" />
             <span>Reset data</span>
           </button>
 
           <Link
             to={`/editor?template=${selectedTemplate}`}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium text-[#18181B] bg-white border border-[#E6E1D6] hover:bg-[#F3EFE6] transition-colors flex items-center gap-1.5 shadow-2xs"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium text-ink bg-white border border-line hover:bg-paper-2 transition-colors flex items-center gap-1.5 shadow-2xs"
           >
-            <Code2 className="w-3.5 h-3.5 text-[#D97706]" />
+            <Code2 className="w-3.5 h-3.5 text-accent" />
             <span>Open in code editor</span>
           </Link>
 
           <button
             onClick={handleDownload}
             disabled={isExporting}
-            className="px-4 py-1.5 rounded-lg bg-[#F59E0B] hover:bg-[#D97706] text-[#18181B] hover:text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-2xs"
+            className="px-4 py-1.5 rounded-lg bg-hl hover:bg-accent text-ink hover:text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-2xs"
           >
             <Download className="w-3.5 h-3.5" />
             <span>{isExporting ? 'Packaging ZIP...' : 'Download ZIP'}</span>
@@ -227,7 +224,7 @@ export default function GeneratorPage() {
       </div>
 
       {/* 2. STEP INDICATOR BAR */}
-      <div className="flex items-center gap-1 p-1 bg-white border border-[#E6E1D6] rounded-xl overflow-x-auto scrollbar-none shadow-2xs">
+      <div className="flex items-center gap-1 p-1 bg-white border border-line rounded-xl overflow-x-auto scrollbar-none shadow-2xs">
         {steps.map((step) => {
           const Icon = step.icon;
           const isActive = activeStep === step.num;
@@ -238,16 +235,16 @@ export default function GeneratorPage() {
               onClick={() => setActiveStep(step.num)}
               className={`flex-1 min-w-[130px] py-2 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                 isActive
-                  ? 'bg-[#18181B] text-white shadow-2xs'
+                  ? 'bg-ink text-white shadow-2xs'
                   : isDone
-                  ? 'text-[#18181B] hover:bg-[#F3EFE6]'
-                  : 'text-[#71717A] hover:bg-[#FAF8F5]'
+                  ? 'text-ink hover:bg-paper-2'
+                  : 'text-pencil hover:bg-paper'
               }`}
             >
               {isDone ? (
                 <Check className="w-3.5 h-3.5 text-emerald-500 font-bold" />
               ) : (
-                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#F59E0B]' : 'text-[#71717A]'}`} />
+                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-hl' : 'text-pencil'}`} />
               )}
               <span>{step.num}. {step.label}</span>
             </button>
@@ -259,14 +256,14 @@ export default function GeneratorPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* LEFT FORM PANEL (5 columns on desktop) */}
-        <div className="lg:col-span-5 bg-white border border-[#E6E1D6] rounded-xl p-5 sm:p-6 space-y-5 shadow-2xs">
+        <div className="lg:col-span-5 bg-white border border-line rounded-xl p-5 sm:p-6 space-y-5 shadow-2xs">
           
           {/* STEP 1: STYLE */}
           {activeStep === 1 && (
             <div className="space-y-4">
               <div>
-                <h2 className="text-sm font-bold text-[#18181B]">Choose Portfolio Engine</h2>
-                <p className="text-xs text-[#52525B] mt-0.5">Select from 24 hand-crafted responsive architectures with rich CSS transforms and animations.</p>
+                <h2 className="text-sm font-bold text-ink">Choose Portfolio Engine</h2>
+                <p className="text-xs text-soft mt-0.5">Select from 24 hand-crafted responsive architectures with rich CSS transforms and animations.</p>
               </div>
 
               <div className="grid grid-cols-2 gap-2.5 max-h-[500px] overflow-y-auto pr-1">
@@ -279,19 +276,19 @@ export default function GeneratorPage() {
                       onClick={() => setSelectedTemplate(cat)}
                       className={`p-3 rounded-xl text-left transition-all duration-200 cursor-pointer border ${
                         isSelected
-                          ? 'border-[#D97706] bg-[#FEF3C7]/40 ring-2 ring-[#F59E0B]/20 scale-[1.01]'
-                          : 'border-[#E6E1D6] bg-white hover:bg-[#FAF8F5] hover:border-[#D1CBC0] hover:-translate-y-0.5'
+                          ? 'border-accent bg-hl-soft/40 ring-2 ring-hl/20 scale-[1.01]'
+                          : 'border-line bg-white hover:bg-paper hover:border-line-2 hover:-translate-y-0.5'
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-[#18181B]">{cat}</span>
+                        <span className="text-xs font-bold text-ink">{cat}</span>
                         {isSelected ? (
-                          <span className="w-2 h-2 rounded-full bg-[#D97706]" />
+                          <span className="w-2 h-2 rounded-full bg-accent" />
                         ) : (
-                          <span className="w-2 h-2 rounded-full bg-[#E6E1D6]" />
+                          <span className="w-2 h-2 rounded-full bg-line" />
                         )}
                       </div>
-                      <span className="text-[11px] text-[#71717A] mt-1 block line-clamp-1">
+                      <span className="text-[11px] text-pencil mt-1 block line-clamp-1">
                         {cat === 'Bento' ? 'Modular 3D grid layout' :
                          cat === 'Terminal' ? 'Interactive UNIX CLI' :
                          cat === 'Neumorphic' ? 'Soft UI extruded clay' :
@@ -322,23 +319,23 @@ export default function GeneratorPage() {
           {activeStep === 2 && (
             <div className="space-y-4">
               <div>
-                <h2 className="text-sm font-bold text-[#18181B]">Personal Profile</h2>
-                <p className="text-xs text-[#52525B] mt-0.5">Enter your public bio, social links, and credentials.</p>
+                <h2 className="text-sm font-bold text-ink">Personal Profile</h2>
+                <p className="text-xs text-soft mt-0.5">Enter your public bio, social links, and credentials.</p>
               </div>
 
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-semibold text-[#18181B] mb-1">Full Name</label>
+                  <label className="block text-xs font-semibold text-ink mb-1">Full Name</label>
                   <input
                     type="text"
                     value={userData.personal.name}
                     onChange={(e) => handlePersonalChange('name', e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-[#E6E1D6] text-[#18181B] focus:outline-none focus:border-[#D97706] focus:ring-2 focus:ring-[#F59E0B]/20"
+                    className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-line text-ink focus:outline-none focus:border-accent focus:ring-2 focus:ring-hl/20"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#18181B] mb-1">Professional Title / Headline</label>
+                  <label className="block text-xs font-semibold text-ink mb-1">Professional Title / Headline</label>
                   <input
                     type="text"
                     value={userData.personal.profession || userData.personal.title}
@@ -346,79 +343,79 @@ export default function GeneratorPage() {
                       handlePersonalChange('title', e.target.value);
                       handlePersonalChange('profession', e.target.value);
                     }}
-                    className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-[#E6E1D6] text-[#18181B] focus:outline-none focus:border-[#D97706] focus:ring-2 focus:ring-[#F59E0B]/20"
+                    className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-line text-ink focus:outline-none focus:border-accent focus:ring-2 focus:ring-hl/20"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#18181B] mb-1">Bio / Headline Summary</label>
+                  <label className="block text-xs font-semibold text-ink mb-1">Bio / Headline Summary</label>
                   <textarea
                     rows={2}
                     value={userData.personal.bio}
                     onChange={(e) => handlePersonalChange('bio', e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-[#E6E1D6] text-[#18181B] focus:outline-none focus:border-[#D97706] focus:ring-2 focus:ring-[#F59E0B]/20"
+                    className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-line text-ink focus:outline-none focus:border-accent focus:ring-2 focus:ring-hl/20"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#18181B] mb-1">Detailed About Me</label>
+                  <label className="block text-xs font-semibold text-ink mb-1">Detailed About Me</label>
                   <textarea
                     rows={3}
                     value={userData.personal.about}
                     onChange={(e) => handlePersonalChange('about', e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-[#E6E1D6] text-[#18181B] focus:outline-none focus:border-[#D97706] focus:ring-2 focus:ring-[#F59E0B]/20"
+                    className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-line text-ink focus:outline-none focus:border-accent focus:ring-2 focus:ring-hl/20"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-xs font-semibold text-[#18181B] mb-1">Location</label>
+                    <label className="block text-xs font-semibold text-ink mb-1">Location</label>
                     <input
                       type="text"
                       value={userData.personal.location || 'San Francisco, CA'}
                       onChange={(e) => handlePersonalChange('location', e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-[#E6E1D6] text-[#18181B] focus:outline-none focus:border-[#D97706]"
+                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-line text-ink focus:outline-none focus:border-accent"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#18181B] mb-1">Email</label>
+                    <label className="block text-xs font-semibold text-ink mb-1">Email</label>
                     <input
                       type="email"
                       value={userData.personal.email || 'alex@example.com'}
                       onChange={(e) => handlePersonalChange('email', e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-[#E6E1D6] text-[#18181B] focus:outline-none focus:border-[#D97706]"
+                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-line text-ink focus:outline-none focus:border-accent"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-xs font-semibold text-[#18181B] mb-1">GitHub URL</label>
+                    <label className="block text-xs font-semibold text-ink mb-1">GitHub URL</label>
                     <input
                       type="text"
                       value={userData.personal.github || 'https://github.com'}
                       onChange={(e) => handlePersonalChange('github', e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-[#E6E1D6] text-[#18181B] focus:outline-none focus:border-[#D97706]"
+                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-line text-ink focus:outline-none focus:border-accent"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#18181B] mb-1">LinkedIn URL</label>
+                    <label className="block text-xs font-semibold text-ink mb-1">LinkedIn URL</label>
                     <input
                       type="text"
                       value={userData.personal.linkedin || 'https://linkedin.com'}
                       onChange={(e) => handlePersonalChange('linkedin', e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-[#E6E1D6] text-[#18181B] focus:outline-none focus:border-[#D97706]"
+                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-line text-ink focus:outline-none focus:border-accent"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#18181B] mb-1">Avatar Photo URL</label>
+                  <label className="block text-xs font-semibold text-ink mb-1">Avatar Photo URL</label>
                   <input
                     type="text"
                     value={userData.personal.avatar}
                     onChange={(e) => handlePersonalChange('avatar', e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-[#E6E1D6] text-[#18181B] focus:outline-none focus:border-[#D97706]"
+                    className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-line text-ink focus:outline-none focus:border-accent"
                   />
                 </div>
               </div>
@@ -430,24 +427,24 @@ export default function GeneratorPage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-sm font-bold text-[#18181B]">Featured Projects</h2>
-                  <p className="text-xs text-[#52525B] mt-0.5">Add, edit, or reorder your engineering showcases.</p>
+                  <h2 className="text-sm font-bold text-ink">Featured Projects</h2>
+                  <p className="text-xs text-soft mt-0.5">Add, edit, or reorder your engineering showcases.</p>
                 </div>
                 <button
                   type="button"
                   onClick={handleAddProject}
-                  className="px-3 py-1.5 rounded-lg bg-[#18181B] text-white text-xs font-semibold hover:bg-[#27272A] transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                  className="px-3 py-1.5 rounded-lg bg-ink text-white text-xs font-semibold hover:bg-ink-2 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
                 >
-                  <Plus className="w-3.5 h-3.5 text-[#F59E0B]" />
+                  <Plus className="w-3.5 h-3.5 text-hl" />
                   <span>Add project</span>
                 </button>
               </div>
 
               <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1">
                 {userData.projects.map((proj, idx) => (
-                  <div key={proj.id || idx} className="p-4 rounded-xl border border-[#E6E1D6] bg-[#FAF8F5] space-y-2.5">
+                  <div key={proj.id || idx} className="p-4 rounded-xl border border-line bg-paper space-y-2.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#18181B]">Project 0{idx + 1}</span>
+                      <span className="text-xs font-bold text-ink">Project 0{idx + 1}</span>
                       <button
                         type="button"
                         onClick={() => handleRemoveProject(idx)}
@@ -463,7 +460,7 @@ export default function GeneratorPage() {
                       placeholder="Project Title"
                       value={proj.title}
                       onChange={(e) => handleUpdateProject(idx, 'title', e.target.value)}
-                      className="w-full px-3 py-1.5 text-xs rounded-lg bg-white border border-[#E6E1D6] text-[#18181B] focus:outline-none focus:border-[#D97706]"
+                      className="w-full px-3 py-1.5 text-xs rounded-lg bg-white border border-line text-ink focus:outline-none focus:border-accent"
                     />
 
                     <textarea
@@ -471,7 +468,7 @@ export default function GeneratorPage() {
                       placeholder="Project Description"
                       value={proj.description}
                       onChange={(e) => handleUpdateProject(idx, 'description', e.target.value)}
-                      className="w-full px-3 py-1.5 text-xs rounded-lg bg-white border border-[#E6E1D6] text-[#18181B] focus:outline-none focus:border-[#D97706]"
+                      className="w-full px-3 py-1.5 text-xs rounded-lg bg-white border border-line text-ink focus:outline-none focus:border-accent"
                     />
 
                     <div className="grid grid-cols-2 gap-2">
@@ -480,14 +477,14 @@ export default function GeneratorPage() {
                         placeholder="Live Demo URL"
                         value={proj.live}
                         onChange={(e) => handleUpdateProject(idx, 'live', e.target.value)}
-                        className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white border border-[#E6E1D6] text-[#18181B] focus:outline-none focus:border-[#D97706]"
+                        className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white border border-line text-ink focus:outline-none focus:border-accent"
                       />
                       <input
                         type="text"
                         placeholder="GitHub URL"
                         value={proj.github}
                         onChange={(e) => handleUpdateProject(idx, 'github', e.target.value)}
-                        className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white border border-[#E6E1D6] text-[#18181B] focus:outline-none focus:border-[#D97706]"
+                        className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white border border-line text-ink focus:outline-none focus:border-accent"
                       />
                     </div>
                   </div>
@@ -500,8 +497,8 @@ export default function GeneratorPage() {
           {activeStep === 4 && (
             <div className="space-y-4">
               <div>
-                <h2 className="text-sm font-bold text-[#18181B]">Technical Skills & Stack</h2>
-                <p className="text-xs text-[#52525B] mt-0.5">List your core languages, frameworks, cloud, and developer tools.</p>
+                <h2 className="text-sm font-bold text-ink">Technical Skills & Stack</h2>
+                <p className="text-xs text-soft mt-0.5">List your core languages, frameworks, cloud, and developer tools.</p>
               </div>
 
               <div className="flex items-center gap-2">
@@ -511,12 +508,12 @@ export default function GeneratorPage() {
                   value={skillInput}
                   onChange={(e) => setSkillInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddSkill())}
-                  className="flex-1 px-3 py-2 text-xs rounded-lg bg-white border border-[#E6E1D6] text-[#18181B] focus:outline-none focus:border-[#D97706]"
+                  className="flex-1 px-3 py-2 text-xs rounded-lg bg-white border border-line text-ink focus:outline-none focus:border-accent"
                 />
                 <button
                   type="button"
                   onClick={handleAddSkill}
-                  className="px-3 py-2 rounded-lg bg-[#18181B] text-white text-xs font-semibold hover:bg-[#27272A] transition-colors cursor-pointer"
+                  className="px-3 py-2 rounded-lg bg-ink text-white text-xs font-semibold hover:bg-ink-2 transition-colors cursor-pointer"
                 >
                   Add
                 </button>
@@ -526,13 +523,13 @@ export default function GeneratorPage() {
                 {(userData.skills?.technical || []).map((sk) => (
                   <span
                     key={sk}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono bg-[#FAF8F5] border border-[#E6E1D6] text-[#18181B]"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono bg-paper border border-line text-ink"
                   >
                     <span>{sk}</span>
                     <button
                       type="button"
                       onClick={() => handleRemoveSkill(sk)}
-                      className="text-[#71717A] hover:text-red-600 cursor-pointer ml-1"
+                      className="text-pencil hover:text-red-600 cursor-pointer ml-1"
                     >
                       ×
                     </button>
@@ -546,26 +543,26 @@ export default function GeneratorPage() {
           {activeStep === 5 && (
             <div className="space-y-5">
               <div>
-                <h2 className="text-sm font-bold text-[#18181B]">Ready for Export</h2>
-                <p className="text-xs text-[#52525B] mt-0.5">Download your complete, production-ready static portfolio website.</p>
+                <h2 className="text-sm font-bold text-ink">Ready for Export</h2>
+                <p className="text-xs text-soft mt-0.5">Download your complete, production-ready static portfolio website.</p>
               </div>
 
-              <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E6E1D6] space-y-2.5 text-xs">
+              <div className="p-4 rounded-xl bg-paper border border-line space-y-2.5 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-[#71717A]">Active Style Engine:</span>
-                  <span className="font-bold text-[#18181B]">{selectedTemplate}</span>
+                  <span className="text-pencil">Active Style Engine:</span>
+                  <span className="font-bold text-ink">{selectedTemplate}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#71717A]">Featured Projects:</span>
-                  <span className="font-bold text-[#18181B]">{userData.projects.length} showcases</span>
+                  <span className="text-pencil">Featured Projects:</span>
+                  <span className="font-bold text-ink">{userData.projects.length} showcases</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#71717A]">Technical Skills:</span>
-                  <span className="font-bold text-[#18181B]">{(userData.skills?.technical || []).length} items</span>
+                  <span className="text-pencil">Technical Skills:</span>
+                  <span className="font-bold text-ink">{(userData.skills?.technical || []).length} items</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#71717A]">Package Contents:</span>
-                  <span className="font-mono text-[#52525B]">index.html · style.css · script.js</span>
+                  <span className="text-pencil">Package Contents:</span>
+                  <span className="font-mono text-soft">index.html · style.css · script.js</span>
                 </div>
               </div>
 
@@ -574,7 +571,7 @@ export default function GeneratorPage() {
                   type="button"
                   onClick={handleDownload}
                   disabled={isExporting}
-                  className="w-full py-2.5 px-4 rounded-lg bg-[#F59E0B] hover:bg-[#D97706] text-[#18181B] hover:text-white text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-2xs"
+                  className="w-full py-2.5 px-4 rounded-lg bg-hl hover:bg-accent text-ink hover:text-white text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-2xs"
                 >
                   <Download className="w-4 h-4" />
                   <span>{isExporting ? 'Generating ZIP...' : 'Download Production ZIP'}</span>
@@ -582,9 +579,9 @@ export default function GeneratorPage() {
 
                 <Link
                   to={`/editor?template=${selectedTemplate}`}
-                  className="w-full py-2.5 px-4 rounded-lg bg-white hover:bg-[#F3EFE6] border border-[#E6E1D6] text-[#18181B] text-xs font-semibold transition-colors flex items-center justify-center gap-2 shadow-2xs"
+                  className="w-full py-2.5 px-4 rounded-lg bg-white hover:bg-paper-2 border border-line text-ink text-xs font-semibold transition-colors flex items-center justify-center gap-2 shadow-2xs"
                 >
-                  <Code2 className="w-4 h-4 text-[#D97706]" />
+                  <Code2 className="w-4 h-4 text-accent" />
                   <span>Fine-tune in split code editor</span>
                 </Link>
               </div>
@@ -592,12 +589,12 @@ export default function GeneratorPage() {
           )}
 
           {/* BOTTOM STEP CONTROLS */}
-          <div className="pt-4 border-t border-[#E6E1D6] flex items-center justify-between">
+          <div className="pt-4 border-t border-line flex items-center justify-between">
             <button
               type="button"
               disabled={activeStep === 1}
               onClick={() => setActiveStep(prev => Math.max(1, prev - 1))}
-              className="px-3 py-1.5 rounded-lg border border-[#E6E1D6] text-xs font-semibold text-[#52525B] hover:text-[#18181B] hover:bg-[#F3EFE6] disabled:opacity-30 cursor-pointer flex items-center gap-1 shadow-2xs"
+              className="px-3 py-1.5 rounded-lg border border-line text-xs font-semibold text-soft hover:text-ink hover:bg-paper-2 disabled:opacity-30 cursor-pointer flex items-center gap-1 shadow-2xs"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back</span>
@@ -607,7 +604,7 @@ export default function GeneratorPage() {
               <button
                 type="button"
                 onClick={() => setActiveStep(prev => Math.min(5, prev + 1))}
-                className="px-4 py-1.5 rounded-lg bg-[#18181B] hover:bg-[#27272A] text-white text-xs font-bold transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
+                className="px-4 py-1.5 rounded-lg bg-ink hover:bg-ink-2 text-white text-xs font-bold transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
               >
                 <span>Next step</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -617,7 +614,7 @@ export default function GeneratorPage() {
                 type="button"
                 onClick={handleDownload}
                 disabled={isExporting}
-                className="px-4 py-1.5 rounded-lg bg-[#F59E0B] hover:bg-[#D97706] text-[#18181B] hover:text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1 shadow-2xs"
+                className="px-4 py-1.5 rounded-lg bg-hl hover:bg-accent text-ink hover:text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1 shadow-2xs"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Export ZIP</span>
@@ -628,35 +625,35 @@ export default function GeneratorPage() {
         </div>
 
         {/* RIGHT LIVE PREVIEW PANEL (7 columns on desktop - sticky) */}
-        <div className="lg:col-span-7 bg-white border border-[#E6E1D6] rounded-xl overflow-hidden sticky top-20 shadow-2xs">
+        <div className="lg:col-span-7 bg-white border border-line rounded-xl overflow-hidden sticky top-20 shadow-2xs">
           
           {/* Preview Header */}
-          <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#E6E1D6] bg-[#FAF8F5]">
+          <div className="flex items-center justify-between px-4 py-2.5 border-b border-line bg-paper">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs font-bold text-[#18181B]">{selectedTemplate} Engine Preview</span>
+              <span className="text-xs font-bold text-ink">{selectedTemplate} Engine Preview</span>
             </div>
 
             <div className="flex items-center gap-2">
               {/* Viewport controls */}
-              <div className="flex items-center bg-[#F3EFE6] p-0.5 rounded-md border border-[#E6E1D6]">
+              <div className="flex items-center bg-paper-2 p-0.5 rounded-md border border-line">
                 <button
                   onClick={() => setViewport('desktop')}
-                  className={`p-1.5 rounded cursor-pointer transition-colors ${viewport === 'desktop' ? 'bg-white text-[#18181B] shadow-2xs' : 'text-[#71717A] hover:text-[#18181B]'}`}
+                  className={`p-1.5 rounded cursor-pointer transition-colors ${viewport === 'desktop' ? 'bg-white text-ink shadow-2xs' : 'text-pencil hover:text-ink'}`}
                   title="Desktop (100%)"
                 >
                   <Monitor className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => setViewport('tablet')}
-                  className={`p-1.5 rounded cursor-pointer transition-colors ${viewport === 'tablet' ? 'bg-white text-[#18181B] shadow-2xs' : 'text-[#71717A] hover:text-[#18181B]'}`}
+                  className={`p-1.5 rounded cursor-pointer transition-colors ${viewport === 'tablet' ? 'bg-white text-ink shadow-2xs' : 'text-pencil hover:text-ink'}`}
                   title="Tablet (768px)"
                 >
                   <Tablet className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => setViewport('mobile')}
-                  className={`p-1.5 rounded cursor-pointer transition-colors ${viewport === 'mobile' ? 'bg-white text-[#18181B] shadow-2xs' : 'text-[#71717A] hover:text-[#18181B]'}`}
+                  className={`p-1.5 rounded cursor-pointer transition-colors ${viewport === 'mobile' ? 'bg-white text-ink shadow-2xs' : 'text-pencil hover:text-ink'}`}
                   title="Mobile (375px)"
                 >
                   <Smartphone className="w-3.5 h-3.5" />
@@ -666,7 +663,7 @@ export default function GeneratorPage() {
               {/* Refresh Preview */}
               <button
                 onClick={() => setPreviewKey(prev => prev + 1)}
-                className="p-1.5 text-[#71717A] hover:text-[#18181B] rounded cursor-pointer hover:bg-[#F3EFE6]"
+                className="p-1.5 text-pencil hover:text-ink rounded cursor-pointer hover:bg-paper-2"
                 title="Refresh preview canvas"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
@@ -675,9 +672,9 @@ export default function GeneratorPage() {
           </div>
 
           {/* Preview Canvas Container */}
-          <div className="bg-[#F3EFE6] p-4 flex justify-center items-center overflow-hidden min-h-[520px]">
+          <div className="bg-paper-2 p-4 flex justify-center items-center overflow-hidden min-h-[520px]">
             <div 
-              className={`bg-white rounded-lg border border-[#E6E1D6] shadow-sm overflow-hidden transition-all duration-200 h-[580px] ${
+              className={`bg-white rounded-lg border border-line shadow-sm overflow-hidden transition-all duration-200 h-[580px] ${
                 viewport === 'mobile' ? 'w-[375px]' :
                 viewport === 'tablet' ? 'w-[680px]' :
                 'w-full'
