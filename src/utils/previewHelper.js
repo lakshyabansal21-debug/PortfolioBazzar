@@ -10,6 +10,25 @@ import { generatePortfolioCode, DEFAULT_USER_DATA } from '../services/templateEn
  * @param {object} options - Options { fallbackCategory, accentColor, customFont }
  * @returns {string} Fully compiled HTML string ready for srcDoc
  */
+/**
+ * CSS (+ a tiny script that loads the Google Font) for the editor's "Visual" tab.
+ * Returns empty strings when nothing was chosen, so the template keeps its own look.
+ * Also used by the ZIP / single-file export so the download matches the preview.
+ */
+export function buildVisualOverrides({ accentColor, customFont } = {}) {
+  let css = '';
+  let js = '';
+  if (accentColor && /^#[0-9a-f]{3,8}$/i.test(accentColor)) {
+    css += `\n:root { --accent-primary: ${accentColor}; --accent: ${accentColor}; --accent-color: ${accentColor}; --primary: ${accentColor}; --primary-color: ${accentColor}; }\n`;
+  }
+  if (customFont) {
+    const family = String(customFont).replace(/[^a-zA-Z0-9 ]/g, '');
+    css += `\nbody, h1, h2, h3, h4, h5, h6, p, a, li, span, button, input, textarea, label, div { font-family: '${family}', system-ui, -apple-system, sans-serif !important; }\n`;
+    js += `(function(){var l=document.createElement('link');l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family=${family.replace(/ /g, '+')}:wght@400;500;600;700&display=swap';document.head.appendChild(l);})();`;
+  }
+  return { css, js };
+}
+
 export function assemblePreviewHtml(rawHtml = '', rawCss = '', rawJs = '', options = {}) {
   let html = (rawHtml || '').trim();
   let css = (rawCss || '').trim();
@@ -28,13 +47,10 @@ export function assemblePreviewHtml(rawHtml = '', rawCss = '', rawJs = '', optio
     if (!js) js = fallbackCode.js;
   }
 
-  // Handle custom accent color and font overrides
-  if (options.accentColor) {
-    css += `\n:root { --accent-primary: ${options.accentColor}; }\n`;
-  }
-  if (options.customFont) {
-    css += `\nbody { font-family: '${options.customFont}', system-ui, -apple-system, sans-serif !important; }\n`;
-  }
+  // Visual tab overrides (only applied when the user actually picked a colour / font)
+  const visual = buildVisualOverrides(options);
+  css += visual.css;
+  if (visual.js) js = js ? `${js}\n${visual.js}` : visual.js;
 
   // Safe storage shim, script wrapper & link interceptor so sandboxed iframes never navigate to parent app
   const safeScript = `
