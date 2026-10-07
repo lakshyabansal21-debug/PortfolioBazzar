@@ -28,18 +28,18 @@ export default function SkillsSection() {
     : categories.filter(c => c.id === activeCategory);
 
   return (
-    <section id="skills" className="py-20 sm:py-28 border-t border-[#E6E1D6]/70 relative">
+    <section id="skills" className="py-20 sm:py-28 border-t border-line/70 relative">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <div className="space-y-2 mb-10 sm:mb-12">
-          <div className="inline-flex items-center gap-2 text-xs font-mono font-semibold uppercase tracking-wider text-[#D97706]">
+          <div className="inline-flex items-center gap-2 text-xs font-mono font-semibold uppercase tracking-wider text-accent">
             <span>// 03 · Skills & Stack</span>
           </div>
-          <h2 className="text-2xl sm:text-4xl font-bold text-[#18181B] tracking-tight">
+          <h2 className="text-2xl sm:text-4xl font-bold text-ink tracking-tight">
             Technical Stack & Core Domains
           </h2>
-          <p className="text-sm sm:text-base text-[#52525B] max-w-xl">
+          <p className="text-sm sm:text-base text-soft max-w-xl">
             Grouped by architectural layer. Focused on composable primitives, memory safety, and high-frequency rendering.
           </p>
         </div>
@@ -50,8 +50,8 @@ export default function SkillsSection() {
             onClick={() => setActiveCategory('all')}
             className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
               activeCategory === 'all'
-                ? 'bg-[#18181B] text-white shadow-2xs'
-                : 'bg-white border border-[#E6E1D6] text-[#52525B] hover:text-[#18181B] hover:bg-[#F3EFE6]'
+                ? 'bg-ink text-white shadow-2xs'
+                : 'bg-white border border-line text-soft hover:text-ink hover:bg-paper-2'
             }`}
           >
             All Disciplines
@@ -64,8 +64,8 @@ export default function SkillsSection() {
                 onClick={() => setActiveCategory(cat.id)}
                 className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
                   activeCategory === cat.id
-                    ? 'bg-[#18181B] text-white shadow-2xs'
-                    : 'bg-white border border-[#E6E1D6] text-[#52525B] hover:text-[#18181B] hover:bg-[#F3EFE6]'
+                    ? 'bg-ink text-white shadow-2xs'
+                    : 'bg-white border border-line text-soft hover:text-ink hover:bg-paper-2'
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -82,16 +82,16 @@ export default function SkillsSection() {
             return (
               <div
                 key={cat.id}
-                className="bg-white rounded-xl border border-[#E6E1D6] p-6 shadow-[0_1px_3px_rgba(24,24,27,0.03)] hover:border-[#D1CBC0] transition-colors flex flex-col justify-between"
+                className="bg-white rounded-xl border border-line p-6 shadow-[0_1px_3px_rgba(24,24,27,0.03)] hover:border-line-2 transition-colors flex flex-col justify-between"
               >
                 <div>
-                  <div className="flex items-center gap-2.5 pb-3 mb-4 border-b border-[#E6E1D6]">
-                    <div className="w-8 h-8 rounded-lg bg-[#FAF8F5] border border-[#E6E1D6] flex items-center justify-center text-[#18181B]">
-                      <Icon className="w-4 h-4 text-[#D97706]" />
+                  <div className="flex items-center gap-2.5 pb-3 mb-4 border-b border-line">
+                    <div className="w-8 h-8 rounded-lg bg-paper border border-line flex items-center justify-center text-ink">
+                      <Icon className="w-4 h-4 text-accent" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-[#18181B]">{cat.name}</h3>
-                      <p className="text-[11px] text-[#71717A] leading-tight mt-0.5">{cat.description}</p>
+                      <h3 className="text-sm font-bold text-ink">{cat.name}</h3>
+                      <p className="text-[11px] text-pencil leading-tight mt-0.5">{cat.description}</p>
                     </div>
                   </div>
 
@@ -100,13 +100,13 @@ export default function SkillsSection() {
                     {cat.items.map((skill) => (
                       <div
                         key={skill.name}
-                        className="p-2.5 rounded-lg bg-[#FAF8F5] border border-[#E6E1D6]/70 flex items-center justify-between gap-2 text-xs hover:border-[#D1CBC0] transition-colors"
+                        className="p-2.5 rounded-lg bg-paper border border-line/70 flex items-center justify-between gap-2 text-xs hover:border-line-2 transition-colors"
                       >
                         <div>
-                          <span className="font-semibold text-[#18181B] block">{skill.name}</span>
-                          <span className="text-[11px] text-[#71717A]">{skill.note}</span>
+                          <span className="font-semibold text-ink block">{skill.name}</span>
+                          <span className="text-[11px] text-pencil">{skill.note}</span>
                         </div>
-                        <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-white border border-[#E6E1D6] text-[#52525B] shrink-0">
+                        <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-white border border-line text-soft shrink-0">
                           {skill.level}
                         </span>
                       </div>
@@ -114,7 +114,7 @@ export default function SkillsSection() {
                   </div>
                 </div>
 
-                <div className="pt-4 mt-4 border-t border-[#F3EFE6] flex items-center justify-between text-[11px] text-[#71717A]">
+                <div className="pt-4 mt-4 border-t border-paper-2 flex items-center justify-between text-[11px] text-pencil">
                   <span>{cat.items.length} tools & patterns</span>
                   <span className="text-emerald-600 font-mono text-[10px]">Production ready</span>
                 </div>

@@ -4,7 +4,7 @@ import { readFieldDefs, applyFieldValues } from '../../utils/editableFields.js';
 import { useToast } from '../../context/ToastContext.jsx';
 
 const inputCls =
-  'w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white focus:outline-none focus:border-[#D97706]';
+  'w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent';
 
 /**
  * Shows the fields the template's creator marked as editable.
@@ -45,9 +45,9 @@ export default function FillDetailsForm({ html, onChange }) {
 
   return (
     <div className="space-y-4">
-      <div className="p-3 bg-[#FAF8F5] border border-[#E6E1D6] rounded-xl flex items-start gap-3">
-        <UserCheck className="w-4 h-4 text-[#F59E0B] mt-0.5 shrink-0" />
-        <p className="text-xs text-[#52525B]">
+      <div className="p-3 bg-paper border border-line rounded-xl flex items-start gap-3">
+        <UserCheck className="w-4 h-4 text-hl mt-0.5 shrink-0" />
+        <p className="text-xs text-soft">
           The template's creator marked these details as yours to change. Replace them with your own and press{' '}
           <b>Apply</b>. Everywhere the old text appears will be updated.
         </p>
@@ -56,7 +56,7 @@ export default function FillDetailsForm({ html, onChange }) {
       <div className="space-y-3">
         {defs.map((d) => (
           <div key={d.id}>
-            <label className="block text-[11px] font-semibold text-[#18181B] mb-1">{d.label}</label>
+            <label className="block text-[11px] font-semibold text-ink mb-1">{d.label}</label>
             {d.type === 'textarea' ? (
               <textarea
                 rows={4}
@@ -81,7 +81,7 @@ export default function FillDetailsForm({ html, onChange }) {
         type="button"
         onClick={handleApply}
         disabled={!dirty}
-        className="w-full px-4 py-2.5 rounded-lg bg-[#F59E0B] hover:bg-[#D97706] text-[#18181B] hover:text-white text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+        className="w-full px-4 py-2.5 rounded-lg bg-hl hover:bg-accent text-ink hover:text-white text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
       >
         <Check className="w-3.5 h-3.5" />
         Apply my details

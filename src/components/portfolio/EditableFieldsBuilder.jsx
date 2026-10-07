@@ -3,7 +3,7 @@ import { Plus, Trash2, Wand2, CheckCircle2, AlertTriangle, Link2 } from 'lucide-
 import { FIELD_TYPES, suggestFields, countOccurrences } from '../../utils/editableFields.js';
 
 const inputCls =
-  'w-full px-2.5 py-1.5 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white focus:outline-none focus:border-[#D97706]';
+  'w-full px-2.5 py-1.5 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent';
 
 /**
  * Lets the person uploading a template choose which parts can be edited by the next
@@ -36,30 +36,30 @@ export default function EditableFieldsBuilder({ html, fields, onChange }) {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs text-[#52525B] max-w-md">
+        <p className="text-xs text-soft max-w-md">
           Tell us what the next person should be able to change, and the text that is currently in your
-          template for each. Example: <span className="font-mono text-[#18181B]">Your name</span> →{' '}
-          <span className="font-mono text-[#18181B]">Alex Rivera</span>.
+          template for each. Example: <span className="font-mono text-ink">Your name</span> →{' '}
+          <span className="font-mono text-ink">Alex Rivera</span>.
         </p>
         <div className="flex gap-2">
           <button
             type="button"
             onClick={autoSuggest}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold bg-[#FAF8F5] hover:bg-[#F3EFE6] border border-[#E6E1D6] text-[#18181B] cursor-pointer transition-colors"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold bg-paper hover:bg-paper-2 border border-line text-ink cursor-pointer transition-colors"
           >
-            <Wand2 className="w-3.5 h-3.5 text-[#D97706]" /> Auto-detect from my HTML
+            <Wand2 className="w-3.5 h-3.5 text-accent" /> Auto-detect from my HTML
           </button>
           <button
             type="button"
             onClick={addLink}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold bg-[#FAF8F5] hover:bg-[#F3EFE6] border border-[#E6E1D6] text-[#18181B] cursor-pointer transition-colors"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold bg-paper hover:bg-paper-2 border border-line text-ink cursor-pointer transition-colors"
           >
-            <Link2 className="w-3.5 h-3.5 text-[#D97706]" /> Add link
+            <Link2 className="w-3.5 h-3.5 text-accent" /> Add link
           </button>
           <button
             type="button"
             onClick={addBlank}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold bg-[#18181B] hover:bg-[#27272A] text-white cursor-pointer transition-colors"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold bg-ink hover:bg-ink-2 text-white cursor-pointer transition-colors"
           >
             <Plus className="w-3.5 h-3.5" /> Add field
           </button>
@@ -67,7 +67,7 @@ export default function EditableFieldsBuilder({ html, fields, onChange }) {
       </div>
 
       {fields.length === 0 && (
-        <div className="p-4 text-center text-xs text-[#71717A] rounded-lg bg-[#FAF8F5] border border-dashed border-[#E6E1D6]">
+        <div className="p-4 text-center text-xs text-pencil rounded-lg bg-paper border border-dashed border-line">
           No editable fields yet. Click <b>Auto-detect</b> to get suggestions, or <b>Add field</b>.
           Without fields, users can still edit your template in the Content tab.
         </div>
@@ -78,7 +78,7 @@ export default function EditableFieldsBuilder({ html, fields, onChange }) {
           const n = counts[f.id] ?? 0;
           const filled = f.old.trim().length > 0;
           return (
-            <div key={f.id} className="grid grid-cols-12 gap-2 items-start p-2.5 rounded-lg border border-[#E6E1D6] bg-[#FAF8F5]">
+            <div key={f.id} className="grid grid-cols-12 gap-2 items-start p-2.5 rounded-lg border border-line bg-paper">
               <div className="col-span-12 sm:col-span-3">
                 <input
                   type="text"
@@ -137,7 +137,7 @@ export default function EditableFieldsBuilder({ html, fields, onChange }) {
                   type="button"
                   onClick={() => remove(f.id)}
                   title="Remove field"
-                  className="p-1.5 rounded text-[#71717A] hover:text-red-500 hover:bg-red-50 cursor-pointer transition-colors"
+                  className="p-1.5 rounded text-pencil hover:text-red-500 hover:bg-red-50 cursor-pointer transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>

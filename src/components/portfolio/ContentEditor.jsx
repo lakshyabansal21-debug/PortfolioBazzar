@@ -36,7 +36,7 @@ import {
 import { readJsData, writeJsData } from '../../utils/jsData.js';
 
 const inputCls =
-  'w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white focus:outline-none focus:border-[#D97706]';
+  'w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent';
 
 const KIND_ICONS = {
   skills: Wrench,
@@ -103,8 +103,8 @@ function IconBtn({ title, onClick, children, danger, disabled }) {
       title={title}
       onClick={onClick}
       disabled={disabled}
-      className={`p-1.5 rounded text-[#71717A] cursor-pointer transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
-        danger ? 'hover:text-red-500 hover:bg-red-50' : 'hover:text-[#18181B] hover:bg-[#F3EFE6]'
+      className={`p-1.5 rounded text-pencil cursor-pointer transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
+        danger ? 'hover:text-red-500 hover:bg-red-50' : 'hover:text-ink hover:bg-paper-2'
       }`}
     >
       {children}
@@ -114,12 +114,12 @@ function IconBtn({ title, onClick, children, danger, disabled }) {
 
 function SectionBox({ icon: Icon, title, badge, defaultOpen = false, children }) {
   return (
-    <details open={defaultOpen} className="group border border-[#E6E1D6] rounded-xl bg-white overflow-hidden">
-      <summary className="flex items-center gap-2 px-3 py-2.5 cursor-pointer select-none list-none bg-[#FAF8F5] hover:bg-[#F3EFE6] transition-colors">
-        <ChevronRight className="w-3.5 h-3.5 text-[#71717A] transition-transform group-open:rotate-90" />
-        <Icon className="w-3.5 h-3.5 text-[#D97706]" />
-        <span className="text-xs font-bold text-[#18181B]">{title}</span>
-        {badge && <span className="ml-auto text-[10px] font-mono text-[#71717A]">{badge}</span>}
+    <details open={defaultOpen} className="group border border-line rounded-xl bg-white overflow-hidden">
+      <summary className="flex items-center gap-2 px-3 py-2.5 cursor-pointer select-none list-none bg-paper hover:bg-paper-2 transition-colors">
+        <ChevronRight className="w-3.5 h-3.5 text-pencil transition-transform group-open:rotate-90" />
+        <Icon className="w-3.5 h-3.5 text-accent" />
+        <span className="text-xs font-bold text-ink">{title}</span>
+        {badge && <span className="ml-auto text-[10px] font-mono text-pencil">{badge}</span>}
       </summary>
       <div className="p-3 space-y-3">{children}</div>
     </details>
@@ -139,14 +139,14 @@ function ChipEditor({ chips, onRemove, onAdd, placeholder = 'Add one…' }) {
         {chips.map((c) => (
           <span
             key={c.key}
-            className="inline-flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-md text-xs font-mono bg-[#FAF8F5] border border-[#E6E1D6] text-[#18181B]"
+            className="inline-flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-md text-xs font-mono bg-paper border border-line text-ink"
           >
             {c.label}
             <button
               type="button"
               title={`Remove ${c.label}`}
               onClick={() => onRemove(c)}
-              className="p-0.5 rounded text-[#71717A] hover:text-red-500 hover:bg-red-50 cursor-pointer transition-colors"
+              className="p-0.5 rounded text-pencil hover:text-red-500 hover:bg-red-50 cursor-pointer transition-colors"
             >
               <X className="w-3 h-3" />
             </button>
@@ -170,7 +170,7 @@ function ChipEditor({ chips, onRemove, onAdd, placeholder = 'Add one…' }) {
         <button
           type="button"
           onClick={submit}
-          className="px-3 rounded-lg bg-[#18181B] text-white text-xs font-semibold flex items-center gap-1 cursor-pointer hover:bg-[#27272A] transition-colors"
+          className="px-3 rounded-lg bg-ink text-white text-xs font-semibold flex items-center gap-1 cursor-pointer hover:bg-ink-2 transition-colors"
         >
           <Plus className="w-3.5 h-3.5" /> Add
         </button>
@@ -181,10 +181,10 @@ function ChipEditor({ chips, onRemove, onAdd, placeholder = 'Add one…' }) {
 
 function ItemCard({ title, index, count, position, onMove, onDuplicate, onRemove, children }) {
   return (
-    <details className="group/item border border-[#E6E1D6] rounded-lg bg-[#FAF8F5]/60">
+    <details className="group/item border border-line rounded-lg bg-paper/60">
       <summary className="flex items-center gap-1 px-2.5 py-2 cursor-pointer select-none list-none">
-        <ChevronRight className="w-3 h-3 text-[#71717A] transition-transform group-open/item:rotate-90" />
-        <span className="text-[11px] font-semibold text-[#18181B] truncate flex-1 ml-1">{title || `Item ${index + 1}`}</span>
+        <ChevronRight className="w-3 h-3 text-pencil transition-transform group-open/item:rotate-90" />
+        <span className="text-[11px] font-semibold text-ink truncate flex-1 ml-1">{title || `Item ${index + 1}`}</span>
         <span onClick={(e) => e.preventDefault()} className="flex items-center">
           <IconBtn title="Move up" onClick={() => onMove(-1)} disabled={position === 0}>
             <ChevronUp className="w-3.5 h-3.5" />
@@ -221,14 +221,14 @@ function JsDataEditor({ js, onChangeJs }) {
 
   return (
     <SectionBox icon={Code2} title="Data in your JavaScript" badge={`${datasets.length} found`} defaultOpen>
-      <p className="text-[11px] text-[#71717A]">
+      <p className="text-[11px] text-pencil">
         These lists are written in your script (not in the HTML), so the page builds itself from them. Editing them
         updates the script.
       </p>
 
       {datasets.map((ds) => (
         <div key={ds.index} className="space-y-2">
-          <div className="text-[10px] font-mono uppercase tracking-wider text-[#71717A]">
+          <div className="text-[10px] font-mono uppercase tracking-wider text-pencil">
             {ds.name} · {ds.value.length} items
           </div>
 
@@ -265,7 +265,7 @@ function JsDataEditor({ js, onChangeJs }) {
                         const shown = isStringArray ? val.join(', ') : String(val);
                         return (
                           <div key={key}>
-                            <div className="text-[10px] font-mono text-[#A1A1AA] mb-0.5">
+                            <div className="text-[10px] font-mono text-mist mb-0.5">
                               {key}
                               {isStringArray ? ' (comma separated)' : ''}
                             </div>
@@ -317,15 +317,15 @@ export default function ContentEditor({ html, js = '', onChangeHtml, onChangeJs 
 
   return (
     <div className="space-y-4">
-      <p className="text-xs text-[#52525B]">
+      <p className="text-xs text-soft">
         Detected <b>{data.sections.length}</b> sections and <b>{listCount}</b> repeated items (skills, projects,
         experience…). Tip: use <b>Edit on page</b> above the preview to click and type directly on the website.
       </p>
 
       {/* Page title */}
       <div>
-        <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-[#71717A] mb-1.5">
-          <Type className="w-3 h-3 text-[#D97706]" /> Browser tab title
+        <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-pencil mb-1.5">
+          <Type className="w-3 h-3 text-accent" /> Browser tab title
         </div>
         <DraftInput value={data.pageTitle} onCommit={(v) => edit(updateTitle(html, v))} />
       </div>
@@ -353,7 +353,7 @@ export default function ContentEditor({ html, js = '', onChangeHtml, onChangeJs 
             {/* repeated items first: skills / projects / experience */}
             {section.lists.map((list) => (
               <div key={list.id} className="space-y-2">
-                <div className="text-[10px] font-mono uppercase tracking-wider text-[#71717A]">
+                <div className="text-[10px] font-mono uppercase tracking-wider text-pencil">
                   {list.label} · {list.items.length}
                 </div>
 
@@ -379,7 +379,7 @@ export default function ContentEditor({ html, js = '', onChangeHtml, onChangeJs 
                       >
                         {item.fields.map((f) => (
                           <div key={f.index}>
-                            <div className="text-[10px] font-mono text-[#A1A1AA] mb-0.5">&lt;{f.tag}&gt;</div>
+                            <div className="text-[10px] font-mono text-mist mb-0.5">&lt;{f.tag}&gt;</div>
                             <DraftInput
                               value={f.text}
                               multiline={f.long}
@@ -392,7 +392,7 @@ export default function ContentEditor({ html, js = '', onChangeHtml, onChangeJs 
                     <button
                       type="button"
                       onClick={() => edit(duplicateItem(html, list.items[list.items.length - 1].index))}
-                      className="w-full py-2 rounded-lg border border-dashed border-[#D1CBC0] text-xs font-semibold text-[#52525B] hover:text-[#18181B] hover:border-[#D97706] hover:bg-[#FAF8F5] flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                      className="w-full py-2 rounded-lg border border-dashed border-line-2 text-xs font-semibold text-soft hover:text-ink hover:border-accent hover:bg-paper flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
                     >
                       <Plus className="w-3.5 h-3.5" /> Add another {list.label.toLowerCase().replace(/s$/, '')}
                     </button>
@@ -405,11 +405,11 @@ export default function ContentEditor({ html, js = '', onChangeHtml, onChangeJs 
             {section.fields.length > 0 && (
               <div className="space-y-2">
                 {section.lists.length > 0 && (
-                  <div className="text-[10px] font-mono uppercase tracking-wider text-[#71717A]">Other text</div>
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-pencil">Other text</div>
                 )}
                 {section.fields.map((f) => (
                   <div key={f.index}>
-                    <div className="text-[10px] font-mono text-[#A1A1AA] mb-0.5">&lt;{f.tag}&gt;</div>
+                    <div className="text-[10px] font-mono text-mist mb-0.5">&lt;{f.tag}&gt;</div>
                     <DraftInput
                       value={f.text}
                       multiline={f.long}
@@ -429,7 +429,7 @@ export default function ContentEditor({ html, js = '', onChangeHtml, onChangeJs 
           <div className="space-y-2">
             {data.links.map((l) => (
               <div key={l.index}>
-                <div className="text-[10px] font-mono text-[#A1A1AA] mb-0.5 truncate">{l.text}</div>
+                <div className="text-[10px] font-mono text-mist mb-0.5 truncate">{l.text}</div>
                 <DraftInput value={l.href} onCommit={(v) => edit(updateAttr(html, 'link', l.index, v))} />
               </div>
             ))}
@@ -443,7 +443,7 @@ export default function ContentEditor({ html, js = '', onChangeHtml, onChangeJs 
           <div className="space-y-2">
             {data.images.map((img) => (
               <div key={img.index}>
-                <div className="text-[10px] font-mono text-[#A1A1AA] mb-0.5 truncate">{img.alt || 'image'}</div>
+                <div className="text-[10px] font-mono text-mist mb-0.5 truncate">{img.alt || 'image'}</div>
                 <DraftInput
                   value={img.src.startsWith('data:') ? '(embedded image)' : img.src}
                   onCommit={(v) => !v.startsWith('(embedded') && edit(updateAttr(html, 'image', img.index, v))}
