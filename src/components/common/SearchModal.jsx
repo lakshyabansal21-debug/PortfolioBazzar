@@ -124,27 +124,27 @@ export default function SearchModal({ isOpen, onClose }) {
       onClick={onClose}
     >
       <div 
-        className="w-full max-w-2xl bg-white border border-[#E6E1D6] rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-100"
+        className="w-full max-w-2xl bg-white border border-line rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-100"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={handleKeyDown}
       >
         {/* Search Input Bar */}
-        <div className="flex items-center px-4 py-3.5 border-b border-[#E6E1D6] bg-white">
-          <Search className="w-4 h-4 text-[#71717A] shrink-0" />
+        <div className="flex items-center px-4 py-3.5 border-b border-line bg-white">
+          <Search className="w-4 h-4 text-pencil shrink-0" />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search templates, styles, keywords (e.g. Developer, Minimal, Terminal)..."
-            className="w-full ml-3 text-sm text-[#18181B] placeholder-[#71717A] bg-transparent focus:outline-none"
+            className="w-full ml-3 text-sm text-ink placeholder-pencil bg-transparent focus:outline-none"
           />
           <button
             type="button"
             onClick={onClose}
             aria-label="Close search"
             title="Close (Esc)"
-            className="group relative shrink-0 ml-2 flex items-center justify-center w-10 h-6 rounded border border-[#E6E1D6] bg-[#FAF8F5] text-[#71717A] cursor-pointer transition-all duration-200 hover:bg-red-50 hover:border-red-300 hover:text-red-500 hover:scale-110 active:scale-95"
+            className="group relative shrink-0 ml-2 flex items-center justify-center w-10 h-6 rounded border border-line bg-paper text-pencil cursor-pointer transition-all duration-200 hover:bg-red-50 hover:border-red-300 hover:text-red-500 hover:scale-110 active:scale-95"
           >
             <span className="absolute text-[10px] font-mono transition-all duration-200 group-hover:opacity-0 group-hover:scale-50">
               ESC
@@ -156,7 +156,7 @@ export default function SearchModal({ isOpen, onClose }) {
         {/* Dynamic Content Area */}
         <div className="max-h-[420px] overflow-y-auto p-4 space-y-4">
           {loading && (
-            <div className="py-8 text-center text-xs font-mono text-[#71717A]">
+            <div className="py-8 text-center text-xs font-mono text-pencil">
               Searching catalog...
             </div>
           )}
@@ -164,7 +164,7 @@ export default function SearchModal({ isOpen, onClose }) {
           {/* Results List */}
           {!loading && results.length > 0 && (
             <div className="space-y-1">
-              <div className="text-[10px] font-mono uppercase tracking-wider text-[#D97706] px-2 mb-1.5">
+              <div className="text-[10px] font-mono uppercase tracking-wider text-accent px-2 mb-1.5">
                 MATCHES FOR "{query}"
               </div>
               {results.map((item, idx) => (
@@ -172,21 +172,21 @@ export default function SearchModal({ isOpen, onClose }) {
                   key={item.id}
                   onClick={() => handleSelectTemplate(item)}
                   className={`w-full flex items-center justify-between p-2.5 rounded-lg text-left transition-colors cursor-pointer ${
-                    selectedIndex === idx ? 'bg-[#F3EFE6] text-[#18181B]' : 'hover:bg-[#FAF8F5] text-[#18181B]'
+                    selectedIndex === idx ? 'bg-paper-2 text-ink' : 'hover:bg-paper text-ink'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <img
                       src={item.thumbnail_url}
                       alt={item.title}
-                      className="w-10 h-8 object-cover rounded border border-[#E6E1D6]"
+                      className="w-10 h-8 object-cover rounded border border-line"
                     />
                     <div>
                       <div className="text-xs font-bold">{item.title}</div>
-                      <div className="text-[11px] text-[#52525B]">{item.category} · by {item.creator_name || 'Community'}</div>
+                      <div className="text-[11px] text-soft">{item.category} · by {item.creator_name || 'Community'}</div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-[#71717A]">
+                  <div className="flex items-center gap-2 text-xs text-pencil">
                     <span className="font-mono text-[11px]">{item.difficulty}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </div>
@@ -195,7 +195,7 @@ export default function SearchModal({ isOpen, onClose }) {
 
               <button
                 onClick={() => handleExecuteSearch()}
-                className="w-full text-center py-2.5 mt-2 text-xs font-semibold text-[#18181B] hover:bg-[#FAF8F5] rounded-lg transition-colors cursor-pointer border-t border-[#E6E1D6]"
+                className="w-full text-center py-2.5 mt-2 text-xs font-semibold text-ink hover:bg-paper rounded-lg transition-colors cursor-pointer border-t border-line"
               >
                 View all results for "{query}" in Catalog →
               </button>
@@ -205,8 +205,8 @@ export default function SearchModal({ isOpen, onClose }) {
           {/* Empty Results */}
           {!loading && query && results.length === 0 && (
             <div className="py-8 text-center">
-              <p className="text-xs text-[#18181B] font-semibold">No templates found for "{query}"</p>
-              <p className="text-[11px] text-[#52525B] mt-1">Try keywords like "Developer", "Minimal", or "Terminal".</p>
+              <p className="text-xs text-ink font-semibold">No templates found for "{query}"</p>
+              <p className="text-[11px] text-soft mt-1">Try keywords like "Developer", "Minimal", or "Terminal".</p>
             </div>
           )}
 
@@ -216,7 +216,7 @@ export default function SearchModal({ isOpen, onClose }) {
               {/* Recent Searches */}
               {recentSearches.length > 0 && (
                 <div>
-                  <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-[#71717A] mb-2 px-1">
+                  <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-pencil mb-2 px-1">
                     <Clock className="w-3 h-3" />
                     <span>Recent Searches</span>
                   </div>
@@ -225,7 +225,7 @@ export default function SearchModal({ isOpen, onClose }) {
                       <button
                         key={term}
                         onClick={() => handleExecuteSearch(term)}
-                        className="px-2.5 py-1 text-xs text-[#18181B] bg-[#FAF8F5] border border-[#E6E1D6] hover:bg-[#F3EFE6] rounded-md transition-colors cursor-pointer"
+                        className="px-2.5 py-1 text-xs text-ink bg-paper border border-line hover:bg-paper-2 rounded-md transition-colors cursor-pointer"
                       >
                         {term}
                       </button>
@@ -236,7 +236,7 @@ export default function SearchModal({ isOpen, onClose }) {
 
               {/* Popular Styles */}
               <div>
-                <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-[#71717A] mb-2 px-1">
+                <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-pencil mb-2 px-1">
                   <Layers className="w-3 h-3" />
                   <span>Popular Architectures</span>
                 </div>
@@ -245,7 +245,7 @@ export default function SearchModal({ isOpen, onClose }) {
                     <button
                       key={style}
                       onClick={() => handleExecuteSearch(style)}
-                      className="px-2.5 py-1 text-xs text-[#18181B] bg-white border border-[#E6E1D6] hover:bg-[#FAF8F5] rounded-md transition-colors cursor-pointer"
+                      className="px-2.5 py-1 text-xs text-ink bg-white border border-line hover:bg-paper rounded-md transition-colors cursor-pointer"
                     >
                       {style}
                     </button>
@@ -255,7 +255,7 @@ export default function SearchModal({ isOpen, onClose }) {
 
               {/* Technologies */}
               <div>
-                <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-[#71717A] mb-2 px-1">
+                <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-pencil mb-2 px-1">
                   <Code className="w-3 h-3" />
                   <span>Technologies</span>
                 </div>
@@ -264,7 +264,7 @@ export default function SearchModal({ isOpen, onClose }) {
                     <button
                       key={tech}
                       onClick={() => handleExecuteSearch(tech)}
-                      className="px-2.5 py-1 text-xs text-[#52525B] bg-white border border-[#E6E1D6] hover:text-[#18181B] hover:border-[#18181B] rounded-md transition-colors cursor-pointer"
+                      className="px-2.5 py-1 text-xs text-soft bg-white border border-line hover:text-ink hover:border-ink rounded-md transition-colors cursor-pointer"
                     >
                       {tech}
                     </button>
@@ -276,9 +276,9 @@ export default function SearchModal({ isOpen, onClose }) {
         </div>
 
         {/* Footer info */}
-        <div className="px-4 py-2 bg-[#FAF8F5] border-t border-[#E6E1D6] flex items-center justify-between text-[11px] text-[#71717A]">
-          <span>Navigate with <kbd className="font-mono bg-white px-1 py-0.5 border border-[#E6E1D6] rounded">↑</kbd> <kbd className="font-mono bg-white px-1 py-0.5 border border-[#E6E1D6] rounded">↓</kbd></span>
-          <span>Select with <kbd className="font-mono bg-white px-1 py-0.5 border border-[#E6E1D6] rounded">Enter</kbd></span>
+        <div className="px-4 py-2 bg-paper border-t border-line flex items-center justify-between text-[11px] text-pencil">
+          <span>Navigate with <kbd className="font-mono bg-white px-1 py-0.5 border border-line rounded">↑</kbd> <kbd className="font-mono bg-white px-1 py-0.5 border border-line rounded">↓</kbd></span>
+          <span>Select with <kbd className="font-mono bg-white px-1 py-0.5 border border-line rounded">Enter</kbd></span>
         </div>
       </div>
     </div>
