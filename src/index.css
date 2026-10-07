@@ -1,132 +1,188 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Caveat:wght@600&family=Onest:wght@400..700&display=swap');
 @import "tailwindcss";
 
-:root {
-  --bg-page: #FAF8F5;
-  --bg-surface: #FFFFFF;
-  --bg-muted: #F3EFE6;
-  --text-primary: #18181B;
-  --text-secondary: #52525B;
-  --text-muted: #71717A;
-  --border-subtle: #E6E1D6;
-  --border-hover: #D1CBC0;
-  --accent-amber: #F59E0B;
-  --accent-amber-dark: #D97706;
-  --accent-blue: #2563EB;
-  --accent-green: #059669;
-  --accent-coral: #EA580C;
-  --accent-purple: #7C3AED;
+/* ------------------------------------------------------------------
+   DESIGN TOKENS  ("notebook + highlighter")
+   All colours live here. Use them as Tailwind classes: bg-paper, text-ink,
+   border-line, bg-hl, text-accent ...  Change a value here and the whole
+   site follows.
+   ------------------------------------------------------------------ */
+@theme {
+  --color-paper: #F3F6FC;       /* page: cool notebook paper */
+  --color-paper-2: #E7ECF7;     /* sunken areas, chips */
+  --color-line: #D3DBEC;        /* borders */
+  --color-line-2: #B4C0DC;      /* hovered borders */
+  --color-ink: #131A33;         /* main text + dark surfaces (blue-black ink) */
+  --color-ink-2: #252E52;       /* hovered dark surfaces */
+  --color-soft: #46506F;        /* secondary text */
+  --color-pencil: #5A6584;      /* muted text */
+  --color-mist: #737D9C;        /* placeholders */
+  --color-hl: #DDF247;          /* highlighter: the one "do this" colour */
+  --color-hl-soft: #F3FACB;
+  --color-accent: #3347D6;      /* links, icons, focus */
+  --color-accent-deep: #2434A8;
+
+  --font-display: 'Bricolage Grotesque', 'Onest', system-ui, sans-serif;
+  --font-hand: 'Caveat', cursive;
 }
 
 @layer base {
+  html { background: var(--color-paper); }
+
   body {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background-color: #FAF8F5;
-    color: #18181B;
+    font-family: 'Onest', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--color-paper);
+    color: var(--color-ink);
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
   }
+
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  ::selection { background: var(--color-hl); color: var(--color-ink); }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
 }
 
-/* Product Card - Clean, Human, Editorial */
-.ph-card,
-.bento-card {
+/* Graph-paper page background (put on the page wrapper) */
+.paper-grid {
+  background-color: var(--color-paper);
+  background-image:
+    linear-gradient(to right, rgba(51, 71, 214, 0.075) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(51, 71, 214, 0.075) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* Small labels: sentence case instead of tracked ALL-CAPS */
+.uppercase { text-transform: none; letter-spacing: 0; }
+.font-mono.uppercase { font-family: 'Onest', system-ui, sans-serif; }
+.tracking-wider, .tracking-wide, .tracking-widest { letter-spacing: 0; }
+
+/* Handwritten margin note */
+.hand { font-family: var(--font-hand); font-weight: 600; }
+
+/* ------------------------------------------------------------------
+   3D / DEPTH
+   ------------------------------------------------------------------ */
+
+/* Panels: a sheet lying on the desk (layered, blue-tinted shadows) */
+.rounded-xl.bg-white.border {
+  border-color: var(--color-line);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 1) inset,
+    0 1px 1px rgba(19, 26, 51, 0.05),
+    0 8px 18px -8px rgba(19, 26, 51, 0.16),
+    0 22px 36px -22px rgba(51, 71, 214, 0.22);
+}
+
+/* Primary action = a physical highlighter keycap */
+button.bg-hl, a.bg-hl {
+  border: 1.5px solid var(--color-ink);
+  box-shadow: 0 3px 0 0 var(--color-ink);
+  transition: transform 90ms ease, box-shadow 90ms ease, background-color 150ms ease, color 150ms ease;
+}
+button.bg-hl:hover, a.bg-hl:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 0 var(--color-ink);
+}
+button.bg-hl:active, a.bg-hl:active {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 0 var(--color-ink);
+}
+button.bg-hl:disabled { transform: none; box-shadow: 0 3px 0 0 var(--color-ink); }
+
+/* Secondary buttons: a flatter key */
+button.bg-white.border.rounded-lg, a.bg-white.border.rounded-lg {
+  box-shadow: 0 2px 0 0 var(--color-line-2);
+  transition: transform 90ms ease, box-shadow 90ms ease, background-color 150ms ease;
+}
+button.bg-white.border.rounded-lg:active, a.bg-white.border.rounded-lg:active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 0 var(--color-line-2);
+}
+
+/* Paper stack behind a card (template cards) */
+.sheet-stack { position: relative; isolation: isolate; }
+.sheet-stack::before,
+.sheet-stack::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 0.75rem;
+  background: #fff;
+  border: 1px solid var(--color-line);
+  z-index: -1;
+  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sheet-stack::before { transform: translate(5px, 6px) rotate(1.1deg); }
+.sheet-stack::after  { transform: translate(10px, 11px) rotate(2.3deg); background: var(--color-paper-2); }
+.sheet-stack:hover::before { transform: translate(8px, 9px) rotate(2deg); }
+.sheet-stack:hover::after  { transform: translate(16px, 16px) rotate(4deg); }
+
+/* Pointer tilt (set by the useTilt hook) */
+.tilt {
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 220ms ease-out;
+  will-change: transform;
+}
+
+/* Hero: fanned stack of template sheets */
+.hero-stage { perspective: 1100px; }
+.hero-sheet {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 80%;
+  transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1), opacity 400ms ease;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tilt, .hero-sheet, .sheet-stack::before, .sheet-stack::after,
+  button.bg-hl, a.bg-hl { transition: none !important; }
+}
+
+/* ------------------------------------------------------------------
+   Legacy helper classes (kept so existing markup keeps working)
+   ------------------------------------------------------------------ */
+.ph-card, .bento-card {
   background: #FFFFFF;
-  border: 1px solid #E6E1D6;
-  border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(24, 24, 27, 0.03);
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+  box-shadow: 0 8px 18px -10px rgba(19, 26, 51, 0.18);
   transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
+.ph-card:hover, .bento-card:hover { border-color: var(--color-line-2); }
+.bento-card-gradient { background: #FFFFFF; border: 1px solid var(--color-line); border-radius: 12px; }
+.bento-card-dark { background: var(--color-paper-2); border: 1px solid var(--color-line); border-radius: 12px; }
 
-.ph-card:hover,
-.bento-card:hover {
-  border-color: #D1CBC0;
-  box-shadow: 0 4px 12px rgba(24, 24, 27, 0.06);
-}
-
-.bento-card-gradient {
+.ph-input, .glass-input {
   background: #FFFFFF;
-  border: 1px solid #E6E1D6;
-  border-radius: 10px;
-}
-
-.bento-card-dark {
-  background: #F3EFE6;
-  border: 1px solid #E6E1D6;
-  border-radius: 10px;
-}
-
-/* Form Input - Crisp, High Readability */
-.ph-input,
-.glass-input {
-  background: #FFFFFF;
-  border: 1px solid #E6E1D6;
-  color: #18181B;
+  border: 1px solid var(--color-line);
+  color: var(--color-ink);
   border-radius: 8px;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-
-.ph-input:focus,
-.glass-input:focus {
-  border-color: #D97706;
-  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+.ph-input:focus, .glass-input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(51, 71, 214, 0.18);
   outline: none;
 }
 
-/* Button Utilities */
-.btn-primary {
-  background-color: #18181B;
-  color: #FFFFFF;
-  font-weight: 600;
-  border-radius: 8px;
-  transition: background-color 0.15s ease, transform 0.1s ease;
-}
-.btn-primary:hover {
-  background-color: #27272A;
-}
+.btn-primary { background-color: var(--color-ink); color: #fff; font-weight: 600; border-radius: 8px; }
+.btn-primary:hover { background-color: var(--color-ink-2); }
+.btn-secondary { background-color: #fff; color: var(--color-ink); border: 1px solid var(--color-line); font-weight: 500; border-radius: 8px; }
+.btn-secondary:hover { background-color: var(--color-paper-2); border-color: var(--color-line-2); }
+.btn-accent { background-color: var(--color-hl); color: var(--color-ink); font-weight: 700; border-radius: 8px; }
+.btn-accent:hover { background-color: var(--color-accent); color: #fff; }
 
-.btn-secondary {
-  background-color: #FFFFFF;
-  color: #18181B;
-  border: 1px solid #E6E1D6;
-  font-weight: 500;
-  border-radius: 8px;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
-}
-.btn-secondary:hover {
-  background-color: #F3EFE6;
-  border-color: #D1CBC0;
-}
-
-.btn-accent {
-  background-color: #F59E0B;
-  color: #18181B;
-  font-weight: 700;
-  border-radius: 8px;
-  transition: background-color 0.15s ease, box-shadow 0.15s ease;
-}
-.btn-accent:hover {
-  background-color: #D97706;
-  color: #FFFFFF;
-}
-
-/* Custom Clean Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #FAF8F5;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #D1CBC0;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #B8B2A5;
-}
-
-
-
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--color-paper); }
+::-webkit-scrollbar-thumb { background: var(--color-line-2); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-mist); }
