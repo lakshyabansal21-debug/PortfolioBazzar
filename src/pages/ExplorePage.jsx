@@ -107,27 +107,24 @@ export default function ExplorePage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
       
       {/* 1. PAGE HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#E6E1D6] pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-line pb-6">
         <div>
-          <div className="text-xs font-mono font-semibold uppercase tracking-wider text-[#D97706] mb-1.5">
-            CATALOG & DISCOVERY
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight text-[#18181B]">
+          <h1 className="text-3xl font-bold tracking-tight text-ink">
             Explore Developer Portfolios
           </h1>
-          <p className="text-sm text-[#52525B] mt-1">
+          <p className="text-sm text-soft mt-1">
             Browse hand-crafted styles, live test templates, and customize for your career.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="px-3 py-1.5 rounded-md bg-white border border-[#E6E1D6] text-xs font-mono text-[#52525B] shadow-2xs">
-            <span className="font-bold text-[#18181B]">{total}</span> {total === 1 ? 'template' : 'templates'} found
+          <div className="px-3 py-1.5 rounded-md bg-white border border-line text-xs font-mono text-soft shadow-2xs">
+            <span className="font-bold text-ink">{total}</span> {total === 1 ? 'template' : 'templates'} found
           </div>
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="flex items-center gap-1.5 text-xs text-[#71717A] hover:text-[#18181B] transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 text-xs text-pencil hover:text-ink transition-colors cursor-pointer"
               title="Clear all filters"
             >
               <RotateCcw className="w-3.5 h-3.5" />
@@ -143,18 +140,18 @@ export default function ExplorePage() {
           
           {/* Search Input */}
           <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-3 w-4 h-4 text-[#71717A]" />
+            <Search className="absolute left-3.5 top-3 w-4 h-4 text-pencil" />
             <input
               type="text"
               placeholder="Search by keywords, tech stack, or persona..."
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="w-full pl-9 pr-9 py-2.5 text-xs rounded-lg bg-white border border-[#E6E1D6] text-[#18181B] placeholder-[#71717A] focus:outline-none focus:border-[#D97706] focus:ring-2 focus:ring-[#F59E0B]/20 transition-all shadow-2xs"
+              className="w-full pl-9 pr-9 py-2.5 text-xs rounded-lg bg-white border border-line text-ink placeholder-pencil focus:outline-none focus:border-accent focus:ring-2 focus:ring-hl/20 transition-all shadow-2xs"
             />
             {search && (
               <button
                 onClick={() => handleSearchChange('')}
-                className="absolute right-3 top-3 text-[#71717A] hover:text-[#18181B] cursor-pointer"
+                className="absolute right-3 top-3 text-pencil hover:text-ink cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -166,7 +163,7 @@ export default function ExplorePage() {
             <select
               value={difficulty}
               onChange={(e) => handleDifficultyChange(e.target.value)}
-              className="py-2.5 px-3 rounded-lg bg-white border border-[#E6E1D6] text-xs text-[#18181B] focus:outline-none focus:border-[#D97706] cursor-pointer shadow-2xs"
+              className="py-2.5 px-3 rounded-lg bg-white border border-line text-xs text-ink focus:outline-none focus:border-accent cursor-pointer shadow-2xs"
             >
               <option value="All">All Skill Levels</option>
               <option value="Beginner">Beginner</option>
@@ -178,7 +175,7 @@ export default function ExplorePage() {
             <select
               value={sort}
               onChange={(e) => handleSortChange(e.target.value)}
-              className="py-2.5 px-3 rounded-lg bg-white border border-[#E6E1D6] text-xs text-[#18181B] focus:outline-none focus:border-[#D97706] cursor-pointer shadow-2xs"
+              className="py-2.5 px-3 rounded-lg bg-white border border-line text-xs text-ink focus:outline-none focus:border-accent cursor-pointer shadow-2xs"
             >
               <option value="popular">Most Popular</option>
               <option value="newest">Newest Added</option>
@@ -190,13 +187,13 @@ export default function ExplorePage() {
         </div>
 
         {/* Category Filter Chips */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none border-b border-[#E6E1D6] pt-1">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none border-b border-line pt-1">
           <button
             onClick={() => handleCategoryChange('All')}
             className={`px-3 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
               category === 'All'
-                ? 'bg-[#18181B] text-white shadow-2xs'
-                : 'bg-white text-[#52525B] hover:text-[#18181B] hover:bg-[#F3EFE6] border border-[#E6E1D6]'
+                ? 'bg-ink text-white shadow-2xs'
+                : 'bg-white text-soft hover:text-ink hover:bg-paper-2 border border-line'
             }`}
           >
             All Categories ({total})
@@ -210,8 +207,8 @@ export default function ExplorePage() {
                 onClick={() => handleCategoryChange(cat)}
                 className={`px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-[#F59E0B] text-[#18181B] font-bold border border-[#D97706] shadow-2xs'
-                    : 'bg-white text-[#52525B] hover:text-[#18181B] hover:bg-[#F3EFE6] border border-[#E6E1D6]'
+                    ? 'bg-hl text-ink font-bold border border-accent shadow-2xs'
+                    : 'bg-white text-soft hover:text-ink hover:bg-paper-2 border border-line'
                 }`}
               >
                 {cat}
@@ -225,12 +222,12 @@ export default function ExplorePage() {
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 py-6">
           {[1, 2, 3, 4, 5, 6].map((n) => (
-            <div key={n} className="bg-white border border-[#E6E1D6] rounded-xl overflow-hidden animate-pulse">
-              <div className="aspect-[16/10] bg-[#F3EFE6]" />
+            <div key={n} className="bg-white border border-line rounded-xl overflow-hidden animate-pulse">
+              <div className="aspect-[16/10] bg-paper-2" />
               <div className="p-4 space-y-2.5">
-                <div className="h-4 bg-[#F3EFE6] rounded w-2/3" />
-                <div className="h-3 bg-[#F3EFE6] rounded w-full" />
-                <div className="h-3 bg-[#F3EFE6] rounded w-4/5" />
+                <div className="h-4 bg-paper-2 rounded w-2/3" />
+                <div className="h-3 bg-paper-2 rounded w-full" />
+                <div className="h-3 bg-paper-2 rounded w-4/5" />
               </div>
             </div>
           ))}
@@ -243,15 +240,15 @@ export default function ExplorePage() {
         </div>
       ) : (
         /* Empty State */
-        <div className="py-20 text-center rounded-xl bg-white border border-[#E6E1D6] p-8 shadow-2xs">
-          <Layers className="w-12 h-12 text-[#71717A] mx-auto mb-3 stroke-1" />
-          <h3 className="text-base font-bold text-[#18181B]">No matching templates</h3>
-          <p className="text-xs text-[#52525B] mt-1.5 max-w-sm mx-auto leading-relaxed">
+        <div className="py-20 text-center rounded-xl bg-white border border-line p-8 shadow-2xs">
+          <Layers className="w-12 h-12 text-pencil mx-auto mb-3 stroke-1" />
+          <h3 className="text-base font-bold text-ink">No matching templates</h3>
+          <p className="text-xs text-soft mt-1.5 max-w-sm mx-auto leading-relaxed">
             No portfolio templates match your active search keyword or category filter. Try clearing filters to see all available templates.
           </p>
           <button
             onClick={clearFilters}
-            className="mt-5 px-4 py-2 rounded-lg bg-[#18181B] hover:bg-[#27272A] text-white text-xs font-semibold cursor-pointer transition-colors"
+            className="mt-5 px-4 py-2 rounded-lg bg-ink hover:bg-ink-2 text-white text-xs font-semibold cursor-pointer transition-colors"
           >
             Clear all filters
           </button>
@@ -260,11 +257,11 @@ export default function ExplorePage() {
 
       {/* 4. PAGINATION */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-1.5 pt-8 border-t border-[#E6E1D6]">
+        <div className="flex items-center justify-center gap-1.5 pt-8 border-t border-line">
           <button
             onClick={() => setPage(Math.max(1, page - 1))}
             disabled={page === 1}
-            className="p-2 rounded-md border border-[#E6E1D6] bg-white text-[#71717A] hover:text-[#18181B] disabled:opacity-40 cursor-pointer shadow-2xs"
+            className="p-2 rounded-md border border-line bg-white text-pencil hover:text-ink disabled:opacity-40 cursor-pointer shadow-2xs"
             title="Previous Page"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -277,8 +274,8 @@ export default function ExplorePage() {
                 onClick={() => setPage(pNum)}
                 className={`w-8 h-8 rounded-md text-xs font-semibold transition-all cursor-pointer ${
                   page === pNum
-                    ? 'bg-[#F59E0B] text-[#18181B] border border-[#D97706] shadow-2xs'
-                    : 'bg-white text-[#52525B] hover:bg-[#F3EFE6] hover:text-[#18181B] border border-[#E6E1D6]'
+                    ? 'bg-hl text-ink border border-accent shadow-2xs'
+                    : 'bg-white text-soft hover:bg-paper-2 hover:text-ink border border-line'
                 }`}
               >
                 {pNum}
@@ -289,7 +286,7 @@ export default function ExplorePage() {
           <button
             onClick={() => setPage(Math.min(totalPages, page + 1))}
             disabled={page === totalPages}
-            className="p-2 rounded-md border border-[#E6E1D6] bg-white text-[#71717A] hover:text-[#18181B] disabled:opacity-40 cursor-pointer shadow-2xs"
+            className="p-2 rounded-md border border-line bg-white text-pencil hover:text-ink disabled:opacity-40 cursor-pointer shadow-2xs"
             title="Next Page"
           >
             <ChevronRight className="w-4 h-4" />
