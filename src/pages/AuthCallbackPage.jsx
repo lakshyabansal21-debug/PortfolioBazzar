@@ -127,15 +127,15 @@ export default function AuthCallbackPage() {
   }, [navigate]);
 
   return (
-    <div className="min-h-[60vh] flex items-center justify-center p-6 bg-[#FAF8F5]">
-      <div className="max-w-md w-full bg-white rounded-2xl p-7 border border-[#E6E1D6] shadow-xl text-center space-y-4">
+    <div className="min-h-[60vh] flex items-center justify-center p-6 bg-paper">
+      <div className="max-w-md w-full bg-white rounded-2xl p-7 border border-line shadow-xl text-center space-y-4">
         {status === 'processing' && (
           <>
-            <div className="w-12 h-12 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mx-auto text-[#D97706]">
+            <div className="w-12 h-12 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mx-auto text-accent">
               <RefreshCw className="w-6 h-6 animate-spin" />
             </div>
-            <h2 className="text-lg font-bold text-[#18181B]">Verifying Google Account...</h2>
-            <p className="text-xs text-[#52525B]">
+            <h2 className="text-lg font-bold text-ink">Verifying Google Account...</h2>
+            <p className="text-xs text-soft">
               Completing secure authentication handshake with Supabase.
             </p>
           </>
@@ -146,8 +146,8 @@ export default function AuthCallbackPage() {
             <div className="w-12 h-12 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center mx-auto text-emerald-600">
               <CheckCircle2 className="w-6 h-6" />
             </div>
-            <h2 className="text-lg font-bold text-[#18181B]">Authentication Successful!</h2>
-            <p className="text-xs text-[#52525B]">
+            <h2 className="text-lg font-bold text-ink">Authentication Successful!</h2>
+            <p className="text-xs text-soft">
               Returning you to your portfolio session...
             </p>
           </>
@@ -158,7 +158,7 @@ export default function AuthCallbackPage() {
             <div className="w-12 h-12 rounded-full bg-red-50 border border-red-200 flex items-center justify-center mx-auto text-red-600">
               <AlertCircle className="w-6 h-6" />
             </div>
-            <h2 className="text-lg font-bold text-[#18181B]">Authentication Failed</h2>
+            <h2 className="text-lg font-bold text-ink">Authentication Failed</h2>
             <p className="text-xs text-red-700 bg-red-50 p-3 rounded-lg border border-red-200 font-mono text-left leading-relaxed">
               {errorMessage}
             </p>
@@ -174,7 +174,7 @@ export default function AuthCallbackPage() {
                   if (window.opener && !window.opener.closed) window.close();
                   else navigate('/', { replace: true });
                 }}
-                className="py-2 px-4 rounded-lg bg-[#18181B] text-white text-xs font-bold hover:bg-black transition-colors"
+                className="py-2 px-4 rounded-lg bg-ink text-white text-xs font-bold hover:bg-black transition-colors"
               >
                 {window.opener && !window.opener.closed ? 'Close Window' : 'Return to App'}
               </button>
