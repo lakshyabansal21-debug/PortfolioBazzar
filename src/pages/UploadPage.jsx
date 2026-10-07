@@ -235,14 +235,11 @@ body {
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 space-y-8">
       
       {/* 1. TOP HEADER */}
-      <div className="border-b border-[#E6E1D6] pb-6">
-        <div className="text-xs font-mono font-semibold uppercase tracking-wider text-[#D97706] mb-1">
-          COMMUNITY / CONTRIBUTIONS
-        </div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#18181B]">
+      <div className="border-b border-line pb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink">
           Publish Portfolio Template
         </h1>
-        <p className="text-xs sm:text-sm text-[#52525B] mt-1.5">
+        <p className="text-xs sm:text-sm text-soft mt-1.5">
           Contribute lightweight, accessible, zero-build static portfolio architectures to the developer community.
         </p>
       </div>
@@ -251,13 +248,13 @@ body {
       <form onSubmit={handleSubmit} className="space-y-6">
         
         {/* Basic Fields Card */}
-        <div className="bg-white border border-[#E6E1D6] rounded-xl p-6 sm:p-7 space-y-5 shadow-2xs">
-          <h2 className="text-sm font-bold text-[#18181B] border-b border-[#E6E1D6] pb-2.5">
+        <div className="bg-white border border-line rounded-xl p-6 sm:p-7 space-y-5 shadow-2xs">
+          <h2 className="text-sm font-bold text-ink border-b border-line pb-2.5">
             Template Specifications
           </h2>
 
           <div>
-            <label className="block text-xs font-semibold text-[#18181B] mb-1.5">
+            <label className="block text-xs font-semibold text-ink mb-1.5">
               Template Title <span className="text-red-500">*</span>
             </label>
             <input
@@ -266,12 +263,12 @@ body {
               placeholder="e.g. Minimalist Mono Developer Portfolio"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] placeholder-[#71717A] focus:outline-none focus:border-[#D97706] focus:ring-2 focus:ring-[#F59E0B]/20"
+              className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink placeholder-pencil focus:outline-none focus:border-accent focus:ring-2 focus:ring-hl/20"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#18181B] mb-1.5">
+            <label className="block text-xs font-semibold text-ink mb-1.5">
               Short Description
             </label>
             <textarea
@@ -279,19 +276,19 @@ body {
               placeholder="Describe the aesthetic direction, layout techniques, and recommended developer archetype..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] placeholder-[#71717A] focus:outline-none focus:border-[#D97706] focus:ring-2 focus:ring-[#F59E0B]/20"
+              className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink placeholder-pencil focus:outline-none focus:border-accent focus:ring-2 focus:ring-hl/20"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#18181B] mb-1.5">
+              <label className="block text-xs font-semibold text-ink mb-1.5">
                 Category Engine
               </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white focus:outline-none focus:border-[#D97706] cursor-pointer"
+                className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent cursor-pointer"
               >
                 {TEMPLATE_CATEGORIES.map((c) => (
                   <option key={c} value={c}>{c}</option>
@@ -300,13 +297,13 @@ body {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#18181B] mb-1.5">
+              <label className="block text-xs font-semibold text-ink mb-1.5">
                 Difficulty Level
               </label>
               <select
                 value={difficulty}
                 onChange={(e) => setDifficulty(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white focus:outline-none focus:border-[#D97706] cursor-pointer"
+                className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent cursor-pointer"
               >
                 <option value="Beginner">Beginner</option>
                 <option value="Intermediate">Intermediate</option>
@@ -317,7 +314,7 @@ body {
 
           {/* Tags Chips Input */}
           <div>
-            <label className="block text-xs font-semibold text-[#18181B] mb-1.5">
+            <label className="block text-xs font-semibold text-ink mb-1.5">
               Tags & Tech Stack
             </label>
             <div className="flex items-center gap-2 mb-2">
@@ -332,12 +329,12 @@ body {
                     handleAddTag();
                   }
                 }}
-                className="flex-1 px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] focus:outline-none focus:border-[#D97706]"
+                className="flex-1 px-3 py-2 text-xs rounded-lg border border-line text-ink focus:outline-none focus:border-accent"
               />
               <button
                 type="button"
                 onClick={handleAddTag}
-                className="px-3 py-2 rounded-lg bg-[#FAF8F5] hover:bg-[#F3EFE6] text-[#18181B] border border-[#E6E1D6] text-xs font-semibold transition-colors cursor-pointer"
+                className="px-3 py-2 rounded-lg bg-paper hover:bg-paper-2 text-ink border border-line text-xs font-semibold transition-colors cursor-pointer"
               >
                 Add
               </button>
@@ -346,13 +343,13 @@ body {
               {tags.map((t) => (
                 <span
                   key={t}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono bg-[#FAF8F5] border border-[#E6E1D6] text-[#18181B]"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono bg-paper border border-line text-ink"
                 >
                   <span>{t}</span>
                   <button
                     type="button"
                     onClick={() => handleRemoveTag(t)}
-                    className="text-[#71717A] hover:text-[#18181B] cursor-pointer ml-1"
+                    className="text-pencil hover:text-ink cursor-pointer ml-1"
                   >
                     ×
                   </button>
@@ -362,17 +359,17 @@ body {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#18181B] mb-1.5">
+            <label className="block text-xs font-semibold text-ink mb-1.5">
               Preview Screenshot URL
             </label>
             <input
               type="url"
               value={thumbnailUrl}
               onChange={(e) => setThumbnailUrl(e.target.value)}
-              className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] focus:outline-none focus:border-[#D97706]"
+              className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink focus:outline-none focus:border-accent"
             />
             {thumbnailUrl && (
-              <div className="mt-3 aspect-[16/9] max-w-sm rounded-lg overflow-hidden border border-[#E6E1D6] bg-[#FAF8F5]">
+              <div className="mt-3 aspect-[16/9] max-w-sm rounded-lg overflow-hidden border border-line bg-paper">
                 <img 
                   src={thumbnailUrl} 
                   alt="Template Thumbnail Preview" 
@@ -387,10 +384,10 @@ body {
         </div>
 
         {/* 3. CODE INPUT SECTION */}
-        <div className="bg-white border border-[#E6E1D6] rounded-xl p-6 sm:p-7 space-y-3 shadow-2xs">
-          <div className="flex items-center justify-between border-b border-[#E6E1D6] pb-3">
+        <div className="bg-white border border-line rounded-xl p-6 sm:p-7 space-y-3 shadow-2xs">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3">
             <div className="flex items-center gap-3">
-              <h2 className="text-sm font-bold text-[#18181B]">
+              <h2 className="text-sm font-bold text-ink">
                 Source Architecture
               </h2>
               <input
@@ -404,20 +401,20 @@ body {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-[#FAF8F5] hover:bg-[#F3EFE6] border border-[#E6E1D6] text-[#18181B] cursor-pointer transition-colors"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-paper hover:bg-paper-2 border border-line text-ink cursor-pointer transition-colors"
               >
-                <Upload className="w-3.5 h-3.5 text-[#D97706]" />
+                <Upload className="w-3.5 h-3.5 text-accent" />
                 Import files
               </button>
             </div>
-            <div className="flex items-center gap-1 bg-[#F3EFE6] p-0.5 rounded-lg border border-[#E6E1D6]">
+            <div className="flex items-center gap-1 bg-paper-2 p-0.5 rounded-lg border border-line max-w-full overflow-x-auto">
               {['html', 'css', 'js'].map((tab) => (
                 <button
                   type="button"
                   key={tab}
                   onClick={() => setCodeTab(tab)}
                   className={`px-3 py-1 rounded text-xs font-mono font-medium cursor-pointer transition-colors ${
-                    codeTab === tab ? 'bg-white text-[#18181B] font-bold shadow-2xs' : 'text-[#71717A] hover:text-[#18181B]'
+                    codeTab === tab ? 'bg-white text-ink font-bold shadow-2xs' : 'text-pencil hover:text-ink'
                   }`}
                 >
                   {tab === 'html' ? 'index.html' : tab === 'css' ? 'style.css' : 'script.js'}
@@ -426,7 +423,7 @@ body {
             </div>
           </div>
 
-          <div className="rounded-xl bg-[#18181B] p-4 text-zinc-200 border border-zinc-800">
+          <div className="rounded-xl bg-ink p-4 text-zinc-200 border border-zinc-800">
             {codeTab === 'html' && (
               <textarea
                 rows={12}
@@ -458,10 +455,10 @@ body {
         </div>
 
         {/* 3b. EDITABLE FIELDS */}
-        <div className="bg-white border border-[#E6E1D6] rounded-xl p-6 sm:p-7 space-y-3 shadow-2xs">
-          <div className="border-b border-[#E6E1D6] pb-3">
-            <h2 className="text-sm font-bold text-[#18181B]">Editable Details</h2>
-            <p className="text-xs text-[#71717A] mt-0.5">
+        <div className="bg-white border border-line rounded-xl p-6 sm:p-7 space-y-3 shadow-2xs">
+          <div className="border-b border-line pb-3">
+            <h2 className="text-sm font-bold text-ink">Editable Details</h2>
+            <p className="text-xs text-pencil mt-0.5">
               Optional. Decide what the next person can personalize with one simple form.
             </p>
           </div>
@@ -470,18 +467,18 @@ body {
 
         {/* 4. OPTIONAL LIVE TEST MODAL / EXPAND */}
         {showPreview && (
-          <div className="bg-white border border-[#E6E1D6] rounded-xl p-5 space-y-3 shadow-2xs">
+          <div className="bg-white border border-line rounded-xl p-5 space-y-3 shadow-2xs">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-[#18181B]">Live Render Simulation</span>
+              <span className="font-bold text-ink">Live Render Simulation</span>
               <button
                 type="button"
                 onClick={() => setShowPreview(false)}
-                className="text-[#71717A] hover:text-[#18181B] cursor-pointer font-medium"
+                className="text-pencil hover:text-ink cursor-pointer font-medium"
               >
                 Close Canvas
               </button>
             </div>
-            <div className="border border-[#E6E1D6] rounded-lg h-[420px] overflow-hidden bg-white shadow-inner">
+            <div className="border border-line rounded-lg h-[420px] overflow-hidden bg-white shadow-inner">
               <iframe
                 title="Upload Preview"
                 srcDoc={previewDoc}
@@ -497,16 +494,16 @@ body {
           <button
             type="button"
             onClick={() => setShowPreview(!showPreview)}
-            className="px-4 py-2.5 rounded-lg bg-white border border-[#E6E1D6] text-[#18181B] text-xs font-semibold hover:bg-[#F3EFE6] transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
+            className="px-4 py-2.5 rounded-lg bg-white border border-line text-ink text-xs font-semibold hover:bg-paper-2 transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
           >
-            <Eye className="w-3.5 h-3.5 text-[#71717A]" />
+            <Eye className="w-3.5 h-3.5 text-pencil" />
             <span>{showPreview ? 'Hide preview' : 'Preview code render'}</span>
           </button>
 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-5 py-2.5 rounded-lg bg-[#F59E0B] hover:bg-[#D97706] text-[#18181B] hover:text-white text-xs font-bold transition-all cursor-pointer disabled:opacity-50 flex items-center gap-1.5 shadow-2xs"
+            className="px-5 py-2.5 rounded-lg bg-hl hover:bg-accent text-ink hover:text-white text-xs font-bold transition-all cursor-pointer disabled:opacity-50 flex items-center gap-1.5 shadow-2xs"
           >
             <span>{isSubmitting ? 'Publishing...' : 'Publish to Catalog'}</span>
             <ArrowRight className="w-3.5 h-3.5" />
