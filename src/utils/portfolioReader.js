@@ -515,3 +515,66 @@ export function buildSingleFileHtml(html, css = '', js = '') {
   }
   return '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
 }
+
+/* ------------------------------------------------------------------ */
+/* Page blocks (Sections tab): reorder / hide the big parts of a page */
+/* ------------------------------------------------------------------ */
+const BLOCK_SKIP = new Set(['SCRIPT', 'STYLE', 'LINK', 'NOSCRIPT', 'TEMPLATE', 'META']);
+
+/** The top-level parts of the page (header, hero, skills, projects, footer ...). */
+function pageBlockEls(doc) {
+  const body = doc.body;
+  const kids = [...body.children].filter((el) => !BLOCK_SKIP.has(tagOf(el)));
+  // a single wrapper (<main>, <div id="app">) that holds the real sections
+  if (kids.length === 1) {
+    const inner = [...kids[0].children].filter((el) => !BLOCK_SKIP.has(tagOf(el)));
+    if (inner.length >= 2) return inner;
+  }
+  return kids;
+}
+
+export function listPageBlocks(html) {
+  const doc = parse(html);
+  const body = doc.body;
+  return pageBlockEls(doc).map((el, index) => {
+    const kind = classifyKind(el, body);
+    return {
+      index,
+      kind,
+      label: sectionLabel(el, kind, body),
+      hidden: el.hasAttribute('data-ph-hidden')
+    };
+  });
+}
+
+/** Move one page block up (dir = -1) or down (dir = 1). */
+export function moveBlock(html, index, dir) {
+  const doc = parse(html);
+  const els = pageBlockEls(doc);
+  const el = els[index];
+  const other = els[index + dir];
+  if (!el || !other) return html;
+  if (dir < 0) other.parentElement.insertBefore(el, other);
+  else other.parentElement.insertBefore(el, other.nextSibling);
+  return serialize(doc, html);
+}
+
+/** Hide / show one page block (adds display:none to the element, so the exported site hides it too). */
+export function toggleBlock(html, index) {
+  const doc = parse(html);
+  const el = pageBlockEls(doc)[index];
+  if (!el) return html;
+  if (el.hasAttribute('data-ph-hidden')) {
+    const prev = el.getAttribute('data-ph-prev-style') || '';
+    el.removeAttribute('data-ph-hidden');
+    el.removeAttribute('data-ph-prev-style');
+    if (prev) el.setAttribute('style', prev);
+    else el.removeAttribute('style');
+  } else {
+    const prev = el.getAttribute('style') || '';
+    el.setAttribute('data-ph-hidden', '1');
+    el.setAttribute('data-ph-prev-style', prev);
+    el.setAttribute('style', `${prev}${prev && !prev.trim().endsWith(';') ? ';' : ''}display:none !important`);
+  }
+  return serialize(doc, html);
+}
