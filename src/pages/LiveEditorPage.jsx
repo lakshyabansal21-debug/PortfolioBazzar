@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { 
   Code2, 
@@ -40,7 +40,7 @@ import {
   generatePortfolioCode 
 } from '../services/templateEngines.js';
 import { dbService } from '../services/dbService.js';
-import { assemblePreviewHtml } from '../utils/previewHelper.js';
+import { assemblePreviewHtml, buildVisualOverrides } from '../utils/previewHelper.js';
 import { downloadPortfolioZip, downloadSingleHtml } from '../utils/zipExport.js';
 import ContentEditor from '../components/portfolio/ContentEditor.jsx';
 import FillDetailsForm from '../components/portfolio/FillDetailsForm.jsx';
@@ -51,14 +51,17 @@ import {
   updateText,
   duplicateItem,
   removeItem,
-  moveItem
+  moveItem,
+  listPageBlocks,
+  moveBlock,
+  toggleBlock
 } from '../utils/portfolioReader.js';
 import { injectInlineEditor } from '../utils/inlineEditor.js';
 import { extractProfileFromHtml, personalizeHtml, getInitials } from '../utils/templatePersonalizer.js';
 import { useToast } from '../context/ToastContext.jsx';
 
 export default function LiveEditorPage() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { addToast } = useToast();
 
   const initialTemplate = searchParams.get('template') || 'Minimal';
@@ -95,30 +98,11 @@ export default function LiveEditorPage() {
   });
 
   // Visual Customizations
-  const [accentColor, setAccentColor] = useState('#F59E0B');
-  const [customFont, setCustomFont] = useState('Plus Jakarta Sans');
+  const [accentColor, setAccentColor] = useState(null); // null = keep the template's own colour
+  const [customFont, setCustomFont] = useState(null); // null = keep the template's own font
 
-  // Section Ordering & Visibility
-  const [sections, setSections] = useState([
-    { id: 'hero', name: 'Hero Profile & Bio', visible: true },
-    { id: 'skills', name: 'Skills & Stack Matrix', visible: true },
-    { id: 'projects', name: 'Featured Project Showcases', visible: true },
-    { id: 'contact', name: 'Contact & Inquiries', visible: true }
-  ]);
-
-  const moveSection = (index, direction) => {
-    const newIdx = index + direction;
-    if (newIdx < 0 || newIdx >= sections.length) return;
-    const updated = [...sections];
-    const [moved] = updated.splice(index, 1);
-    updated.splice(newIdx, 0, moved);
-    setSections(updated);
-    addToast(`Reordered ${moved.name}`, 'info');
-  };
-
-  const toggleSection = (id) => {
-    setSections(sections.map(s => s.id === id ? { ...s, visible: !s.visible } : s));
-  };
+  // Sections tab: the real top-level parts of the current page (read from the HTML)
+  // Code is declared further down, so the list is computed after activeHtml exists (see pageBlocks below).
 
   // Base generated code
   const baseCode = useMemo(() => {
@@ -131,54 +115,115 @@ export default function LiveEditorPage() {
   const [customJs, setCustomJs] = useState(null);
   const [codeTab, setCodeTab] = useState('html');
 
+  // Put an uploaded / community template into the editor
+  const applyLoadedTemplate = useCallback((t) => {
+    setLoadedCustomTemplate(t);
+    setCustomHtml(t.html_code);
+    setCustomCss(t.css_code || '');
+    setCustomJs(t.js_code || '');
+    if (t.category) setTemplate(t.category);
+
+    // Extract current profile values from template HTML
+    const extracted = extractProfileFromHtml(t.html_code, {
+      name: t.creator_name,
+      title: t.title,
+      creator_name: t.creator_name
+    });
+    setExtractedProfile(extracted);
+    setProfileForm({
+      name: extracted.name || '',
+      title: extracted.title || '',
+      bio: extracted.bio || '',
+      email: extracted.email || '',
+      github: extracted.github || '',
+      linkedin: extracted.linkedin || '',
+      twitter: extracted.twitter || ''
+    });
+
+    setTemplateMeta({
+      title: t.title || '',
+      creator_name: t.creator_name || '',
+      category: t.category || 'Minimal',
+      description: t.description || ''
+    });
+
+    setAccentColor(null);
+    setCustomFont(null);
+    setActiveSidebarTab('personalize');
+    addToast(`Loaded template: "${t.title}". Personalize your info below.`, 'success');
+  }, [addToast]);
+
   // Load custom template if templateId provided in query string
   useEffect(() => {
     const templateId = searchParams.get('templateId') || searchParams.get('id');
     if (templateId) {
       dbService.getTemplateById(templateId).then((t) => {
-        if (t) {
-          setLoadedCustomTemplate(t);
-          setCustomHtml(t.html_code);
-          setCustomCss(t.css_code || '');
-          setCustomJs(t.js_code || '');
-          if (t.category) setTemplate(t.category);
-
-          // Extract current profile values from template HTML
-          const extracted = extractProfileFromHtml(t.html_code, {
-            name: t.creator_name,
-            title: t.title,
-            creator_name: t.creator_name
-          });
-          setExtractedProfile(extracted);
-          setProfileForm({
-            name: extracted.name || '',
-            title: extracted.title || '',
-            bio: extracted.bio || '',
-            email: extracted.email || '',
-            github: extracted.github || '',
-            linkedin: extracted.linkedin || '',
-            twitter: extracted.twitter || ''
-          });
-
-          setTemplateMeta({
-            title: t.title || '',
-            creator_name: t.creator_name || '',
-            category: t.category || 'Minimal',
-            description: t.description || ''
-          });
-
-          setActiveSidebarTab('personalize');
-          addToast(`Loaded template: "${t.title}". Personalize your info below.`, 'success');
-        }
+        if (t) applyLoadedTemplate(t);
       }).catch(err => {
         console.warn('Notice loading template into editor:', err);
       });
     }
-  }, [searchParams, addToast]);
+  }, [searchParams, applyLoadedTemplate]);
+
+  // List of uploaded / community templates for the header dropdown
+  const [catalog, setCatalog] = useState([]);
+  const refreshCatalog = useCallback(async () => {
+    try {
+      const res = await dbService.getTemplates({ limit: 500, sort: 'newest' });
+      // built-in demo styles (id "tmpl-...") are already listed as engines
+      setCatalog((res.templates || []).filter((t) => t && t.id && !String(t.id).startsWith('tmpl-')));
+    } catch (e) {
+      console.warn('Notice loading template list:', e);
+    }
+  }, []);
+  useEffect(() => { refreshCatalog(); }, [refreshCatalog]);
 
   const activeHtml = customHtml !== null ? customHtml : baseCode.html;
   const activeCss = customCss !== null ? customCss : baseCode.css;
   const activeJs = customJs !== null ? customJs : baseCode.js;
+
+  // Sections tab data + actions (work on the real HTML, so they also work for uploaded templates)
+  const pageBlocks = useMemo(() => listPageBlocks(activeHtml), [activeHtml]);
+  const handleMoveBlock = (index, dir) => {
+    setCustomHtml(moveBlock(activeHtml, index, dir));
+    addToast('Section moved', 'info');
+  };
+  const handleToggleBlock = (index) => setCustomHtml(toggleBlock(activeHtml, index));
+
+  // CSS / JS used for downloads = template code + the Visual tab choices (so the file matches the preview)
+  const visualOverrides = useMemo(() => buildVisualOverrides({ accentColor, customFont }), [accentColor, customFont]);
+  const exportCss = activeCss + visualOverrides.css;
+  const exportJs = visualOverrides.js ? `${activeJs}\n${visualOverrides.js}` : activeJs;
+
+  // Header dropdown: switch between built-in engines and uploaded templates
+  const selectValue = loadedCustomTemplate ? `custom:${loadedCustomTemplate.id}` : `engine:${template}`;
+  const hasUnsavedChanges = loadedCustomTemplate
+    ? customHtml !== loadedCustomTemplate.html_code ||
+      customCss !== (loadedCustomTemplate.css_code || '') ||
+      customJs !== (loadedCustomTemplate.js_code || '')
+    : customHtml !== null || customCss !== null || customJs !== null;
+
+  const handleTemplateSwitch = (value) => {
+    if (value === selectValue) return;
+    if (hasUnsavedChanges && !window.confirm('You have unsaved changes. Switch template and lose them?')) return;
+
+    if (value.startsWith('custom:')) {
+      // the effect above loads it when the URL changes
+      setSearchParams({ templateId: value.slice('custom:'.length) });
+      return;
+    }
+    const cat = value.slice('engine:'.length);
+    setLoadedCustomTemplate(null);
+    setExtractedProfile(null);
+    setCustomHtml(null);
+    setCustomCss(null);
+    setCustomJs(null);
+    setAccentColor(null);
+    setCustomFont(null);
+    setTemplate(cat);
+    if (['metadata'].includes(activeSidebarTab)) setActiveSidebarTab('personalize');
+    setSearchParams({ template: cat });
+  };
 
   // Fields the template's creator marked as editable (stored inside the template html)
   const hasCreatorFields = useMemo(
@@ -236,6 +281,7 @@ export default function LiveEditorPage() {
         setLoadedCustomTemplate({ ...loadedCustomTemplate, ...updated, ...updates });
         confetti({ particleCount: 60, spread: 60 });
         addToast('Template saved and updated in database!', 'success');
+        refreshCatalog();
       }
     } catch (err) {
       addToast('Failed to save template: ' + (err.message || 'Unknown error'), 'error');
@@ -259,6 +305,7 @@ export default function LiveEditorPage() {
         });
         confetti({ particleCount: 70, spread: 60 });
         addToast('Saved as new portfolio in your collection!', 'success');
+        refreshCatalog();
       }
     } catch (err) {
       addToast('Failed to create remix: ' + (err.message || 'Unknown error'), 'error');
@@ -349,8 +396,8 @@ export default function LiveEditorPage() {
       const author = loadedCustomTemplate?.creator_name || userData.personal.name || 'Community Member';
       await downloadPortfolioZip({
         html: activeHtml,
-        css: activeCss,
-        js: activeJs,
+        css: exportCss,
+        js: exportJs,
         zipName: `${fileName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-live-editor.zip`,
         authorName: author
       });
@@ -371,7 +418,7 @@ export default function LiveEditorPage() {
   const handleDownloadHtml = () => {
     try {
       const fileName = loadedCustomTemplate?.title || profileForm.name || userData.personal.name || 'portfolio';
-      downloadSingleHtml({ html: activeHtml, css: activeCss, js: activeJs, fileName });
+      downloadSingleHtml({ html: activeHtml, css: exportCss, js: exportJs, fileName });
       confetti({ particleCount: 50, spread: 50 });
       addToast('Single index.html downloaded (CSS & JS inlined)', 'success');
     } catch (err) {
@@ -391,70 +438,72 @@ export default function LiveEditorPage() {
     setCustomCss(null);
     setCustomJs(null);
     setUserData({ ...DEFAULT_USER_DATA });
-    setAccentColor('#F59E0B');
+    setAccentColor(null);
+    setCustomFont(null);
     addToast('Reset to original template codebase', 'info');
   };
 
   return (
-    <div className={`max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4 ${isFullscreen ? 'fixed inset-0 z-50 bg-[#FAF8F5] p-4' : ''}`}>
+    <div className={`max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4 ${isFullscreen ? 'fixed inset-0 z-50 bg-paper p-4' : ''}`}>
       
       {/* 1. TOP BAR */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-white border border-[#E6E1D6] rounded-xl shadow-2xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-white border border-line rounded-xl shadow-2xs">
         
         {/* Left: Navigation & Template Engine Selector */}
         <div className="flex items-center gap-3">
           <Link
             to="/explore"
-            className="p-1.5 rounded-lg text-[#71717A] hover:text-[#18181B] hover:bg-[#F3EFE6] transition-colors"
+            className="p-1.5 rounded-lg text-pencil hover:text-ink hover:bg-paper-2 transition-colors"
             title="Back to Catalog"
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
 
           <div>
-            <div className="text-xs font-bold text-[#18181B] flex items-center gap-2 flex-wrap">
-              <span className="font-mono text-[#D97706]">DEV STUDIO</span>
-              <span className="text-[#E6E1D6]">/</span>
-              {loadedCustomTemplate ? (
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-xs text-[#18181B] underline decoration-[#F59E0B] decoration-2">
-                    {loadedCustomTemplate.title}
-                  </span>
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-[#FAF8F5] text-[#52525B] border border-[#E6E1D6]">
-                    Community Template
-                  </span>
-                </div>
-              ) : (
-                <select
-                  value={template}
-                  onChange={(e) => {
-                    setTemplate(e.target.value);
-                    setCustomHtml(null);
-                    setCustomCss(null);
-                    setCustomJs(null);
-                  }}
-                  className="font-semibold text-xs text-[#18181B] bg-transparent border-0 focus:outline-none cursor-pointer underline decoration-[#F59E0B] decoration-2"
-                >
+            <div className="text-xs font-bold text-ink flex items-center gap-2 flex-wrap">
+              <span className="font-mono text-accent">DEV STUDIO</span>
+              <span className="text-line">/</span>
+              <select
+                value={selectValue}
+                onChange={(e) => handleTemplateSwitch(e.target.value)}
+                className="font-semibold text-xs text-ink bg-transparent border-0 focus:outline-none cursor-pointer underline decoration-hl decoration-2 max-w-[220px]"
+              >
+                <optgroup label="Built-in engines">
                   {TEMPLATE_CATEGORIES.map(cat => (
-                    <option key={cat} value={cat}>{cat} Engine</option>
+                    <option key={cat} value={`engine:${cat}`}>{cat} Engine</option>
                   ))}
-                </select>
+                </optgroup>
+                {(catalog.length > 0 || loadedCustomTemplate) && (
+                  <optgroup label="Uploaded & community templates">
+                    {loadedCustomTemplate && !catalog.some((t) => String(t.id) === String(loadedCustomTemplate.id)) && (
+                      <option value={`custom:${loadedCustomTemplate.id}`}>{loadedCustomTemplate.title}</option>
+                    )}
+                    {catalog.map((t) => (
+                      <option key={t.id} value={`custom:${t.id}`}>{t.title}</option>
+                    ))}
+                  </optgroup>
+                )}
+              </select>
+              {loadedCustomTemplate && (
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-paper text-soft border border-line">
+                  Community Template
+                </span>
               )}
             </div>
           </div>
         </div>
 
         {/* Center & Right: Viewport Controls, Fullscreen, Reset, Download */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {loadedCustomTemplate && (
             <>
               <button
                 onClick={handleSaveToDatabase}
                 disabled={isSavingDb}
-                className="px-2.5 py-1.5 rounded-lg bg-[#18181B] hover:bg-[#27272A] text-white text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs disabled:opacity-50"
+                className="px-2.5 py-1.5 rounded-lg bg-ink hover:bg-ink-2 text-white text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs disabled:opacity-50"
                 title="Save updates directly to template in database"
               >
-                <Save className="w-3.5 h-3.5 text-[#F59E0B]" />
+                <Save className="w-3.5 h-3.5 text-hl" />
                 <span className="hidden sm:inline">{isSavingDb ? 'Saving...' : 'Save Changes'}</span>
               </button>
 
@@ -462,34 +511,34 @@ export default function LiveEditorPage() {
                 href={`/site/${loadedCustomTemplate.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-2.5 py-1.5 rounded-lg border border-[#E6E1D6] bg-white text-[#18181B] hover:bg-[#F3EFE6] text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer mr-1"
+                className="px-2.5 py-1.5 rounded-lg border border-line bg-white text-ink hover:bg-paper-2 text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer mr-1"
                 title="Open full portfolio website in standalone view"
               >
-                <ExternalLink className="w-3.5 h-3.5 text-[#D97706]" />
+                <ExternalLink className="w-3.5 h-3.5 text-accent" />
                 <span className="hidden sm:inline">Open Live Site</span>
               </a>
             </>
           )}
 
           {/* Viewport Toggles */}
-          <div className="flex items-center bg-[#F3EFE6] p-0.5 rounded-md border border-[#E6E1D6]">
+          <div className="flex items-center bg-paper-2 p-0.5 rounded-md border border-line">
             <button
               onClick={() => setViewport('desktop')}
-              className={`p-1.5 rounded cursor-pointer transition-colors ${viewport === 'desktop' ? 'bg-white text-[#18181B] shadow-2xs font-semibold' : 'text-[#71717A] hover:text-[#18181B]'}`}
+              className={`p-1.5 rounded cursor-pointer transition-colors ${viewport === 'desktop' ? 'bg-white text-ink shadow-2xs font-semibold' : 'text-pencil hover:text-ink'}`}
               title="Desktop View (100%)"
             >
               <Monitor className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => setViewport('tablet')}
-              className={`p-1.5 rounded cursor-pointer transition-colors ${viewport === 'tablet' ? 'bg-white text-[#18181B] shadow-2xs font-semibold' : 'text-[#71717A] hover:text-[#18181B]'}`}
+              className={`p-1.5 rounded cursor-pointer transition-colors ${viewport === 'tablet' ? 'bg-white text-ink shadow-2xs font-semibold' : 'text-pencil hover:text-ink'}`}
               title="Tablet View (768px)"
             >
               <Tablet className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => setViewport('mobile')}
-              className={`p-1.5 rounded cursor-pointer transition-colors ${viewport === 'mobile' ? 'bg-white text-[#18181B] shadow-2xs font-semibold' : 'text-[#71717A] hover:text-[#18181B]'}`}
+              className={`p-1.5 rounded cursor-pointer transition-colors ${viewport === 'mobile' ? 'bg-white text-ink shadow-2xs font-semibold' : 'text-pencil hover:text-ink'}`}
               title="Mobile View (375px)"
             >
               <Smartphone className="w-3.5 h-3.5" />
@@ -498,7 +547,7 @@ export default function LiveEditorPage() {
 
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="p-1.5 rounded-md border border-[#E6E1D6] bg-white text-[#71717A] hover:text-[#18181B] hover:bg-[#F3EFE6] transition-colors cursor-pointer shadow-2xs"
+            className="p-1.5 rounded-md border border-line bg-white text-pencil hover:text-ink hover:bg-paper-2 transition-colors cursor-pointer shadow-2xs"
             title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen Stage'}
           >
             {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
@@ -506,7 +555,7 @@ export default function LiveEditorPage() {
 
           <button
             onClick={handleReset}
-            className="p-1.5 rounded-md border border-[#E6E1D6] bg-white text-[#71717A] hover:text-[#18181B] hover:bg-[#F3EFE6] transition-colors cursor-pointer shadow-2xs"
+            className="p-1.5 rounded-md border border-line bg-white text-pencil hover:text-ink hover:bg-paper-2 transition-colors cursor-pointer shadow-2xs"
             title="Reset code overrides"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -514,7 +563,7 @@ export default function LiveEditorPage() {
 
           <button
             onClick={handleDownloadHtml}
-            className="px-3.5 py-1.5 rounded-lg bg-white hover:bg-[#F3EFE6] text-[#18181B] border border-[#E6E1D6] font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            className="px-3.5 py-1.5 rounded-lg bg-white hover:bg-paper-2 text-ink border border-line font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
             title="Download one self-contained index.html"
           >
             <FileText className="w-3.5 h-3.5" />
@@ -524,7 +573,7 @@ export default function LiveEditorPage() {
           <button
             onClick={handleDownload}
             disabled={isExporting}
-            className="px-3.5 py-1.5 rounded-lg bg-[#F59E0B] hover:bg-[#D97706] text-[#18181B] hover:text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-2xs"
+            className="px-3.5 py-1.5 rounded-lg bg-hl hover:bg-accent text-ink hover:text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-2xs"
           >
             <Download className="w-3.5 h-3.5" />
             <span>{isExporting ? 'Packaging...' : 'Download ZIP'}</span>
@@ -534,28 +583,28 @@ export default function LiveEditorPage() {
       </div>
 
       {/* 2. MAIN SPLIT-SCREEN WORKSPACE */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-[calc(100vh-170px)] min-h-[640px]">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:h-[calc(100vh-170px)] lg:min-h-[640px]">
         
         {/* LEFT PANEL: CONFIG & CODE (5 columns) */}
-        <div className="lg:col-span-5 flex flex-col bg-white border border-[#E6E1D6] rounded-xl overflow-hidden shadow-2xs">
+        <div className="h-[560px] lg:h-auto lg:col-span-5 flex flex-col bg-white border border-line rounded-xl overflow-hidden shadow-2xs">
           
           {/* Panel Tab Controls */}
-          <div className="p-2.5 border-b border-[#E6E1D6] bg-[#FAF8F5] flex items-center justify-between overflow-x-auto">
+          <div className="p-2.5 border-b border-line bg-paper flex items-center justify-between overflow-x-auto">
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setActiveSidebarTab('personalize')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
-                  activeSidebarTab === 'personalize' ? 'bg-[#18181B] text-white shadow-2xs' : 'text-[#71717A] hover:text-[#18181B]'
+                  activeSidebarTab === 'personalize' ? 'bg-ink text-white shadow-2xs' : 'text-pencil hover:text-ink'
                 }`}
               >
-                <UserCheck className="w-3.5 h-3.5 text-[#F59E0B]" />
+                <UserCheck className="w-3.5 h-3.5 text-hl" />
                 <span>Personalize Info</span>
               </button>
 
               <button
                 onClick={() => setActiveSidebarTab('content')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                  activeSidebarTab === 'content' ? 'bg-[#18181B] text-white shadow-2xs' : 'text-[#71717A] hover:text-[#18181B]'
+                  activeSidebarTab === 'content' ? 'bg-ink text-white shadow-2xs' : 'text-pencil hover:text-ink'
                 }`}
               >
                 Content & Skills
@@ -564,17 +613,17 @@ export default function LiveEditorPage() {
               <button
                 onClick={() => setActiveSidebarTab('visual')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                  activeSidebarTab === 'visual' ? 'bg-white text-[#18181B] shadow-2xs border border-[#E6E1D6]' : 'text-[#71717A] hover:text-[#18181B]'
+                  activeSidebarTab === 'visual' ? 'bg-white text-ink shadow-2xs border border-line' : 'text-pencil hover:text-ink'
                 }`}
               >
                 Visual
               </button>
 
-              {!loadedCustomTemplate && (
+              {(
                 <button
                   onClick={() => setActiveSidebarTab('sections')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                    activeSidebarTab === 'sections' ? 'bg-white text-[#18181B] shadow-2xs border border-[#E6E1D6]' : 'text-[#71717A] hover:text-[#18181B]'
+                    activeSidebarTab === 'sections' ? 'bg-white text-ink shadow-2xs border border-line' : 'text-pencil hover:text-ink'
                   }`}
                 >
                   Sections
@@ -585,7 +634,7 @@ export default function LiveEditorPage() {
                 <button
                   onClick={() => setActiveSidebarTab('metadata')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                    activeSidebarTab === 'metadata' ? 'bg-white text-[#18181B] shadow-2xs border border-[#E6E1D6]' : 'text-[#71717A] hover:text-[#18181B]'
+                    activeSidebarTab === 'metadata' ? 'bg-white text-ink shadow-2xs border border-line' : 'text-pencil hover:text-ink'
                   }`}
                 >
                   Template Info
@@ -595,7 +644,7 @@ export default function LiveEditorPage() {
               <button
                 onClick={() => setActiveSidebarTab('code')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                  activeSidebarTab === 'code' ? 'bg-white text-[#18181B] shadow-2xs border border-[#E6E1D6]' : 'text-[#71717A] hover:text-[#18181B]'
+                  activeSidebarTab === 'code' ? 'bg-white text-ink shadow-2xs border border-line' : 'text-pencil hover:text-ink'
                 }`}
               >
                 Raw Code
@@ -613,14 +662,14 @@ export default function LiveEditorPage() {
 
             {activeSidebarTab === 'personalize' && !hasCreatorFields && (
               <div className="space-y-4">
-                <div className="p-3 bg-[#FAF8F5] border border-[#E6E1D6] rounded-xl">
+                <div className="p-3 bg-paper border border-line rounded-xl">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-[#18181B] text-[#F59E0B] font-bold text-sm flex items-center justify-center border border-[#E6E1D6] shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-ink text-hl font-bold text-sm flex items-center justify-center border border-line shrink-0">
                       {getInitials(profileForm.name)}
                     </div>
                     <div>
-                      <h3 className="text-xs font-bold text-[#18181B]">Personalize Portfolio</h3>
-                      <p className="text-[11px] text-[#52525B]">
+                      <h3 className="text-xs font-bold text-ink">Personalize Portfolio</h3>
+                      <p className="text-[11px] text-soft">
                         Change your name, headline, bio, and contact links in this template.
                       </p>
                     </div>
@@ -629,8 +678,8 @@ export default function LiveEditorPage() {
 
                 {/* Name Input */}
                 <div>
-                  <label className="block text-xs font-semibold text-[#18181B] mb-1">
-                    Your Full Name <span className="text-[#D97706]">*</span>
+                  <label className="block text-xs font-semibold text-ink mb-1">
+                    Your Full Name <span className="text-accent">*</span>
                   </label>
                   <input
                     type="text"
@@ -640,16 +689,16 @@ export default function LiveEditorPage() {
                       setProfileForm(prev => ({ ...prev, name: val }));
                     }}
                     placeholder="e.g. Lakshya Bansal"
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white focus:outline-none focus:border-[#D97706]"
+                    className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent"
                   />
-                  <p className="text-[10px] text-[#71717A] mt-0.5">
+                  <p className="text-[10px] text-pencil mt-0.5">
                     Updates headings, title tags, avatar initials, and copyright info.
                   </p>
                 </div>
 
                 {/* Headline / Title Input */}
                 <div>
-                  <label className="block text-xs font-semibold text-[#18181B] mb-1">
+                  <label className="block text-xs font-semibold text-ink mb-1">
                     Professional Headline / Role
                   </label>
                   <input
@@ -660,13 +709,13 @@ export default function LiveEditorPage() {
                       setProfileForm(prev => ({ ...prev, title: val }));
                     }}
                     placeholder="e.g. Aspiring Engineer & Developer"
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white focus:outline-none focus:border-[#D97706]"
+                    className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent"
                   />
                 </div>
 
                 {/* Bio / About Input */}
                 <div>
-                  <label className="block text-xs font-semibold text-[#18181B] mb-1">
+                  <label className="block text-xs font-semibold text-ink mb-1">
                     About Me & Bio
                   </label>
                   <textarea
@@ -677,14 +726,14 @@ export default function LiveEditorPage() {
                       setProfileForm(prev => ({ ...prev, bio: val }));
                     }}
                     placeholder="Passionate engineer building elegant solutions..."
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white focus:outline-none focus:border-[#D97706] resize-y"
+                    className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent resize-y"
                   />
                 </div>
 
                 {/* Contact Email */}
                 <div>
-                  <label className="block text-xs font-semibold text-[#18181B] mb-1 flex items-center gap-1">
-                    <Mail className="w-3 h-3 text-[#71717A]" />
+                  <label className="block text-xs font-semibold text-ink mb-1 flex items-center gap-1">
+                    <Mail className="w-3 h-3 text-pencil" />
                     <span>Contact Email</span>
                   </label>
                   <input
@@ -695,19 +744,19 @@ export default function LiveEditorPage() {
                       setProfileForm(prev => ({ ...prev, email: val }));
                     }}
                     placeholder="you@example.com"
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white focus:outline-none focus:border-[#D97706]"
+                    className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent"
                   />
                 </div>
 
                 {/* Social Profiles */}
-                <div className="pt-2 border-t border-[#E6E1D6] space-y-2.5">
-                  <span className="text-[11px] font-bold text-[#18181B] uppercase tracking-wider block">
+                <div className="pt-2 border-t border-line space-y-2.5">
+                  <span className="text-[11px] font-bold text-ink uppercase tracking-wider block">
                     Social & Profile Links
                   </span>
 
                   <div>
-                    <label className="block text-[11px] text-[#52525B] mb-0.5 flex items-center gap-1">
-                      <Github className="w-3 h-3 text-[#71717A]" />
+                    <label className="block text-[11px] text-soft mb-0.5 flex items-center gap-1">
+                      <Github className="w-3 h-3 text-pencil" />
                       <span>GitHub URL</span>
                     </label>
                     <input
@@ -715,13 +764,13 @@ export default function LiveEditorPage() {
                       value={profileForm.github}
                       onChange={(e) => setProfileForm(prev => ({ ...prev, github: e.target.value }))}
                       placeholder="https://github.com/username"
-                      className="w-full px-3 py-1.5 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white focus:outline-none focus:border-[#D97706]"
+                      className="w-full px-3 py-1.5 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[11px] text-[#52525B] mb-0.5 flex items-center gap-1">
-                      <Linkedin className="w-3 h-3 text-[#71717A]" />
+                    <label className="block text-[11px] text-soft mb-0.5 flex items-center gap-1">
+                      <Linkedin className="w-3 h-3 text-pencil" />
                       <span>LinkedIn URL</span>
                     </label>
                     <input
@@ -729,13 +778,13 @@ export default function LiveEditorPage() {
                       value={profileForm.linkedin}
                       onChange={(e) => setProfileForm(prev => ({ ...prev, linkedin: e.target.value }))}
                       placeholder="https://linkedin.com/in/username"
-                      className="w-full px-3 py-1.5 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white focus:outline-none focus:border-[#D97706]"
+                      className="w-full px-3 py-1.5 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[11px] text-[#52525B] mb-0.5 flex items-center gap-1">
-                      <Twitter className="w-3 h-3 text-[#71717A]" />
+                    <label className="block text-[11px] text-soft mb-0.5 flex items-center gap-1">
+                      <Twitter className="w-3 h-3 text-pencil" />
                       <span>Twitter / X URL</span>
                     </label>
                     <input
@@ -743,17 +792,17 @@ export default function LiveEditorPage() {
                       value={profileForm.twitter}
                       onChange={(e) => setProfileForm(prev => ({ ...prev, twitter: e.target.value }))}
                       placeholder="https://x.com/username"
-                      className="w-full px-3 py-1.5 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white focus:outline-none focus:border-[#D97706]"
+                      className="w-full px-3 py-1.5 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent"
                     />
                   </div>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="pt-3 border-t border-[#E6E1D6] space-y-2">
+                <div className="pt-3 border-t border-line space-y-2">
                   <button
                     type="button"
                     onClick={() => handleApplyPersonalization()}
-                    className="w-full py-2 px-3 rounded-lg bg-[#F59E0B] hover:bg-[#D97706] text-[#18181B] hover:text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
+                    className="w-full py-2 px-3 rounded-lg bg-hl hover:bg-accent text-ink hover:text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
                   >
                     <Wand2 className="w-3.5 h-3.5" />
                     <span>Apply Changes to Live Preview</span>
@@ -764,9 +813,9 @@ export default function LiveEditorPage() {
                       type="button"
                       onClick={handleSaveToDatabase}
                       disabled={isSavingDb}
-                      className="w-full py-2 px-3 rounded-lg bg-[#18181B] hover:bg-[#27272A] text-white text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer disabled:opacity-50"
+                      className="w-full py-2 px-3 rounded-lg bg-ink hover:bg-ink-2 text-white text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer disabled:opacity-50"
                     >
-                      <Save className="w-3.5 h-3.5 text-[#F59E0B]" />
+                      <Save className="w-3.5 h-3.5 text-hl" />
                       <span>{isSavingDb ? 'Saving to Database...' : 'Save to Template (Database)'}</span>
                     </button>
                   ) : null}
@@ -774,9 +823,9 @@ export default function LiveEditorPage() {
                   <button
                     type="button"
                     onClick={handleSaveAsRemix}
-                    className="w-full py-2 px-3 rounded-lg bg-white hover:bg-[#F3EFE6] text-[#18181B] text-xs font-medium border border-[#E6E1D6] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                    className="w-full py-2 px-3 rounded-lg bg-white hover:bg-paper-2 text-ink text-xs font-medium border border-line transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
                   >
-                    <Sparkles className="w-3.5 h-3.5 text-[#D97706]" />
+                    <Sparkles className="w-3.5 h-3.5 text-accent" />
                     <span>Save as New Portfolio in Catalog</span>
                   </button>
                 </div>
@@ -786,28 +835,28 @@ export default function LiveEditorPage() {
             {/* TEMPLATE SETTINGS METADATA TAB */}
             {activeSidebarTab === 'metadata' && loadedCustomTemplate && (
               <div className="space-y-4">
-                <div className="p-3 bg-[#FAF8F5] border border-[#E6E1D6] rounded-xl">
-                  <h3 className="text-xs font-bold text-[#18181B]">Template Settings</h3>
-                  <p className="text-[11px] text-[#52525B]">
+                <div className="p-3 bg-paper border border-line rounded-xl">
+                  <h3 className="text-xs font-bold text-ink">Template Settings</h3>
+                  <p className="text-[11px] text-soft">
                     Rename this template, change author attribution, or update the catalog description.
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#18181B] mb-1">
-                    Template Title <span className="text-[#D97706]">*</span>
+                  <label className="block text-xs font-semibold text-ink mb-1">
+                    Template Title <span className="text-accent">*</span>
                   </label>
                   <input
                     type="text"
                     value={templateMeta.title}
                     onChange={(e) => setTemplateMeta({ ...templateMeta, title: e.target.value })}
                     placeholder="e.g. Modern Developer Showcase"
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white focus:outline-none focus:border-[#D97706]"
+                    className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#18181B] mb-1">
+                  <label className="block text-xs font-semibold text-ink mb-1">
                     Creator / Author Name
                   </label>
                   <input
@@ -815,18 +864,18 @@ export default function LiveEditorPage() {
                     value={templateMeta.creator_name}
                     onChange={(e) => setTemplateMeta({ ...templateMeta, creator_name: e.target.value })}
                     placeholder="e.g. Lakshya Bansal"
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white focus:outline-none focus:border-[#D97706]"
+                    className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#18181B] mb-1">
+                  <label className="block text-xs font-semibold text-ink mb-1">
                     Template Category
                   </label>
                   <select
                     value={templateMeta.category}
                     onChange={(e) => setTemplateMeta({ ...templateMeta, category: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white cursor-pointer focus:outline-none focus:border-[#D97706]"
+                    className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white cursor-pointer focus:outline-none focus:border-accent"
                   >
                     {TEMPLATE_CATEGORIES.map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
@@ -835,7 +884,7 @@ export default function LiveEditorPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#18181B] mb-1">
+                  <label className="block text-xs font-semibold text-ink mb-1">
                     Catalog Description
                   </label>
                   <textarea
@@ -843,7 +892,7 @@ export default function LiveEditorPage() {
                     value={templateMeta.description}
                     onChange={(e) => setTemplateMeta({ ...templateMeta, description: e.target.value })}
                     placeholder="Describe what makes this portfolio template standout..."
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white focus:outline-none focus:border-[#D97706] resize-y"
+                    className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent resize-y"
                   />
                 </div>
 
@@ -851,9 +900,9 @@ export default function LiveEditorPage() {
                   type="button"
                   onClick={handleSaveToDatabase}
                   disabled={isSavingDb}
-                  className="w-full py-2 px-3 rounded-lg bg-[#18181B] hover:bg-[#27272A] text-white text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer disabled:opacity-50"
+                  className="w-full py-2 px-3 rounded-lg bg-ink hover:bg-ink-2 text-white text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer disabled:opacity-50"
                 >
-                  <Save className="w-3.5 h-3.5 text-[#F59E0B]" />
+                  <Save className="w-3.5 h-3.5 text-hl" />
                   <span>{isSavingDb ? 'Saving Changes...' : 'Save Template Settings'}</span>
                 </button>
               </div>
@@ -863,19 +912,20 @@ export default function LiveEditorPage() {
             {activeSidebarTab === 'visual' && (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-[#18181B] mb-1.5">Color Accent Token</label>
+                  <label className="block text-xs font-semibold text-ink mb-1.5">Color Accent Token</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
-                      value={accentColor}
+                      value={accentColor || '#F59E0B'}
                       onChange={(e) => setAccentColor(e.target.value)}
-                      className="w-9 h-9 rounded-lg border border-[#E6E1D6] cursor-pointer p-0.5 bg-white"
+                      className="w-9 h-9 rounded-lg border border-line cursor-pointer p-0.5 bg-white"
                     />
                     <input
                       type="text"
-                      value={accentColor}
+                      value={accentColor || ''}
+                      placeholder="Template default"
                       onChange={(e) => setAccentColor(e.target.value)}
-                      className="flex-1 px-3 py-1.5 text-xs rounded-lg border border-[#E6E1D6] font-mono uppercase text-[#18181B] focus:outline-none focus:border-[#D97706]"
+                      className="flex-1 px-3 py-1.5 text-xs rounded-lg border border-line font-mono uppercase text-ink focus:outline-none focus:border-accent"
                     />
                   </div>
                   {/* Preset color chips */}
@@ -894,12 +944,13 @@ export default function LiveEditorPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#18181B] mb-1.5">Primary Typography</label>
+                  <label className="block text-xs font-semibold text-ink mb-1.5">Primary Typography</label>
                   <select
-                    value={customFont}
-                    onChange={(e) => setCustomFont(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white cursor-pointer focus:outline-none focus:border-[#D97706]"
+                    value={customFont || ''}
+                    onChange={(e) => setCustomFont(e.target.value || null)}
+                    className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white cursor-pointer focus:outline-none focus:border-accent"
                   >
+                    <option value="">Template default font</option>
                     <option value="Plus Jakarta Sans">Plus Jakarta Sans (Balanced Humanist)</option>
                     <option value="Inter">Inter (Technical Precision)</option>
                     <option value="Geist">Geist (Developer Sans)</option>
@@ -908,10 +959,10 @@ export default function LiveEditorPage() {
                   </select>
                 </div>
 
-                <div className="pt-3 border-t border-[#E6E1D6] space-y-3">
-                  <span className="text-xs font-bold text-[#18181B]">Quick Profile Overrides</span>
+                <div className="pt-3 border-t border-line space-y-3">
+                  <span className="text-xs font-bold text-ink">Quick Profile Overrides</span>
                   <div>
-                    <label className="block text-[11px] font-semibold text-[#52525B] mb-1">Your Name</label>
+                    <label className="block text-[11px] font-semibold text-soft mb-1">Your Name</label>
                     <input
                       type="text"
                       value={userData.personal.name}
@@ -919,11 +970,11 @@ export default function LiveEditorPage() {
                         ...userData,
                         personal: { ...userData.personal, name: e.target.value }
                       })}
-                      className="w-full px-3 py-1.5 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] focus:outline-none focus:border-[#D97706]"
+                      className="w-full px-3 py-1.5 text-xs rounded-lg border border-line text-ink focus:outline-none focus:border-accent"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-semibold text-[#52525B] mb-1">Professional Headline</label>
+                    <label className="block text-[11px] font-semibold text-soft mb-1">Professional Headline</label>
                     <input
                       type="text"
                       value={userData.personal.title}
@@ -931,7 +982,7 @@ export default function LiveEditorPage() {
                         ...userData,
                         personal: { ...userData.personal, title: e.target.value }
                       })}
-                      className="w-full px-3 py-1.5 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] focus:outline-none focus:border-[#D97706]"
+                      className="w-full px-3 py-1.5 text-xs rounded-lg border border-line text-ink focus:outline-none focus:border-accent"
                     />
                   </div>
                 </div>
@@ -948,46 +999,53 @@ export default function LiveEditorPage() {
               />
             )}
 
-            {/* SECTIONS REORDERING TAB */}
+            {/* SECTIONS REORDERING TAB (reads the real page structure) */}
             {activeSidebarTab === 'sections' && (
               <div className="space-y-3">
-                <p className="text-xs text-[#52525B]">
-                  Reorder and toggle visibility of structural components in your active template:
+                <p className="text-xs text-soft">
+                  Reorder or hide the main parts of this page. Changes apply to the preview and to your download.
                 </p>
 
+                {pageBlocks.length < 2 && (
+                  <div className="p-3 rounded-xl border border-line bg-paper text-xs text-soft">
+                    No separate sections were found in this HTML (the page may be built by JavaScript). Use the Raw Code tab to edit it.
+                  </div>
+                )}
+
                 <div className="space-y-2">
-                  {sections.map((sec, idx) => (
+                  {pageBlocks.map((blk, idx) => (
                     <div
-                      key={sec.id}
-                      className="flex items-center justify-between p-3 rounded-xl border border-[#E6E1D6] bg-[#FAF8F5]"
+                      key={`${blk.index}-${blk.label}`}
+                      className="flex items-center justify-between p-3 rounded-xl border border-line bg-paper"
                     >
                       <div className="flex items-center gap-2.5">
                         <button
-                          onClick={() => toggleSection(sec.id)}
+                          onClick={() => handleToggleBlock(blk.index)}
+                          title={blk.hidden ? 'Show section' : 'Hide section'}
                           className={`w-4 h-4 rounded border flex items-center justify-center cursor-pointer ${
-                            sec.visible ? 'bg-[#18181B] border-[#18181B] text-white' : 'bg-white border-[#E6E1D6]'
+                            !blk.hidden ? 'bg-ink border-ink text-white' : 'bg-white border-line'
                           }`}
                         >
-                          {sec.visible && <Check className="w-3 h-3 font-bold" />}
+                          {!blk.hidden && <Check className="w-3 h-3 font-bold" />}
                         </button>
-                        <span className={`text-xs font-semibold ${sec.visible ? 'text-[#18181B]' : 'text-[#71717A] line-through'}`}>
-                          {sec.name}
+                        <span className={`text-xs font-semibold ${!blk.hidden ? 'text-ink' : 'text-pencil line-through'}`}>
+                          {blk.label}
                         </span>
                       </div>
 
                       <div className="flex items-center gap-1">
                         <button
-                          onClick={() => moveSection(idx, -1)}
+                          onClick={() => handleMoveBlock(blk.index, -1)}
                           disabled={idx === 0}
-                          className="p-1 text-[#71717A] hover:text-[#18181B] disabled:opacity-30 cursor-pointer hover:bg-[#F3EFE6] rounded"
+                          className="p-1 text-pencil hover:text-ink disabled:opacity-30 cursor-pointer hover:bg-paper-2 rounded"
                           title="Move section up"
                         >
                           <MoveUp className="w-3.5 h-3.5" />
                         </button>
                         <button
-                          onClick={() => moveSection(idx, 1)}
-                          disabled={idx === sections.length - 1}
-                          className="p-1 text-[#71717A] hover:text-[#18181B] disabled:opacity-30 cursor-pointer hover:bg-[#F3EFE6] rounded"
+                          onClick={() => handleMoveBlock(blk.index, 1)}
+                          disabled={idx === pageBlocks.length - 1}
+                          className="p-1 text-pencil hover:text-ink disabled:opacity-30 cursor-pointer hover:bg-paper-2 rounded"
                           title="Move section down"
                         >
                           <MoveDown className="w-3.5 h-3.5" />
@@ -1003,13 +1061,13 @@ export default function LiveEditorPage() {
             {activeSidebarTab === 'code' && (
               <div className="h-full flex flex-col space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1 bg-[#F3EFE6] p-0.5 rounded-lg border border-[#E6E1D6]">
+                  <div className="flex items-center gap-1 bg-paper-2 p-0.5 rounded-lg border border-line">
                     {['html', 'css', 'js'].map((tab) => (
                       <button
                         key={tab}
                         onClick={() => setCodeTab(tab)}
                         className={`px-2.5 py-0.5 rounded text-[11px] font-mono cursor-pointer transition-colors ${
-                          codeTab === tab ? 'bg-white text-[#18181B] font-bold shadow-2xs' : 'text-[#71717A] hover:text-[#18181B]'
+                          codeTab === tab ? 'bg-white text-ink font-bold shadow-2xs' : 'text-pencil hover:text-ink'
                         }`}
                       >
                         {tab.toUpperCase()}
@@ -1019,14 +1077,14 @@ export default function LiveEditorPage() {
 
                   <button
                     onClick={() => handleCopy(codeTab === 'html' ? activeHtml : codeTab === 'css' ? activeCss : activeJs, codeTab)}
-                    className="flex items-center gap-1 text-[11px] font-semibold text-[#52525B] hover:text-[#18181B] cursor-pointer"
+                    className="flex items-center gap-1 text-[11px] font-semibold text-soft hover:text-ink cursor-pointer"
                   >
                     {copiedTab === codeTab ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
                     <span>Copy {codeTab.toUpperCase()}</span>
                   </button>
                 </div>
 
-                <div className="flex-1 min-h-[400px] rounded-xl bg-[#18181B] p-3 overflow-hidden flex flex-col border border-zinc-800">
+                <div className="flex-1 min-h-[400px] rounded-xl bg-ink p-3 overflow-hidden flex flex-col border border-zinc-800">
                   {codeTab === 'html' && (
                     <textarea
                       value={activeHtml}
@@ -1060,13 +1118,13 @@ export default function LiveEditorPage() {
         </div>
 
         {/* RIGHT PANEL: LIVE PREVIEW IFRAME (7 columns) */}
-        <div className="lg:col-span-7 bg-white border border-[#E6E1D6] rounded-xl overflow-hidden shadow-2xs flex flex-col">
+        <div className="h-[520px] lg:h-auto lg:col-span-7 bg-white border border-line rounded-xl overflow-hidden shadow-2xs flex flex-col">
           
           {/* Preview address line */}
-          <div className="px-4 py-2.5 border-b border-[#E6E1D6] bg-[#FAF8F5] flex items-center justify-between text-xs text-[#71717A]">
+          <div className="px-4 py-2.5 border-b border-line bg-paper flex items-center justify-between text-xs text-pencil">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="font-mono text-[11px] text-[#18181B] font-semibold">Live Split Preview</span>
+              <span className="font-mono text-[11px] text-ink font-semibold">Live Split Preview</span>
             </div>
             <div className="flex items-center gap-3">
               <button
@@ -1075,21 +1133,21 @@ export default function LiveEditorPage() {
                 title="Click any text in the preview to edit it right there"
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
                   editOnPage
-                    ? 'bg-[#F59E0B] border-[#D97706] text-[#18181B] shadow-2xs'
-                    : 'bg-white border-[#E6E1D6] text-[#18181B] hover:bg-[#F3EFE6]'
+                    ? 'bg-hl border-accent text-ink shadow-2xs'
+                    : 'bg-white border-line text-ink hover:bg-paper-2'
                 }`}
               >
                 <Pencil className="w-3 h-3" />
                 {editOnPage ? 'Editing on page — Done' : 'Edit on page'}
               </button>
-              <span className="text-[11px] font-mono text-[#52525B] hidden sm:inline">
+              <span className="text-[11px] font-mono text-soft hidden sm:inline">
                 VIEWPORT: {viewport.toUpperCase()}
               </span>
             </div>
           </div>
 
           {editOnPage && (
-            <div className="px-4 py-2 border-b border-[#F59E0B]/40 bg-[#FEF3C7] text-[11px] text-[#78350F] leading-relaxed">
+            <div className="px-4 py-2 border-b border-hl/40 bg-hl-soft text-[11px] text-accent-deep leading-relaxed">
               {clickableTextCount === 0 ? (
                 <>
                   No clickable text found in the HTML: this page builds its content with JavaScript. Use{' '}
@@ -1105,9 +1163,9 @@ export default function LiveEditorPage() {
           )}
 
           {/* Iframe Stage */}
-          <div className="flex-1 bg-[#F3EFE6] p-4 flex justify-center items-center overflow-hidden">
+          <div className="flex-1 bg-paper-2 p-4 flex justify-center items-center overflow-hidden">
             <div 
-              className={`bg-white rounded-lg border border-[#E6E1D6] shadow-sm overflow-hidden transition-all duration-200 h-full w-full ${
+              className={`bg-white rounded-lg border border-line shadow-sm overflow-hidden transition-all duration-200 h-full w-full ${
                 viewport === 'mobile' ? 'max-w-[375px]' :
                 viewport === 'tablet' ? 'max-w-[768px]' :
                 'w-full'
