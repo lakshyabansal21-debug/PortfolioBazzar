@@ -64,28 +64,28 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full h-16 bg-[#FAF8F5]/90 backdrop-blur-md border-b border-[#E6E1D6] transition-all">
+      <header className="sticky top-0 z-40 w-full h-16 bg-paper/90 backdrop-blur-md border-b border-line transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
           
           {/* Left: Brand & Navigation */}
           <div className="flex items-center gap-7">
             <Link to="/" className="flex items-center gap-2.5 group focus-visible:outline-none">
-              <div className="w-7 h-7 rounded-md bg-[#18181B] text-white flex items-center justify-center font-mono text-xs font-bold shadow-xs group-hover:scale-105 transition-transform">
+              <div className="w-7 h-7 rounded-md bg-ink text-white flex items-center justify-center font-mono text-xs font-bold shadow-xs group-hover:scale-105 transition-transform">
                 <span>P</span>
-                <span className="text-[#F59E0B]">H</span>
+                <span className="text-hl">H</span>
               </div>
               <div className="flex items-baseline gap-1">
-                <span className="font-bold text-sm tracking-tight text-[#18181B]">
+                <span className="font-bold text-sm tracking-tight text-ink">
                   PortfolioHub
                 </span>
-                <span className="text-[10px] font-mono text-[#D97706] font-semibold uppercase tracking-wider">
+                <span className="text-[10px] font-mono text-accent font-semibold uppercase tracking-wider">
                   Dev
                 </span>
               </div>
             </Link>
 
             {/* Desktop Nav Items */}
-            <nav className="hidden md:flex items-center gap-1">
+            <nav className="hidden lg:flex items-center gap-1">
               {navLinks.map((item) => {
                 const isActive = location.pathname === item.path || 
                   (item.path.includes('?') && location.pathname + location.search === item.path);
@@ -95,14 +95,14 @@ export default function Navbar() {
                     to={item.path}
                     className={`relative px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 ${
                       isActive
-                        ? 'text-[#18181B] bg-[#F3EFE6] font-semibold shadow-2xs'
-                        : 'text-[#52525B] hover:text-[#18181B] hover:bg-[#F4F1EA]'
+                        ? 'text-ink bg-paper-2 font-semibold shadow-2xs'
+                        : 'text-soft hover:text-ink hover:bg-paper-2'
                     }`}
                   >
-                    <item.icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#D97706]' : 'text-[#71717A]'}`} />
+                    <item.icon className={`w-3.5 h-3.5 ${isActive ? 'text-accent' : 'text-pencil'}`} />
                     <span>{item.name}</span>
                     {isActive && (
-                      <span className="absolute bottom-0 left-3 right-3 h-[2px] bg-[#D97706] rounded-full" />
+                      <span className="absolute bottom-0 left-3 right-3 h-[2px] bg-accent rounded-full" />
                     )}
                   </Link>
                 );
@@ -111,17 +111,17 @@ export default function Navbar() {
           </div>
 
           {/* Right: Search, Status, Auth, and Primary Action */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-3">
             
             {/* Quick Search Button */}
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-white hover:bg-[#F3EFE6] border border-[#E6E1D6] hover:border-[#D1CBC0] text-xs text-[#52525B] hover:text-[#18181B] transition-all cursor-pointer shadow-2xs"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-white hover:bg-paper-2 border border-line hover:border-line-2 text-xs text-soft hover:text-ink transition-all cursor-pointer shadow-2xs"
               title="Search Portfolios (Cmd+K)"
             >
-              <Search className="w-3.5 h-3.5 text-[#71717A]" />
-              <span>Search styles...</span>
-              <kbd className="text-[10px] font-mono px-1.5 py-0.5 bg-[#FAF8F5] border border-[#E6E1D6] rounded text-[#71717A]">
+              <Search className="w-3.5 h-3.5 text-pencil" />
+              <span className="hidden xl:inline">Search styles...</span>
+              <kbd className="hidden xl:inline text-[10px] font-mono px-1.5 py-0.5 bg-paper border border-line rounded text-pencil">
                 ⌘K
               </kbd>
             </button>
@@ -129,7 +129,7 @@ export default function Navbar() {
             {/* Supabase status indicator
             <button 
               onClick={() => { setAuthMode('login'); setIsAuthModalOpen(true); }}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono text-[#52525B] bg-[#F3EFE6] border border-[#E6E1D6] hover:border-[#D97706] hover:bg-[#FAF8F5] transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono text-soft bg-paper-2 border border-line hover:border-accent hover:bg-paper transition-colors cursor-pointer"
               title="Click to view Supabase Cloud Status & Connection Settings"
             >
               <span className={`w-1.5 h-1.5 rounded-full ${isSupabaseConfigured ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
@@ -141,7 +141,7 @@ export default function Navbar() {
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-2 p-1 pl-2.5 rounded-md border border-[#E6E1D6] bg-white hover:bg-[#F3EFE6] transition-colors text-xs font-medium text-[#18181B] cursor-pointer shadow-2xs"
+                  className="flex items-center gap-2 p-1 pl-2.5 rounded-md border border-line bg-white hover:bg-paper-2 transition-colors text-xs font-medium text-ink cursor-pointer shadow-2xs"
                 >
                   <span className="max-w-[120px] truncate">
                     {profile?.username || user.email?.split('@')[0]}
@@ -149,21 +149,21 @@ export default function Navbar() {
                   <img
                     src={profile?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'}
                     alt="Avatar"
-                    className="w-6 h-6 rounded-full object-cover border border-[#E6E1D6]"
+                    className="w-6 h-6 rounded-full object-cover border border-line"
                   />
                 </button>
 
                 {/* Dropdown Menu */}
                 {isUserMenuOpen && (
                   <div 
-                    className="absolute right-0 mt-2 w-56 rounded-lg bg-white p-1.5 shadow-md z-50 border border-[#E6E1D6] animate-in fade-in slide-in-from-top-1 duration-150"
+                    className="absolute right-0 mt-2 w-56 rounded-lg bg-white p-1.5 shadow-md z-50 border border-line animate-in fade-in slide-in-from-top-1 duration-150"
                     onMouseLeave={() => setIsUserMenuOpen(false)}
                   >
-                    <div className="px-3 py-2 border-b border-[#E6E1D6] mb-1">
-                      <p className="text-[11px] text-[#71717A]">Signed in as</p>
-                      <p className="text-xs font-semibold text-[#18181B] truncate">{user.email || profile?.username}</p>
+                    <div className="px-3 py-2 border-b border-line mb-1">
+                      <p className="text-[11px] text-pencil">Signed in as</p>
+                      <p className="text-xs font-semibold text-ink truncate">{user.email || profile?.username}</p>
                       {isAdmin && (
-                        <span className="mt-1 inline-flex items-center gap-1 text-[10px] bg-[#FEF3C7] text-[#92400E] px-1.5 py-0.5 rounded font-bold font-mono">
+                        <span className="mt-1 inline-flex items-center gap-1 text-[10px] bg-hl-soft text-accent-deep px-1.5 py-0.5 rounded font-bold font-mono">
                           ADMIN ACCESS
                         </span>
                       )}
@@ -172,18 +172,18 @@ export default function Navbar() {
                     <Link
                       to="/profile"
                       onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs text-[#18181B] hover:bg-[#F3EFE6] transition-colors"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs text-ink hover:bg-paper-2 transition-colors"
                     >
-                      <User className="w-3.5 h-3.5 text-[#71717A]" />
+                      <User className="w-3.5 h-3.5 text-pencil" />
                       <span>My Profile & Starred</span>
                     </Link>
 
                     <Link
                       to="/generator"
                       onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs text-[#18181B] hover:bg-[#F3EFE6] transition-colors"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs text-ink hover:bg-paper-2 transition-colors"
                     >
-                      <Wand2 className="w-3.5 h-3.5 text-[#71717A]" />
+                      <Wand2 className="w-3.5 h-3.5 text-pencil" />
                       <span>New Portfolio</span>
                     </Link>
 
@@ -191,14 +191,14 @@ export default function Navbar() {
                       <Link
                         to="/admin"
                         onClick={() => setIsUserMenuOpen(false)}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs text-[#18181B] hover:bg-[#F3EFE6] transition-colors"
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs text-ink hover:bg-paper-2 transition-colors"
                       >
-                        <ShieldCheck className="w-3.5 h-3.5 text-[#71717A]" />
+                        <ShieldCheck className="w-3.5 h-3.5 text-pencil" />
                         <span>Platform Admin</span>
                       </Link>
                     )}
 
-                    <div className="border-t border-[#E6E1D6] my-1"></div>
+                    <div className="border-t border-line my-1"></div>
 
                     <button
                       onClick={handleSignOut}
@@ -214,13 +214,13 @@ export default function Navbar() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleOpenAuth('login')}
-                  className="px-3 py-1.5 text-xs font-medium text-[#52525B] hover:text-[#18181B] transition-colors cursor-pointer"
+                  className="px-3 py-1.5 text-xs font-medium text-soft hover:text-ink transition-colors cursor-pointer"
                 >
                   Sign in
                 </button>
                 <button
                   onClick={() => handleOpenAuth('signup')}
-                  className="px-3.5 py-1.5 rounded-md text-xs font-medium bg-white hover:bg-[#F3EFE6] text-[#18181B] border border-[#E6E1D6] transition-colors cursor-pointer shadow-2xs"
+                  className="px-3.5 py-1.5 rounded-md text-xs font-medium bg-white hover:bg-paper-2 text-ink border border-line transition-colors cursor-pointer shadow-2xs"
                 >
                   Join
                 </button>
@@ -230,7 +230,7 @@ export default function Navbar() {
             {/* Direct Create Action button with Amber Accent */}
             <Link
               to="/generator"
-              className="px-3.5 py-1.5 rounded-md text-xs font-semibold bg-[#F59E0B] hover:bg-[#D97706] text-[#18181B] hover:text-white transition-all shadow-2xs flex items-center gap-1.5"
+              className="px-3.5 py-1.5 rounded-md text-xs font-semibold bg-hl hover:bg-accent text-ink hover:text-white transition-all shadow-2xs flex items-center gap-1.5"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Create portfolio</span>
@@ -239,17 +239,17 @@ export default function Navbar() {
           </div>
 
           {/* Mobile Menu & Search Button */}
-          <div className="flex items-center gap-2 md:hidden">
+          <div className="flex items-center gap-2 lg:hidden">
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="p-2 text-[#52525B] hover:text-[#18181B] rounded-md hover:bg-[#F3EFE6]"
+              className="p-2 text-soft hover:text-ink rounded-md hover:bg-paper-2"
               title="Search"
             >
               <Search className="w-4 h-4" />
             </button>
             <button
               onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
-              className="p-2 text-[#52525B] hover:text-[#18181B] rounded-md hover:bg-[#F3EFE6]"
+              className="p-2 text-soft hover:text-ink rounded-md hover:bg-paper-2"
             >
               {isMobileNavOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -259,7 +259,7 @@ export default function Navbar() {
 
         {/* Mobile Drawer */}
         {isMobileNavOpen && (
-          <div className="md:hidden border-b border-[#E6E1D6] bg-white p-4 space-y-3 shadow-md animate-in fade-in duration-150">
+          <div className="lg:hidden border-b border-line bg-white p-4 space-y-3 shadow-md animate-in fade-in duration-150">
             <div className="flex flex-col space-y-1">
               {navLinks.map((item) => {
                 const isActive = location.pathname === item.path;
@@ -270,32 +270,32 @@ export default function Navbar() {
                     onClick={() => setIsMobileNavOpen(false)}
                     className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${
                       isActive
-                        ? 'bg-[#F3EFE6] text-[#18181B] font-semibold'
-                        : 'text-[#52525B] hover:bg-[#FAF8F5] hover:text-[#18181B]'
+                        ? 'bg-paper-2 text-ink font-semibold'
+                        : 'text-soft hover:bg-paper hover:text-ink'
                     }`}
                   >
-                    <item.icon className={`w-4 h-4 ${isActive ? 'text-[#D97706]' : 'text-[#71717A]'}`} />
+                    <item.icon className={`w-4 h-4 ${isActive ? 'text-accent' : 'text-pencil'}`} />
                     <span>{item.name}</span>
                   </Link>
                 );
               })}
             </div>
 
-            <div className="pt-3 border-t border-[#E6E1D6] flex flex-col gap-2">
+            <div className="pt-3 border-t border-line flex flex-col gap-2">
               {user ? (
                 <>
                   <Link
                     to="/profile"
                     onClick={() => setIsMobileNavOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-[#18181B] hover:bg-[#FAF8F5]"
+                    className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-ink hover:bg-paper"
                   >
-                    <User className="w-4 h-4 text-[#71717A]" />
+                    <User className="w-4 h-4 text-pencil" />
                     <span>My Profile ({profile?.username || user.email})</span>
                   </Link>
                   <Link
                     to="/generator"
                     onClick={() => setIsMobileNavOpen(false)}
-                    className="flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-semibold bg-[#F59E0B] text-[#18181B]"
+                    className="flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-semibold bg-hl text-ink"
                   >
                     <Plus className="w-4 h-4" />
                     <span>Create portfolio</span>
@@ -312,13 +312,13 @@ export default function Navbar() {
                 <div className="grid grid-cols-2 gap-2 pt-1">
                   <button
                     onClick={() => handleOpenAuth('login')}
-                    className="py-2 text-center rounded-md text-xs font-medium border border-[#E6E1D6] text-[#18181B] hover:bg-[#FAF8F5]"
+                    className="py-2 text-center rounded-md text-xs font-medium border border-line text-ink hover:bg-paper"
                   >
                     Sign in
                   </button>
                   <button
                     onClick={() => handleOpenAuth('signup')}
-                    className="py-2 text-center rounded-md text-xs font-semibold bg-[#F59E0B] text-[#18181B] hover:bg-[#D97706]"
+                    className="py-2 text-center rounded-md text-xs font-semibold bg-hl text-ink hover:bg-accent"
                   >
                     Create portfolio
                   </button>
