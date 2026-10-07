@@ -92,21 +92,21 @@ export default function StandalonePreviewPage() {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-[#FAF8F5] flex flex-col items-center justify-center z-50">
-        <div className="w-10 h-10 border-3 border-[#18181B] border-t-[#F59E0B] rounded-full animate-spin mb-4" />
-        <p className="text-xs font-mono text-[#52525B]">Booting live portfolio preview stage...</p>
+      <div className="fixed inset-0 bg-paper flex flex-col items-center justify-center z-50">
+        <div className="w-10 h-10 border-3 border-ink border-t-hl rounded-full animate-spin mb-4" />
+        <p className="text-xs font-mono text-soft">Booting live portfolio preview stage...</p>
       </div>
     );
   }
 
   if (!template) {
     return (
-      <div className="fixed inset-0 bg-[#FAF8F5] flex flex-col items-center justify-center p-6 text-center z-50">
-        <h2 className="text-xl font-bold text-[#18181B] mb-2">Portfolio Template Not Found</h2>
-        <p className="text-sm text-[#71717A] mb-6 max-w-md">The requested portfolio site could not be found or has been moved.</p>
+      <div className="fixed inset-0 bg-paper flex flex-col items-center justify-center p-6 text-center z-50">
+        <h2 className="text-xl font-bold text-ink mb-2">Portfolio Template Not Found</h2>
+        <p className="text-sm text-pencil mb-6 max-w-md">The requested portfolio site could not be found or has been moved.</p>
         <Link 
           to="/explore"
-          className="px-4 py-2 bg-[#18181B] text-white rounded-lg text-xs font-semibold hover:bg-[#27272A] transition-colors"
+          className="px-4 py-2 bg-ink text-white rounded-lg text-xs font-semibold hover:bg-ink-2 transition-colors"
         >
           Return to Catalog
         </Link>
@@ -115,10 +115,10 @@ export default function StandalonePreviewPage() {
   }
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-[#18181B] overflow-hidden select-none">
+    <div className="fixed inset-0 flex flex-col bg-ink overflow-hidden select-none">
       
       {/* 1. TOP FLOATING CONTROL BAR */}
-      <div className={`transition-all duration-300 ease-in-out border-b border-[#27272A] bg-[#18181B]/95 backdrop-blur-md text-white px-4 py-2.5 z-50 flex items-center justify-between shrink-0 shadow-md ${
+      <div className={`transition-all duration-300 ease-in-out border-b border-ink-2 bg-ink/95 backdrop-blur-md text-white px-4 py-2.5 z-50 flex items-center justify-between shrink-0 shadow-md ${
         isBarCollapsed ? '-mt-14 opacity-0 pointer-events-none' : 'mt-0 opacity-100'
       }`}>
         
@@ -126,7 +126,7 @@ export default function StandalonePreviewPage() {
         <div className="flex items-center gap-3 min-w-0">
           <Link
             to={`/template/${template.id}`}
-            className="p-1.5 rounded-lg bg-[#27272A] hover:bg-[#3F3F46] text-[#A1A1AA] hover:text-white transition-colors"
+            className="p-1.5 rounded-lg bg-ink-2 hover:bg-ink-2 text-mist hover:text-white transition-colors"
             title="Back to Template Details"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -137,22 +137,22 @@ export default function StandalonePreviewPage() {
               <h1 className="text-xs font-bold text-white truncate max-w-[200px] sm:max-w-xs md:max-w-md">
                 {template.title}
               </h1>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-[#27272A] text-[#F59E0B] border border-[#3F3F46] shrink-0">
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-ink-2 text-hl border border-ink-2 shrink-0">
                 {template.category}
               </span>
             </div>
-            <p className="text-[10px] text-[#A1A1AA] truncate">
+            <p className="text-[10px] text-mist truncate">
               By {template.creator_name || 'Community Member'} · Live Preview
             </p>
           </div>
         </div>
 
         {/* Center: Viewport Controls (Desktop, Tablet, Mobile) */}
-        <div className="hidden md:flex items-center bg-[#27272A] p-0.5 rounded-lg border border-[#3F3F46]">
+        <div className="hidden md:flex items-center bg-ink-2 p-0.5 rounded-lg border border-ink-2">
           <button
             onClick={() => setViewport('desktop')}
             className={`p-1.5 rounded text-xs transition-colors cursor-pointer ${
-              viewport === 'desktop' ? 'bg-[#3F3F46] text-white font-semibold' : 'text-[#A1A1AA] hover:text-white'
+              viewport === 'desktop' ? 'bg-ink-2 text-white font-semibold' : 'text-mist hover:text-white'
             }`}
             title="Desktop Canvas"
           >
@@ -161,7 +161,7 @@ export default function StandalonePreviewPage() {
           <button
             onClick={() => setViewport('tablet')}
             className={`p-1.5 rounded text-xs transition-colors cursor-pointer ${
-              viewport === 'tablet' ? 'bg-[#3F3F46] text-white font-semibold' : 'text-[#A1A1AA] hover:text-white'
+              viewport === 'tablet' ? 'bg-ink-2 text-white font-semibold' : 'text-mist hover:text-white'
             }`}
             title="Tablet Canvas (768px)"
           >
@@ -170,7 +170,7 @@ export default function StandalonePreviewPage() {
           <button
             onClick={() => setViewport('mobile')}
             className={`p-1.5 rounded text-xs transition-colors cursor-pointer ${
-              viewport === 'mobile' ? 'bg-[#3F3F46] text-white font-semibold' : 'text-[#A1A1AA] hover:text-white'
+              viewport === 'mobile' ? 'bg-ink-2 text-white font-semibold' : 'text-mist hover:text-white'
             }`}
             title="Mobile Canvas (375px)"
           >
@@ -182,7 +182,7 @@ export default function StandalonePreviewPage() {
         <div className="flex items-center gap-2 shrink-0">
           <Link
             to={`/editor?templateId=${template.id}`}
-            className="px-3 py-1.5 rounded-lg bg-[#F59E0B] hover:bg-[#D97706] text-[#18181B] hover:text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
+            className="px-3 py-1.5 rounded-lg bg-hl hover:bg-accent text-ink hover:text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
           >
             <Code2 className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Open in Dev Studio</span>
@@ -192,16 +192,16 @@ export default function StandalonePreviewPage() {
           <button
             onClick={handleDownload}
             disabled={isExporting}
-            className="px-3 py-1.5 rounded-lg bg-[#27272A] hover:bg-[#3F3F46] text-white text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50 border border-[#3F3F46]"
+            className="px-3 py-1.5 rounded-lg bg-ink-2 hover:bg-ink-2 text-white text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50 border border-ink-2"
             title="Download ZIP"
           >
-            <Download className="w-3.5 h-3.5 text-[#F59E0B]" />
+            <Download className="w-3.5 h-3.5 text-hl" />
             <span className="hidden sm:inline">{isExporting ? 'Packaging...' : 'Download ZIP'}</span>
           </button>
 
           <button
             onClick={() => setIsBarCollapsed(true)}
-            className="p-1.5 rounded-lg text-[#A1A1AA] hover:text-white hover:bg-[#27272A] transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-mist hover:text-white hover:bg-ink-2 transition-colors cursor-pointer"
             title="Collapse toolbar"
           >
             <ChevronUp className="w-4 h-4" />
@@ -213,7 +213,7 @@ export default function StandalonePreviewPage() {
       {isBarCollapsed && (
         <button
           onClick={() => setIsBarCollapsed(false)}
-          className="fixed top-3 right-3 z-50 p-2 rounded-full bg-[#18181B]/80 hover:bg-[#18181B] text-white border border-[#3F3F46] shadow-lg backdrop-blur-sm transition-all hover:scale-105 cursor-pointer flex items-center gap-1 text-xs font-mono"
+          className="fixed top-3 right-3 z-50 p-2 rounded-full bg-ink/80 hover:bg-ink text-white border border-ink-2 shadow-lg backdrop-blur-sm transition-all hover:scale-105 cursor-pointer flex items-center gap-1 text-xs font-mono"
           title="Show preview controls"
         >
           <ChevronDown className="w-3.5 h-3.5" />
@@ -222,7 +222,7 @@ export default function StandalonePreviewPage() {
       )}
 
       {/* 2. FULL CANVAS IFRAME STAGE */}
-      <div className="flex-1 w-full h-full flex justify-center items-center overflow-hidden bg-[#09090B]">
+      <div className="flex-1 w-full h-full flex justify-center items-center overflow-hidden bg-ink">
         <div
           className={`h-full bg-white transition-all duration-300 shadow-2xl overflow-hidden ${
             viewport === 'mobile' ? 'w-[375px] my-auto rounded-md' :
