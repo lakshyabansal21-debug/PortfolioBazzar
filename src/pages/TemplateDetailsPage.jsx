@@ -298,8 +298,8 @@ export default function TemplateDetailsPage() {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-[#18181B] border-t-[#F59E0B] rounded-full animate-spin" />
-          <p className="text-xs font-mono text-[#71717A]">Loading template architecture...</p>
+          <div className="w-8 h-8 border-2 border-ink border-t-hl rounded-full animate-spin" />
+          <p className="text-xs font-mono text-pencil">Loading template architecture...</p>
         </div>
       </div>
     );
@@ -318,16 +318,16 @@ export default function TemplateDetailsPage() {
       <div className="flex items-center justify-between">
         <Link
           to="/explore"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#52525B] hover:text-[#18181B] transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-soft hover:text-ink transition-colors"
         >
-          <ArrowLeft className="w-3.5 h-3.5 text-[#71717A]" />
+          <ArrowLeft className="w-3.5 h-3.5 text-pencil" />
           <span>Back to Catalog</span>
         </Link>
 
         <div className="flex items-center gap-2">
           <button
             onClick={handleShare}
-            className="p-2 rounded-md bg-white border border-[#E6E1D6] text-[#71717A] hover:text-[#18181B] hover:bg-[#F3EFE6] transition-colors cursor-pointer shadow-2xs"
+            className="p-2 rounded-md bg-white border border-line text-pencil hover:text-ink hover:bg-paper-2 transition-colors cursor-pointer shadow-2xs"
             title="Share Template"
           >
             <Share2 className="w-3.5 h-3.5" />
@@ -335,16 +335,16 @@ export default function TemplateDetailsPage() {
           <button
             onClick={handleFavorite}
             className={`p-2 rounded-md border transition-colors cursor-pointer shadow-2xs ${
-              isFav ? 'bg-[#FEF3C7] text-[#D97706] border-[#F59E0B]' : 'bg-white text-[#71717A] hover:text-[#18181B] border-[#E6E1D6] hover:bg-[#F3EFE6]'
+              isFav ? 'bg-hl-soft text-accent border-hl' : 'bg-white text-pencil hover:text-ink border-line hover:bg-paper-2'
             }`}
             title="Favorite"
           >
-            <Star className={`w-3.5 h-3.5 ${isFav ? 'fill-[#F59E0B]' : ''}`} />
+            <Star className={`w-3.5 h-3.5 ${isFav ? 'fill-hl' : ''}`} />
           </button>
           <button
             onClick={handleLike}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border text-xs font-mono transition-colors cursor-pointer shadow-2xs ${
-              isLiked ? 'bg-rose-50 border-rose-200 text-rose-600' : 'bg-white border-[#E6E1D6] text-[#71717A] hover:text-[#18181B] hover:bg-[#F3EFE6]'
+              isLiked ? 'bg-rose-50 border-rose-200 text-rose-600' : 'bg-white border-line text-pencil hover:text-ink hover:bg-paper-2'
             }`}
           >
             <Heart className={`w-3.5 h-3.5 ${isLiked ? 'fill-rose-500' : ''}`} />
@@ -354,43 +354,43 @@ export default function TemplateDetailsPage() {
       </div>
 
       {/* 2. TEMPLATE HEADER INFORMATION & PRIMARY CTAs */}
-      <div className="bg-white border border-[#E6E1D6] rounded-xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 shadow-2xs">
+      <div className="bg-white border border-line rounded-xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 shadow-2xs">
         <div className="space-y-3 max-w-2xl">
           <div className="flex flex-wrap items-center gap-2">
             <span className={`px-2.5 py-0.5 rounded text-[10px] font-mono font-semibold border ${badgeClass}`}>
               {template.category}
             </span>
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono text-[#52525B] bg-[#F3EFE6] border border-[#E6E1D6]">
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono text-soft bg-paper-2 border border-line">
               {template.difficulty || 'Intermediate'}
             </span>
             {template.is_featured && (
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#F59E0B] text-[#18181B] shadow-2xs">
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-hl text-ink shadow-2xs">
                 FEATURED ENGINE
               </span>
             )}
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#18181B]">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink">
             {template.title}
           </h1>
 
-          <p className="text-xs sm:text-sm text-[#52525B] leading-relaxed">
+          <p className="text-xs sm:text-sm text-soft leading-relaxed">
             {template.description}
           </p>
 
-          <div className="flex flex-wrap items-center gap-4 text-xs text-[#71717A] pt-2 border-t border-[#E6E1D6]">
+          <div className="flex flex-wrap items-center gap-4 text-xs text-pencil pt-2 border-t border-line">
             <div className="flex items-center gap-2">
               <img
                 src={template.creator_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'}
                 alt=""
-                className="w-5 h-5 rounded-full object-cover border border-[#E6E1D6]"
+                className="w-5 h-5 rounded-full object-cover border border-line"
               />
-              <span className="text-[#18181B] font-semibold">{template.creator_name || 'Community Member'}</span>
+              <span className="text-ink font-semibold">{template.creator_name || 'Community Member'}</span>
             </div>
-            <span className="text-[#E6E1D6]">·</span>
-            <span className="font-mono text-[11px] text-[#52525B]">{techStack}</span>
-            <span className="text-[#E6E1D6]">·</span>
-            <span className="font-mono text-[11px] text-[#52525B]">{(template.downloads_count || 0).toLocaleString()} downloads</span>
+            <span className="text-line">·</span>
+            <span className="font-mono text-[11px] text-soft">{techStack}</span>
+            <span className="text-line">·</span>
+            <span className="font-mono text-[11px] text-soft">{(template.downloads_count || 0).toLocaleString()} downloads</span>
           </div>
         </div>
 
@@ -400,23 +400,23 @@ export default function TemplateDetailsPage() {
             href={`/site/${template.id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full text-center px-4 py-2.5 rounded-lg bg-[#18181B] hover:bg-[#27272A] text-white text-xs font-bold transition-all shadow-2xs flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full text-center px-4 py-2.5 rounded-lg bg-ink hover:bg-ink-2 text-white text-xs font-bold transition-all shadow-2xs flex items-center justify-center gap-2 cursor-pointer"
           >
-            <ExternalLink className="w-3.5 h-3.5 text-[#F59E0B]" />
+            <ExternalLink className="w-3.5 h-3.5 text-hl" />
             <span>Open Live Portfolio Site</span>
           </a>
 
           <button
             onClick={handleOpenEditModal}
-            className="w-full text-center px-4 py-2.5 rounded-lg bg-[#FAF8F5] hover:bg-[#F3EFE6] text-[#18181B] text-xs font-bold transition-all shadow-2xs border border-[#E6E1D6] flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full text-center px-4 py-2.5 rounded-lg bg-paper hover:bg-paper-2 text-ink text-xs font-bold transition-all shadow-2xs border border-line flex items-center justify-center gap-2 cursor-pointer"
           >
-            <Edit3 className="w-3.5 h-3.5 text-[#D97706]" />
+            <Edit3 className="w-3.5 h-3.5 text-accent" />
             <span>Edit Details & Name</span>
           </button>
 
           <Link
             to={`/editor?templateId=${template.id}`}
-            className="w-full text-center px-4 py-2.5 rounded-lg bg-[#F59E0B] hover:bg-[#D97706] text-[#18181B] hover:text-white text-xs font-bold transition-all shadow-2xs flex items-center justify-center gap-2"
+            className="w-full text-center px-4 py-2.5 rounded-lg bg-hl hover:bg-accent text-ink hover:text-white text-xs font-bold transition-all shadow-2xs flex items-center justify-center gap-2"
           >
             <Code2 className="w-3.5 h-3.5" />
             <span>Open in Dev Studio</span>
@@ -425,58 +425,58 @@ export default function TemplateDetailsPage() {
           <button
             onClick={handleDownloadZip}
             disabled={isExporting}
-            className="w-full text-center px-4 py-2 rounded-lg bg-white hover:bg-[#F3EFE6] text-[#18181B] text-xs font-semibold border border-[#E6E1D6] hover:border-[#D1CBC0] transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-2xs"
+            className="w-full text-center px-4 py-2 rounded-lg bg-white hover:bg-paper-2 text-ink text-xs font-semibold border border-line hover:border-line-2 transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-2xs"
           >
-            <Download className="w-3.5 h-3.5 text-[#D97706]" />
+            <Download className="w-3.5 h-3.5 text-accent" />
             <span>{isExporting ? 'Packaging ZIP...' : 'Download ZIP export'}</span>
           </button>
         </div>
       </div>
 
       {/* 3. MAIN INTERACTIVE BROWSER PREVIEW STAGE */}
-      <div className={`bg-white border border-[#E6E1D6] rounded-xl overflow-hidden shadow-2xs ${isFullscreen ? 'fixed inset-0 z-50 rounded-none border-0' : ''}`}>
+      <div className={`bg-white border border-line rounded-xl overflow-hidden shadow-2xs ${isFullscreen ? 'fixed inset-0 z-50 rounded-none border-0' : ''}`}>
         
         {/* Browser Header Bar */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#E6E1D6] bg-[#FAF8F5]">
+        <div className="flex items-center justify-between gap-2 px-3 sm:px-4 py-2.5 border-b border-line bg-paper">
           {/* Window dots & Fullsite link */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#E6E1D6] border border-[#D1CBC0]" />
-              <span className="w-2.5 h-2.5 rounded-full bg-[#E6E1D6] border border-[#D1CBC0]" />
-              <span className="w-2.5 h-2.5 rounded-full bg-[#E6E1D6] border border-[#D1CBC0]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-line border border-line-2" />
+              <span className="w-2.5 h-2.5 rounded-full bg-line border border-line-2" />
+              <span className="w-2.5 h-2.5 rounded-full bg-line border border-line-2" />
             </div>
             <a 
               href={`/site/${template.id}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[11px] font-mono text-[#71717A] hover:text-[#D97706] flex items-center gap-1 transition-colors"
+              className="text-[11px] font-mono text-pencil hover:text-accent flex items-center gap-1 transition-colors min-w-0"
               title="Open standalone live website"
             >
-              <span>portfoliohub.dev/site/{template.id?.substring(0, 8) || 'preview'}</span>
+              <span className="truncate hidden sm:inline">portfoliohub.dev/site/{template.id?.substring(0, 8) || 'preview'}</span>
               <ExternalLink className="w-2.5 h-2.5" />
             </a>
           </div>
 
           {/* Viewport & Fullscreen Controls */}
           <div className="flex items-center gap-2">
-            <div className="flex items-center bg-[#F3EFE6] p-0.5 rounded-md border border-[#E6E1D6]">
+            <div className="flex items-center bg-paper-2 p-0.5 rounded-md border border-line">
               <button
                 onClick={() => setViewport('desktop')}
-                className={`p-1.5 rounded cursor-pointer transition-colors ${viewport === 'desktop' ? 'bg-white text-[#18181B] shadow-2xs font-semibold' : 'text-[#71717A] hover:text-[#18181B]'}`}
+                className={`p-1.5 rounded cursor-pointer transition-colors ${viewport === 'desktop' ? 'bg-white text-ink shadow-2xs font-semibold' : 'text-pencil hover:text-ink'}`}
                 title="Desktop Canvas"
               >
                 <Monitor className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => setViewport('tablet')}
-                className={`p-1.5 rounded cursor-pointer transition-colors ${viewport === 'tablet' ? 'bg-white text-[#18181B] shadow-2xs font-semibold' : 'text-[#71717A] hover:text-[#18181B]'}`}
+                className={`p-1.5 rounded cursor-pointer transition-colors ${viewport === 'tablet' ? 'bg-white text-ink shadow-2xs font-semibold' : 'text-pencil hover:text-ink'}`}
                 title="Tablet Canvas (768px)"
               >
                 <Tablet className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => setViewport('mobile')}
-                className={`p-1.5 rounded cursor-pointer transition-colors ${viewport === 'mobile' ? 'bg-white text-[#18181B] shadow-2xs font-semibold' : 'text-[#71717A] hover:text-[#18181B]'}`}
+                className={`p-1.5 rounded cursor-pointer transition-colors ${viewport === 'mobile' ? 'bg-white text-ink shadow-2xs font-semibold' : 'text-pencil hover:text-ink'}`}
                 title="Mobile Canvas (375px)"
               >
                 <Smartphone className="w-3.5 h-3.5" />
@@ -487,7 +487,7 @@ export default function TemplateDetailsPage() {
               href={`/site/${template.id}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-1.5 rounded-md text-[#71717A] hover:text-[#18181B] hover:bg-[#F3EFE6] border border-[#E6E1D6] transition-colors cursor-pointer"
+              className="p-1.5 rounded-md text-pencil hover:text-ink hover:bg-paper-2 border border-line transition-colors cursor-pointer"
               title="Open full-screen portfolio site in new tab"
             >
               <ExternalLink className="w-3.5 h-3.5" />
@@ -495,7 +495,7 @@ export default function TemplateDetailsPage() {
 
             <button
               onClick={() => setIsFullscreen(!isFullscreen)}
-              className="p-1.5 rounded-md text-[#71717A] hover:text-[#18181B] hover:bg-[#F3EFE6] border border-[#E6E1D6] transition-colors cursor-pointer"
+              className="p-1.5 rounded-md text-pencil hover:text-ink hover:bg-paper-2 border border-line transition-colors cursor-pointer"
               title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen Stage'}
             >
               {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
@@ -504,9 +504,9 @@ export default function TemplateDetailsPage() {
         </div>
 
         {/* Live Preview Canvas Stage */}
-        <div className={`bg-[#F3EFE6] p-4 flex justify-center items-center overflow-hidden ${isFullscreen ? 'h-[calc(100vh-42px)]' : 'min-h-[520px]'}`}>
+        <div className={`bg-paper-2 p-4 flex justify-center items-center overflow-hidden ${isFullscreen ? 'h-[calc(100vh-42px)]' : 'min-h-[520px]'}`}>
           <div
-            className={`bg-white rounded-lg border border-[#E6E1D6] shadow-sm overflow-hidden transition-all duration-200 ${
+            className={`bg-white rounded-lg border border-line shadow-sm overflow-hidden transition-all duration-200 ${
               isFullscreen ? 'h-full' : 'h-[620px]'
             } ${
               viewport === 'mobile' ? 'w-[375px]' :
@@ -526,16 +526,16 @@ export default function TemplateDetailsPage() {
       </div>
 
       {/* 4. DETAILS & CODE TABS SECTION */}
-      <div className="bg-white border border-[#E6E1D6] rounded-xl overflow-hidden shadow-2xs">
+      <div className="bg-white border border-line rounded-xl overflow-hidden shadow-2xs">
         
         {/* Tab Controls */}
-        <div className="flex items-center gap-1 px-5 pt-3 border-b border-[#E6E1D6] bg-[#FAF8F5]">
+        <div className="flex items-center gap-1 px-5 pt-3 border-b border-line bg-paper">
           <button
             onClick={() => setActiveTab('overview')}
             className={`px-3 py-2 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${
               activeTab === 'overview'
-                ? 'border-[#D97706] text-[#18181B]'
-                : 'border-transparent text-[#71717A] hover:text-[#18181B]'
+                ? 'border-accent text-ink'
+                : 'border-transparent text-pencil hover:text-ink'
             }`}
           >
             Architecture Overview
@@ -544,8 +544,8 @@ export default function TemplateDetailsPage() {
             onClick={() => setActiveTab('html')}
             className={`px-3 py-2 text-xs font-mono font-medium border-b-2 transition-colors cursor-pointer ${
               activeTab === 'html'
-                ? 'border-[#D97706] text-[#18181B]'
-                : 'border-transparent text-[#71717A] hover:text-[#18181B]'
+                ? 'border-accent text-ink'
+                : 'border-transparent text-pencil hover:text-ink'
             }`}
           >
             index.html
@@ -554,8 +554,8 @@ export default function TemplateDetailsPage() {
             onClick={() => setActiveTab('css')}
             className={`px-3 py-2 text-xs font-mono font-medium border-b-2 transition-colors cursor-pointer ${
               activeTab === 'css'
-                ? 'border-[#D97706] text-[#18181B]'
-                : 'border-transparent text-[#71717A] hover:text-[#18181B]'
+                ? 'border-accent text-ink'
+                : 'border-transparent text-pencil hover:text-ink'
             }`}
           >
             style.css
@@ -564,8 +564,8 @@ export default function TemplateDetailsPage() {
             onClick={() => setActiveTab('js')}
             className={`px-3 py-2 text-xs font-mono font-medium border-b-2 transition-colors cursor-pointer ${
               activeTab === 'js'
-                ? 'border-[#D97706] text-[#18181B]'
-                : 'border-transparent text-[#71717A] hover:text-[#18181B]'
+                ? 'border-accent text-ink'
+                : 'border-transparent text-pencil hover:text-ink'
             }`}
           >
             script.js
@@ -574,8 +574,8 @@ export default function TemplateDetailsPage() {
             onClick={() => setActiveTab('reviews')}
             className={`px-3 py-2 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${
               activeTab === 'reviews'
-                ? 'border-[#D97706] text-[#18181B]'
-                : 'border-transparent text-[#71717A] hover:text-[#18181B]'
+                ? 'border-accent text-ink'
+                : 'border-transparent text-pencil hover:text-ink'
             }`}
           >
             Community Reviews ({comments.length})
@@ -589,30 +589,30 @@ export default function TemplateDetailsPage() {
           {activeTab === 'overview' && (
             <div className="space-y-6 max-w-3xl">
               <div>
-                <h3 className="text-sm font-bold text-[#18181B] mb-3">Engine Specifications</h3>
+                <h3 className="text-sm font-bold text-ink mb-3">Engine Specifications</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="p-3.5 rounded-lg bg-[#FAF8F5] border border-[#E6E1D6]">
-                    <div className="text-[10px] font-mono text-[#71717A]">STYLE CATEGORY</div>
-                    <div className="text-xs font-bold text-[#18181B] mt-0.5">{template.category}</div>
+                  <div className="p-3.5 rounded-lg bg-paper border border-line">
+                    <div className="text-[10px] font-mono text-pencil">STYLE CATEGORY</div>
+                    <div className="text-xs font-bold text-ink mt-0.5">{template.category}</div>
                   </div>
-                  <div className="p-3.5 rounded-lg bg-[#FAF8F5] border border-[#E6E1D6]">
-                    <div className="text-[10px] font-mono text-[#71717A]">DIFFICULTY</div>
-                    <div className="text-xs font-bold text-[#18181B] mt-0.5">{template.difficulty || 'Intermediate'}</div>
+                  <div className="p-3.5 rounded-lg bg-paper border border-line">
+                    <div className="text-[10px] font-mono text-pencil">DIFFICULTY</div>
+                    <div className="text-xs font-bold text-ink mt-0.5">{template.difficulty || 'Intermediate'}</div>
                   </div>
-                  <div className="p-3.5 rounded-lg bg-[#FAF8F5] border border-[#E6E1D6]">
-                    <div className="text-[10px] font-mono text-[#71717A]">RUNTIME OVERHEAD</div>
+                  <div className="p-3.5 rounded-lg bg-paper border border-line">
+                    <div className="text-[10px] font-mono text-pencil">RUNTIME OVERHEAD</div>
                     <div className="text-xs font-bold text-emerald-700 mt-0.5">0 KB (Static)</div>
                   </div>
-                  <div className="p-3.5 rounded-lg bg-[#FAF8F5] border border-[#E6E1D6]">
-                    <div className="text-[10px] font-mono text-[#71717A]">DEPLOYMENT</div>
-                    <div className="text-xs font-bold text-[#18181B] mt-0.5">GitHub / Vercel / Pages</div>
+                  <div className="p-3.5 rounded-lg bg-paper border border-line">
+                    <div className="text-[10px] font-mono text-pencil">DEPLOYMENT</div>
+                    <div className="text-xs font-bold text-ink mt-0.5">GitHub / Vercel / Pages</div>
                   </div>
                 </div>
               </div>
 
               <div>
-                <h3 className="text-sm font-bold text-[#18181B] mb-2">Architectural Highlights</h3>
-                <p className="text-xs text-[#52525B] leading-relaxed">
+                <h3 className="text-sm font-bold text-ink mb-2">Architectural Highlights</h3>
+                <p className="text-xs text-soft leading-relaxed">
                   {template.description} This template is designed with semantic HTML elements, high-performance CSS Grid layouts, and vanilla JS interactions. It requires zero compilation steps and can be hosted completely free on GitHub Pages, Cloudflare Pages, Vercel, or Netlify.
                 </p>
               </div>
@@ -620,13 +620,13 @@ export default function TemplateDetailsPage() {
               <div className="pt-2 flex flex-wrap items-center gap-3">
                 <Link
                   to={`/generator?template=${template.category || 'Minimal'}`}
-                  className="px-4 py-2 rounded-lg bg-[#F59E0B] hover:bg-[#D97706] text-[#18181B] hover:text-white text-xs font-bold transition-all"
+                  className="px-4 py-2 rounded-lg bg-hl hover:bg-accent text-ink hover:text-white text-xs font-bold transition-all"
                 >
                   Generate with this style
                 </Link>
                 <Link
                   to={`/editor?template=${template.category || 'Minimal'}`}
-                  className="px-4 py-2 rounded-lg bg-white border border-[#E6E1D6] hover:bg-[#F3EFE6] text-[#18181B] text-xs font-semibold transition-colors"
+                  className="px-4 py-2 rounded-lg bg-white border border-line hover:bg-paper-2 text-ink text-xs font-semibold transition-colors"
                 >
                   Open in raw split editor
                 </Link>
@@ -638,19 +638,19 @@ export default function TemplateDetailsPage() {
           {(activeTab === 'html' || activeTab === 'css' || activeTab === 'js') && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono font-medium text-[#52525B]">
+                <span className="text-xs font-mono font-medium text-soft">
                   {activeTab === 'html' ? 'index.html (Semantic Structure)' : activeTab === 'css' ? 'style.css (Styling & Layout)' : 'script.js (Interactive Logic)'}
                 </span>
                 <button
                   onClick={() => handleCopyCode(generatedCode[activeTab])}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-white hover:bg-[#F3EFE6] text-[#18181B] border border-[#E6E1D6] transition-colors cursor-pointer shadow-2xs"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-white hover:bg-paper-2 text-ink border border-line transition-colors cursor-pointer shadow-2xs"
                 >
-                  {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-[#71717A]" />}
+                  {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-pencil" />}
                   <span>{copiedCode ? 'Copied' : 'Copy code'}</span>
                 </button>
               </div>
 
-              <div className="rounded-lg bg-[#18181B] text-zinc-200 p-4 font-mono text-xs overflow-auto max-h-[500px] border border-zinc-800">
+              <div className="rounded-lg bg-ink text-zinc-200 p-4 font-mono text-xs overflow-auto max-h-[500px] border border-zinc-800">
                 <pre className="whitespace-pre-wrap leading-relaxed">{generatedCode[activeTab]}</pre>
               </div>
             </div>
@@ -660,18 +660,18 @@ export default function TemplateDetailsPage() {
           {activeTab === 'reviews' && (
             <div className="space-y-6 max-w-3xl">
               {/* Submission Form */}
-              <form onSubmit={handleAddComment} className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E6E1D6] space-y-3 shadow-2xs">
+              <form onSubmit={handleAddComment} className="p-4 rounded-xl bg-paper border border-line space-y-3 shadow-2xs">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-[#18181B]">Your Rating:</span>
+                  <span className="text-xs font-semibold text-ink">Your Rating:</span>
                   <div className="flex items-center gap-1">
                     {[1, 2, 3, 4, 5].map((s) => (
                       <button
                         type="button"
                         key={s}
                         onClick={() => setNewRating(s)}
-                        className="p-1 cursor-pointer text-[#71717A] hover:text-[#D97706] transition-colors"
+                        className="p-1 cursor-pointer text-pencil hover:text-accent transition-colors"
                       >
-                        <Star className={`w-4 h-4 ${s <= newRating ? 'fill-[#F59E0B] text-[#D97706]' : 'text-[#D1CBC0]'}`} />
+                        <Star className={`w-4 h-4 ${s <= newRating ? 'fill-hl text-accent' : 'text-line-2'}`} />
                       </button>
                     ))}
                   </div>
@@ -682,14 +682,14 @@ export default function TemplateDetailsPage() {
                   placeholder="Leave developer feedback or tips for this template..."
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  className="w-full p-3 rounded-lg bg-white border border-[#E6E1D6] text-xs text-[#18181B] placeholder-[#71717A] focus:outline-none focus:border-[#D97706] focus:ring-2 focus:ring-[#F59E0B]/20"
+                  className="w-full p-3 rounded-lg bg-white border border-line text-xs text-ink placeholder-pencil focus:outline-none focus:border-accent focus:ring-2 focus:ring-hl/20"
                 />
 
                 <div className="flex justify-end">
                   <button
                     type="submit"
                     disabled={submittingComment || !newComment.trim()}
-                    className="px-4 py-2 rounded-lg bg-[#18181B] hover:bg-[#27272A] text-white text-xs font-semibold transition-colors cursor-pointer disabled:opacity-40"
+                    className="px-4 py-2 rounded-lg bg-ink hover:bg-ink-2 text-white text-xs font-semibold transition-colors cursor-pointer disabled:opacity-40"
                   >
                     {submittingComment ? 'Posting...' : 'Post review'}
                   </button>
@@ -699,28 +699,28 @@ export default function TemplateDetailsPage() {
               {/* Reviews List */}
               <div className="space-y-3">
                 {comments.length === 0 ? (
-                  <p className="text-xs text-[#71717A] py-6 text-center">
+                  <p className="text-xs text-pencil py-6 text-center">
                     No community reviews yet. Be the first developer to review!
                   </p>
                 ) : (
                   comments.map((comm) => (
-                    <div key={comm.id} className="p-4 rounded-xl bg-white border border-[#E6E1D6] space-y-2 shadow-2xs">
+                    <div key={comm.id} className="p-4 rounded-xl bg-white border border-line space-y-2 shadow-2xs">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <img
                             src={comm.user_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'}
                             alt=""
-                            className="w-6 h-6 rounded-full object-cover border border-[#E6E1D6]"
+                            className="w-6 h-6 rounded-full object-cover border border-line"
                           />
-                          <span className="text-xs font-bold text-[#18181B]">{comm.user_name}</span>
+                          <span className="text-xs font-bold text-ink">{comm.user_name}</span>
                         </div>
                         <div className="flex items-center gap-0.5">
                           {[...Array(comm.rating || 5)].map((_, i) => (
-                            <Star key={i} className="w-3.5 h-3.5 fill-[#F59E0B] text-[#D97706]" />
+                            <Star key={i} className="w-3.5 h-3.5 fill-hl text-accent" />
                           ))}
                         </div>
                       </div>
-                      <p className="text-xs text-[#52525B] leading-relaxed pl-8">
+                      <p className="text-xs text-soft leading-relaxed pl-8">
                         {comm.content}
                       </p>
                     </div>
@@ -735,17 +735,14 @@ export default function TemplateDetailsPage() {
 
       {/* 5. RELATED TEMPLATES */}
       {relatedTemplates.length > 0 && (
-        <div className="border-t border-[#E6E1D6] pt-10 space-y-4">
+        <div className="border-t border-line pt-10 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-xs font-mono font-semibold uppercase tracking-wider text-[#D97706] mb-1">
-                MORE IN THIS CATEGORY
-              </div>
-              <h3 className="text-base font-bold text-[#18181B]">
+              <h3 className="text-base font-bold text-ink">
                 Other {template.category} Portfolios
               </h3>
             </div>
-            <Link to={`/explore?category=${template.category}`} className="text-xs font-semibold text-[#18181B] hover:text-[#D97706] transition-colors">
+            <Link to={`/explore?category=${template.category}`} className="text-xs font-semibold text-ink hover:text-accent transition-colors">
               View all
             </Link>
           </div>
@@ -760,35 +757,35 @@ export default function TemplateDetailsPage() {
       {/* 6. EDIT DETAILS & NAME MODAL */}
       {isEditModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl border border-[#E6E1D6] shadow-xl max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white rounded-2xl border border-line shadow-xl max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             {/* Modal Header */}
-            <div className="p-4 sm:p-5 border-b border-[#E6E1D6] flex items-center justify-between bg-[#FAF8F5]">
+            <div className="p-4 sm:p-5 border-b border-line flex items-center justify-between bg-paper">
               <div>
-                <h3 className="text-sm font-bold text-[#18181B] flex items-center gap-2">
-                  <UserCheck className="w-4 h-4 text-[#F59E0B]" />
+                <h3 className="text-sm font-bold text-ink flex items-center gap-2">
+                  <UserCheck className="w-4 h-4 text-hl" />
                   <span>Customize Template & Personal Info</span>
                 </h3>
-                <p className="text-[11px] text-[#52525B]">
+                <p className="text-[11px] text-soft">
                   Update your name, headline, bio, or rename this template in the catalog.
                 </p>
               </div>
               <button
                 onClick={() => setIsEditModalOpen(false)}
-                className="p-1 rounded-lg text-[#71717A] hover:text-[#18181B] hover:bg-[#F3EFE6] transition-colors cursor-pointer"
+                className="p-1 rounded-lg text-pencil hover:text-ink hover:bg-paper-2 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Modal Tabs */}
-            <div className="flex border-b border-[#E6E1D6] bg-white px-5 pt-2 gap-2">
+            <div className="flex border-b border-line bg-white px-5 pt-2 gap-2">
               <button
                 type="button"
                 onClick={() => setEditModalTab('personal')}
                 className={`pb-2.5 text-xs font-semibold border-b-2 cursor-pointer transition-colors ${
                   editModalTab === 'personal'
-                    ? 'border-[#18181B] text-[#18181B]'
-                    : 'border-transparent text-[#71717A] hover:text-[#18181B]'
+                    ? 'border-ink text-ink'
+                    : 'border-transparent text-pencil hover:text-ink'
                 }`}
               >
                 Your Personal Details
@@ -798,8 +795,8 @@ export default function TemplateDetailsPage() {
                 onClick={() => setEditModalTab('template')}
                 className={`pb-2.5 text-xs font-semibold border-b-2 cursor-pointer transition-colors ${
                   editModalTab === 'template'
-                    ? 'border-[#18181B] text-[#18181B]'
-                    : 'border-transparent text-[#71717A] hover:text-[#18181B]'
+                    ? 'border-ink text-ink'
+                    : 'border-transparent text-pencil hover:text-ink'
                 }`}
               >
                 Template Name & Metadata
@@ -810,35 +807,35 @@ export default function TemplateDetailsPage() {
             <div className="p-5 overflow-y-auto space-y-4 flex-1">
               {editModalTab === 'personal' ? (
                 <div className="space-y-3.5">
-                  <div className="flex items-center gap-3 p-3 rounded-xl bg-[#FAF8F5] border border-[#E6E1D6]">
-                    <div className="w-10 h-10 rounded-full bg-[#18181B] text-[#F59E0B] font-bold text-sm flex items-center justify-center shrink-0">
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-paper border border-line">
+                    <div className="w-10 h-10 rounded-full bg-ink text-hl font-bold text-sm flex items-center justify-center shrink-0">
                       {getInitials(personalForm.name)}
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-[#18181B]">
+                      <div className="text-xs font-bold text-ink">
                         {personalForm.name || 'Your Name'}
                       </div>
-                      <div className="text-[11px] text-[#71717A]">
+                      <div className="text-[11px] text-pencil">
                         {personalForm.title || 'Professional Title'}
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[#18181B] mb-1">
-                      Full Name <span className="text-[#D97706]">*</span>
+                    <label className="block text-xs font-semibold text-ink mb-1">
+                      Full Name <span className="text-accent">*</span>
                     </label>
                     <input
                       type="text"
                       value={personalForm.name}
                       onChange={(e) => setPersonalForm({ ...personalForm, name: e.target.value })}
                       placeholder="e.g. Lakshya Bansal"
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white focus:outline-none focus:border-[#D97706]"
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[#18181B] mb-1">
+                    <label className="block text-xs font-semibold text-ink mb-1">
                       Professional Headline / Role
                     </label>
                     <input
@@ -846,12 +843,12 @@ export default function TemplateDetailsPage() {
                       value={personalForm.title}
                       onChange={(e) => setPersonalForm({ ...personalForm, title: e.target.value })}
                       placeholder="e.g. Aspiring Engineer & Developer"
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white focus:outline-none focus:border-[#D97706]"
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[#18181B] mb-1">
+                    <label className="block text-xs font-semibold text-ink mb-1">
                       About Me / Bio
                     </label>
                     <textarea
@@ -859,13 +856,13 @@ export default function TemplateDetailsPage() {
                       value={personalForm.bio}
                       onChange={(e) => setPersonalForm({ ...personalForm, bio: e.target.value })}
                       placeholder="Brief background summary..."
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white focus:outline-none focus:border-[#D97706] resize-y"
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent resize-y"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[#18181B] mb-1 flex items-center gap-1">
-                      <Mail className="w-3 h-3 text-[#71717A]" />
+                    <label className="block text-xs font-semibold text-ink mb-1 flex items-center gap-1">
+                      <Mail className="w-3 h-3 text-pencil" />
                       <span>Contact Email</span>
                     </label>
                     <input
@@ -873,14 +870,14 @@ export default function TemplateDetailsPage() {
                       value={personalForm.email}
                       onChange={(e) => setPersonalForm({ ...personalForm, email: e.target.value })}
                       placeholder="you@domain.com"
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white focus:outline-none focus:border-[#D97706]"
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                     <div>
-                      <label className="block text-[11px] text-[#52525B] mb-1 flex items-center gap-1">
-                        <Github className="w-3 h-3 text-[#71717A]" />
+                      <label className="block text-[11px] text-soft mb-1 flex items-center gap-1">
+                        <Github className="w-3 h-3 text-pencil" />
                         <span>GitHub Profile</span>
                       </label>
                       <input
@@ -888,12 +885,12 @@ export default function TemplateDetailsPage() {
                         value={personalForm.github}
                         onChange={(e) => setPersonalForm({ ...personalForm, github: e.target.value })}
                         placeholder="https://github.com/..."
-                        className="w-full px-3 py-1.5 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white focus:outline-none focus:border-[#D97706]"
+                        className="w-full px-3 py-1.5 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent"
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] text-[#52525B] mb-1 flex items-center gap-1">
-                        <Linkedin className="w-3 h-3 text-[#71717A]" />
+                      <label className="block text-[11px] text-soft mb-1 flex items-center gap-1">
+                        <Linkedin className="w-3 h-3 text-pencil" />
                         <span>LinkedIn Profile</span>
                       </label>
                       <input
@@ -901,7 +898,7 @@ export default function TemplateDetailsPage() {
                         value={personalForm.linkedin}
                         onChange={(e) => setPersonalForm({ ...personalForm, linkedin: e.target.value })}
                         placeholder="https://linkedin.com/in/..."
-                        className="w-full px-3 py-1.5 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white focus:outline-none focus:border-[#D97706]"
+                        className="w-full px-3 py-1.5 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent"
                       />
                     </div>
                   </div>
@@ -909,23 +906,23 @@ export default function TemplateDetailsPage() {
               ) : (
                 <div className="space-y-3.5">
                   <div>
-                    <label className="block text-xs font-semibold text-[#18181B] mb-1">
-                      Template Title (Name in Catalog) <span className="text-[#D97706]">*</span>
+                    <label className="block text-xs font-semibold text-ink mb-1">
+                      Template Title (Name in Catalog) <span className="text-accent">*</span>
                     </label>
                     <input
                       type="text"
                       value={templateForm.title}
                       onChange={(e) => setTemplateForm({ ...templateForm, title: e.target.value })}
                       placeholder="e.g. Lakshya Bansal - Developer Portfolio"
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white focus:outline-none focus:border-[#D97706]"
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent"
                     />
-                    <p className="text-[10px] text-[#71717A] mt-0.5">
+                    <p className="text-[10px] text-pencil mt-0.5">
                       Change this to update how this template appears across the website catalog.
                     </p>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[#18181B] mb-1">
+                    <label className="block text-xs font-semibold text-ink mb-1">
                       Author / Creator Name
                     </label>
                     <input
@@ -933,18 +930,18 @@ export default function TemplateDetailsPage() {
                       value={templateForm.creator_name}
                       onChange={(e) => setTemplateForm({ ...templateForm, creator_name: e.target.value })}
                       placeholder="e.g. Lakshya Bansal"
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white focus:outline-none focus:border-[#D97706]"
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[#18181B] mb-1">
+                    <label className="block text-xs font-semibold text-ink mb-1">
                       Category
                     </label>
                     <select
                       value={templateForm.category}
                       onChange={(e) => setTemplateForm({ ...templateForm, category: e.target.value })}
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white cursor-pointer focus:outline-none focus:border-[#D97706]"
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white cursor-pointer focus:outline-none focus:border-accent"
                     >
                       {TEMPLATE_CATEGORIES.map(cat => (
                         <option key={cat} value={cat}>{cat}</option>
@@ -953,7 +950,7 @@ export default function TemplateDetailsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[#18181B] mb-1">
+                    <label className="block text-xs font-semibold text-ink mb-1">
                       Catalog Description
                     </label>
                     <textarea
@@ -961,7 +958,7 @@ export default function TemplateDetailsPage() {
                       value={templateForm.description}
                       onChange={(e) => setTemplateForm({ ...templateForm, description: e.target.value })}
                       placeholder="Describe the portfolio..."
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] bg-white focus:outline-none focus:border-[#D97706] resize-y"
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent resize-y"
                     />
                   </div>
                 </div>
@@ -969,11 +966,11 @@ export default function TemplateDetailsPage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 border-t border-[#E6E1D6] bg-[#FAF8F5] flex items-center justify-between gap-3">
+            <div className="p-4 border-t border-line bg-paper flex items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={() => setIsEditModalOpen(false)}
-                className="px-3.5 py-2 rounded-lg text-xs font-semibold text-[#52525B] hover:text-[#18181B] hover:bg-[#F3EFE6] transition-colors cursor-pointer"
+                className="px-3.5 py-2 rounded-lg text-xs font-semibold text-soft hover:text-ink hover:bg-paper-2 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -982,9 +979,9 @@ export default function TemplateDetailsPage() {
                 type="button"
                 onClick={handleSaveEdit}
                 disabled={isSavingEdit}
-                className="px-5 py-2 rounded-lg bg-[#18181B] hover:bg-[#27272A] text-white text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="px-5 py-2 rounded-lg bg-ink hover:bg-ink-2 text-white text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
-                <Save className="w-3.5 h-3.5 text-[#F59E0B]" />
+                <Save className="w-3.5 h-3.5 text-hl" />
                 <span>{isSavingEdit ? 'Saving Updates...' : 'Save & Apply Changes'}</span>
               </button>
             </div>
