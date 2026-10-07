@@ -79,51 +79,51 @@ export default function ProfilePage() {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-7">
       
       {/* 1. PROFILE HEADER CARD */}
-      <div className="bg-white border border-[#E6E1D6] rounded-xl p-6 sm:p-8 space-y-6 shadow-2xs">
+      <div className="bg-white border border-line rounded-xl p-6 sm:p-8 space-y-6 shadow-2xs">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
           <div className="flex items-start gap-4">
             <img
               src={displayAvatar}
               alt={displayName}
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-[#E6E1D6] shadow-2xs"
+              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-line shadow-2xs"
             />
             <div className="space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl sm:text-2xl font-bold text-[#18181B] tracking-tight">
+                <h1 className="text-xl sm:text-2xl font-bold text-ink tracking-tight">
                   {displayName}
                 </h1>
-                <span className="font-mono text-xs text-[#71717A]">@{displayUsername}</span>
+                <span className="font-mono text-xs text-pencil">@{displayUsername}</span>
                 <span className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   Supabase Synced
                 </span>
               </div>
 
-              <p className="text-xs sm:text-sm text-[#52525B] max-w-xl leading-relaxed">
+              <p className="text-xs sm:text-sm text-soft max-w-xl leading-relaxed">
                 {profile?.bio || 'Building minimalist developer portfolios and lightweight web architectures.'}
               </p>
 
               {/* Social & Contact Links */}
-              <div className="flex flex-wrap items-center gap-4 pt-1 text-xs text-[#52525B]">
+              <div className="flex flex-wrap items-center gap-4 pt-1 text-xs text-soft">
                 <a
                   href="https://github.com"
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-1.5 hover:text-[#18181B] transition-colors"
+                  className="flex items-center gap-1.5 hover:text-ink transition-colors"
                 >
-                  <Github className="w-3.5 h-3.5 text-[#71717A]" />
+                  <Github className="w-3.5 h-3.5 text-pencil" />
                   <span>github.com/{displayUsername}</span>
                 </a>
                 <a
                   href="https://linkedin.com"
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-1.5 hover:text-[#18181B] transition-colors"
+                  className="flex items-center gap-1.5 hover:text-ink transition-colors"
                 >
-                  <Linkedin className="w-3.5 h-3.5 text-[#71717A]" />
+                  <Linkedin className="w-3.5 h-3.5 text-pencil" />
                   <span>linkedin</span>
                 </a>
-                <span className="flex items-center gap-1.5 text-[#71717A]">
+                <span className="flex items-center gap-1.5 text-pencil">
                   <Mail className="w-3.5 h-3.5" />
                   <span>{user?.email || 'developer@portfoliohub.dev'}</span>
                 </span>
@@ -133,42 +133,42 @@ export default function ProfilePage() {
 
           <button
             onClick={() => setIsEditing(!isEditing)}
-            className="px-3.5 py-1.5 rounded-lg border border-[#E6E1D6] bg-white text-[#18181B] hover:bg-[#F3EFE6] text-xs font-semibold transition-colors cursor-pointer self-start sm:self-auto flex items-center gap-1.5 shadow-2xs"
+            className="px-3.5 py-1.5 rounded-lg border border-line bg-white text-ink hover:bg-paper-2 text-xs font-semibold transition-colors cursor-pointer self-start sm:self-auto flex items-center gap-1.5 shadow-2xs"
           >
-            <Edit3 className="w-3.5 h-3.5 text-[#71717A]" />
+            <Edit3 className="w-3.5 h-3.5 text-pencil" />
             <span>{isEditing ? 'Cancel' : 'Edit profile'}</span>
           </button>
         </div>
 
         {/* Edit Form */}
         {isEditing && (
-          <form onSubmit={handleSaveProfile} className="pt-5 border-t border-[#E6E1D6] space-y-4">
+          <form onSubmit={handleSaveProfile} className="pt-5 border-t border-line space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-[#18181B] mb-1">Display Name</label>
+                <label className="block text-xs font-semibold text-ink mb-1">Display Name</label>
                 <input
                   type="text"
                   value={editUsername}
                   onChange={(e) => setEditUsername(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] focus:outline-none focus:border-[#D97706]"
+                  className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink focus:outline-none focus:border-accent"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#18181B] mb-1">Avatar Image URL</label>
+                <label className="block text-xs font-semibold text-ink mb-1">Avatar Image URL</label>
                 <input
                   type="url"
                   value={editAvatar}
                   onChange={(e) => setEditAvatar(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] focus:outline-none focus:border-[#D97706]"
+                  className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink focus:outline-none focus:border-accent"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#18181B] mb-1">Bio / Headline</label>
+                <label className="block text-xs font-semibold text-ink mb-1">Bio / Headline</label>
                 <input
                   type="text"
                   value={editBio}
                   onChange={(e) => setEditBio(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-[#E6E1D6] text-[#18181B] focus:outline-none focus:border-[#D97706]"
+                  className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink focus:outline-none focus:border-accent"
                 />
               </div>
             </div>
@@ -176,7 +176,7 @@ export default function ProfilePage() {
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="px-4 py-2 rounded-lg bg-[#F59E0B] hover:bg-[#D97706] text-[#18181B] hover:text-white text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                className="px-4 py-2 rounded-lg bg-hl hover:bg-accent text-ink hover:text-white text-xs font-bold transition-all cursor-pointer shadow-2xs"
               >
                 Save profile
               </button>
@@ -185,37 +185,37 @@ export default function ProfilePage() {
         )}
 
         {/* 2. STATS ROW */}
-        <div className="pt-5 border-t border-[#E6E1D6] flex flex-wrap items-center gap-8 text-xs">
+        <div className="pt-5 border-t border-line flex flex-wrap items-center gap-8 text-xs">
           <div>
-            <span className="font-bold text-sm text-[#18181B] mr-1.5">
+            <span className="font-bold text-sm text-ink mr-1.5">
               {uploadedTemplates.length}
             </span>
-            <span className="text-[#52525B]">Published templates</span>
+            <span className="text-soft">Published templates</span>
           </div>
           <div>
-            <span className="font-bold text-sm text-[#18181B] mr-1.5">
+            <span className="font-bold text-sm text-ink mr-1.5">
               {totalDownloads}
             </span>
-            <span className="text-[#52525B]">Community downloads</span>
+            <span className="text-soft">Community downloads</span>
           </div>
           <div>
-            <span className="font-bold text-sm text-[#18181B] mr-1.5">
+            <span className="font-bold text-sm text-ink mr-1.5">
               {totalStars}
             </span>
-            <span className="text-[#52525B]">Total stars</span>
+            <span className="text-soft">Total stars</span>
           </div>
         </div>
 
       </div>
 
       {/* 3. TABS */}
-      <div className="flex items-center gap-1 border-b border-[#E6E1D6] pb-1">
+      <div className="flex items-center gap-1 border-b border-line pb-1">
         <button
           onClick={() => setActiveTab('uploads')}
           className={`px-3.5 py-2 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${
             activeTab === 'uploads'
-              ? 'border-[#D97706] text-[#18181B]'
-              : 'border-transparent text-[#71717A] hover:text-[#18181B]'
+              ? 'border-accent text-ink'
+              : 'border-transparent text-pencil hover:text-ink'
           }`}
         >
           Uploaded Templates ({uploadedTemplates.length})
@@ -225,8 +225,8 @@ export default function ProfilePage() {
           onClick={() => setActiveTab('favorites')}
           className={`px-3.5 py-2 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${
             activeTab === 'favorites'
-              ? 'border-[#D97706] text-[#18181B]'
-              : 'border-transparent text-[#71717A] hover:text-[#18181B]'
+              ? 'border-accent text-ink'
+              : 'border-transparent text-pencil hover:text-ink'
           }`}
         >
           Saved Favorites ({favoriteTemplates.length})
@@ -236,8 +236,8 @@ export default function ProfilePage() {
           onClick={() => setActiveTab('activity')}
           className={`px-3.5 py-2 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${
             activeTab === 'activity'
-              ? 'border-[#D97706] text-[#18181B]'
-              : 'border-transparent text-[#71717A] hover:text-[#18181B]'
+              ? 'border-accent text-ink'
+              : 'border-transparent text-pencil hover:text-ink'
           }`}
         >
           Activity Log
@@ -246,17 +246,17 @@ export default function ProfilePage() {
 
       {/* 4. TAB PANELS */}
       {loading ? (
-        <div className="py-16 text-center text-xs font-mono text-[#71717A]">Loading profile catalog...</div>
+        <div className="py-16 text-center text-xs font-mono text-pencil">Loading profile catalog...</div>
       ) : activeTab === 'uploads' ? (
         uploadedTemplates.length === 0 ? (
-          <div className="py-16 text-center bg-white border border-[#E6E1D6] rounded-xl p-8 space-y-3 shadow-2xs">
-            <h3 className="text-sm font-bold text-[#18181B]">No templates published yet</h3>
-            <p className="text-xs text-[#52525B] max-w-sm mx-auto leading-relaxed">
+          <div className="py-16 text-center bg-white border border-line rounded-xl p-8 space-y-3 shadow-2xs">
+            <h3 className="text-sm font-bold text-ink">No templates published yet</h3>
+            <p className="text-xs text-soft max-w-sm mx-auto leading-relaxed">
               Contribute custom portfolio layouts and architectures to the open developer ecosystem.
             </p>
             <Link
               to="/upload"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#F59E0B] hover:bg-[#D97706] text-[#18181B] hover:text-white text-xs font-bold transition-all shadow-2xs"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-hl hover:bg-accent text-ink hover:text-white text-xs font-bold transition-all shadow-2xs"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Publish first template</span>
@@ -271,14 +271,14 @@ export default function ProfilePage() {
         )
       ) : activeTab === 'favorites' ? (
         favoriteTemplates.length === 0 ? (
-          <div className="py-16 text-center bg-white border border-[#E6E1D6] rounded-xl p-8 space-y-3 shadow-2xs">
-            <h3 className="text-sm font-bold text-[#18181B]">No saved templates</h3>
-            <p className="text-xs text-[#52525B] max-w-sm mx-auto leading-relaxed">
+          <div className="py-16 text-center bg-white border border-line rounded-xl p-8 space-y-3 shadow-2xs">
+            <h3 className="text-sm font-bold text-ink">No saved templates</h3>
+            <p className="text-xs text-soft max-w-sm mx-auto leading-relaxed">
               Star templates in the Catalog to save and quickly access them here.
             </p>
             <Link
               to="/explore"
-              className="inline-block px-4 py-2 rounded-lg bg-[#18181B] hover:bg-[#27272A] text-white text-xs font-semibold transition-colors shadow-2xs"
+              className="inline-block px-4 py-2 rounded-lg bg-ink hover:bg-ink-2 text-white text-xs font-semibold transition-colors shadow-2xs"
             >
               Browse Catalog
             </Link>
@@ -292,38 +292,38 @@ export default function ProfilePage() {
         )
       ) : (
         /* Activity Tab */
-        <div className="bg-white border border-[#E6E1D6] rounded-xl p-6 sm:p-7 space-y-4 shadow-2xs">
-          <h3 className="text-xs font-mono font-bold text-[#18181B] uppercase tracking-wider">
+        <div className="bg-white border border-line rounded-xl p-6 sm:p-7 space-y-4 shadow-2xs">
+          <h3 className="text-xs font-mono font-bold text-ink uppercase tracking-wider">
             Recent Account Milestones
           </h3>
 
           <div className="space-y-3 text-xs">
-            <div className="flex items-center gap-3 py-2.5 border-b border-[#E6E1D6]">
-              <Clock className="w-4 h-4 text-[#71717A]" />
+            <div className="flex items-center gap-3 py-2.5 border-b border-line">
+              <Clock className="w-4 h-4 text-pencil" />
               <div className="flex-1">
-                <span className="font-semibold text-[#18181B]">Signed into PortfolioHub</span>
-                <span className="text-[#71717A] ml-2 font-mono text-[11px]">Today</span>
+                <span className="font-semibold text-ink">Signed into PortfolioHub</span>
+                <span className="text-pencil ml-2 font-mono text-[11px]">Today</span>
               </div>
             </div>
 
             {favoriteTemplates.slice(0, 3).map((t) => (
-              <div key={t.id} className="flex items-center gap-3 py-2.5 border-b border-[#E6E1D6]">
-                <Star className="w-4 h-4 fill-[#F59E0B] text-[#D97706]" />
+              <div key={t.id} className="flex items-center gap-3 py-2.5 border-b border-line">
+                <Star className="w-4 h-4 fill-hl text-accent" />
                 <div className="flex-1">
-                  <span className="text-[#52525B]">Starred template </span>
-                  <Link to={`/template/${t.id}`} className="font-bold text-[#18181B] hover:underline">
+                  <span className="text-soft">Starred template </span>
+                  <Link to={`/template/${t.id}`} className="font-bold text-ink hover:underline">
                     {t.title}
                   </Link>
-                  <span className="text-[#71717A] ml-2 font-mono text-[11px]">({t.category})</span>
+                  <span className="text-pencil ml-2 font-mono text-[11px]">({t.category})</span>
                 </div>
               </div>
             ))}
 
             <div className="flex items-center gap-3 py-2.5">
-              <Download className="w-4 h-4 text-[#71717A]" />
+              <Download className="w-4 h-4 text-pencil" />
               <div className="flex-1">
-                <span className="font-semibold text-[#18181B]">Downloaded standalone portfolio ZIP bundle</span>
-                <span className="text-[#71717A] ml-2 font-mono text-[11px]">Recent</span>
+                <span className="font-semibold text-ink">Downloaded standalone portfolio ZIP bundle</span>
+                <span className="text-pencil ml-2 font-mono text-[11px]">Recent</span>
               </div>
             </div>
           </div>
