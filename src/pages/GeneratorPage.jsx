@@ -1,29 +1,25 @@
+/**
+ * GeneratorPage.jsx: 5-step wizard that builds a portfolio from a form: style, profile, projects, skills, export.
+ */
 import React, { useState, useMemo, useEffect } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { 
-  Download, 
-  Code2, 
-  Eye, 
-  Plus, 
-  Trash2, 
-  Check, 
-  Layers, 
-  User, 
-  Briefcase, 
-  Cpu, 
-  Mail, 
+import { useSearchParams, Link } from 'react-router-dom';
+import {
+  Download,
+  Code2,
+  Plus,
+  Trash2,
+  Check,
+  Layers,
+  User,
+  Briefcase,
+  Cpu,
   ArrowRight,
   ArrowLeft,
   RotateCcw,
   Monitor,
   Tablet,
   Smartphone,
-  ExternalLink,
-  Github,
-  Globe,
-  RefreshCw,
-  Sparkles,
-  CheckCircle2
+  RefreshCw
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { 
@@ -33,14 +29,10 @@ import {
 } from '../services/templateEngines.js';
 import { assemblePreviewHtml } from '../utils/previewHelper.js';
 import { downloadPortfolioZip } from '../utils/zipExport.js';
-import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
-import { CATEGORY_BADGE_STYLES } from '../components/common/TemplateCard.jsx';
 
 export default function GeneratorPage() {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const { user } = useAuth();
   const { addToast } = useToast();
 
   const initialTemplate = searchParams.get('template') || 'Minimal';
@@ -263,7 +255,11 @@ export default function GeneratorPage() {
             <div className="space-y-4">
               <div>
                 <h2 className="text-sm font-bold text-ink">Choose Portfolio Engine</h2>
+<<<<<<< HEAD
                 <p className="text-xs text-soft mt-0.5">Select from 24 hand-crafted responsive architectures with rich CSS transforms and animations.</p>
+=======
+                <p className="text-xs text-soft mt-0.5">Select from {TEMPLATE_CATEGORIES.length} hand-crafted responsive architectures with rich CSS transforms and animations.</p>
+>>>>>>> a6a0a74 (Update website content and layout)
               </div>
 
               <div className="grid grid-cols-2 gap-2.5 max-h-[500px] overflow-y-auto pr-1">
@@ -381,7 +377,8 @@ export default function GeneratorPage() {
                     <label className="block text-xs font-semibold text-ink mb-1">Email</label>
                     <input
                       type="email"
-                      value={userData.personal.email || 'alex@example.com'}
+                      value={userData.personal.email || ''}
+                      placeholder="you@example.com"
                       onChange={(e) => handlePersonalChange('email', e.target.value)}
                       className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-line text-ink focus:outline-none focus:border-accent"
                     />
@@ -393,7 +390,8 @@ export default function GeneratorPage() {
                     <label className="block text-xs font-semibold text-ink mb-1">GitHub URL</label>
                     <input
                       type="text"
-                      value={userData.personal.github || 'https://github.com'}
+                      value={userData.personal.github || ''}
+                      placeholder="https://github.com/yourname"
                       onChange={(e) => handlePersonalChange('github', e.target.value)}
                       className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-line text-ink focus:outline-none focus:border-accent"
                     />
@@ -402,7 +400,8 @@ export default function GeneratorPage() {
                     <label className="block text-xs font-semibold text-ink mb-1">LinkedIn URL</label>
                     <input
                       type="text"
-                      value={userData.personal.linkedin || 'https://linkedin.com'}
+                      value={userData.personal.linkedin || ''}
+                      placeholder="https://linkedin.com/in/yourname"
                       onChange={(e) => handlePersonalChange('linkedin', e.target.value)}
                       className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-line text-ink focus:outline-none focus:border-accent"
                     />

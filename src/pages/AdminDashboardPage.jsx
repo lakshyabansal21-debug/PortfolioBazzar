@@ -1,5 +1,9 @@
+/**
+ * AdminDashboardPage.jsx: Admin-only page: real platform numbers, feature / delete templates, sync built-in templates to Supabase.
+ */
 import React, { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
+<<<<<<< HEAD
 import { 
   ShieldCheck, 
   Layers, 
@@ -7,10 +11,13 @@ import {
   Star, 
   Trash2, 
   Eye, 
+=======
+import {
+  Trash2,
+  Eye,
+>>>>>>> a6a0a74 (Update website content and layout)
   Database,
   Plus,
-  Sparkles,
-  CheckCircle2,
   RefreshCw,
   Copy,
   Check,
@@ -18,15 +25,16 @@ import {
   X
 } from 'lucide-react';
 import { dbService } from '../services/dbService.js';
+import { SEED_TEMPLATES } from '../data/seedTemplates.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
-import { CATEGORY_BADGE_STYLES } from '../components/common/TemplateCard.jsx';
 
 function AdminDashboardContent() {
   const { isSupabaseConfigured } = useAuth();
   const { addToast } = useToast();
 
   const [templates, setTemplates] = useState([]);
+  const [stats, setStats] = useState(null); // real numbers from dbService.getPlatformStats()
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [showSqlModal, setShowSqlModal] = useState(false);
@@ -34,8 +42,12 @@ function AdminDashboardContent() {
 
   async function loadAll() {
     setLoading(true);
-    const res = await dbService.getTemplates({ limit: 100 });
+    const [res, platformStats] = await Promise.all([
+      dbService.getTemplates({ limit: 1000, sort: 'newest' }),
+      dbService.getPlatformStats()
+    ]);
     setTemplates(res.templates || []);
+    setStats(platformStats);
     setLoading(false);
   }
 
@@ -48,7 +60,7 @@ function AdminDashboardContent() {
     try {
       const result = await dbService.syncAllStylesToSupabase();
       if (result.success) {
-        addToast(result.message || 'All 24 styles synchronized to Supabase!', 'success');
+        addToast(result.message, 'success');
         await loadAll();
       } else {
         addToast(result.error || result.message || 'Could not sync to Supabase', 'error');
@@ -78,11 +90,11 @@ function AdminDashboardContent() {
     if (!window.confirm(`Permanently remove "${title}" from the platform catalog?`)) return;
     await dbService.deleteTemplate(id);
     setTemplates(templates.filter(t => t.id !== id));
+    setStats(await dbService.getPlatformStats());
     addToast(`Deleted "${title}"`, 'success');
   };
 
-  const totalDownloads = templates.reduce((acc, t) => acc + (t.downloads_count || 0), 0);
-  const totalLikes = templates.reduce((acc, t) => acc + (t.likes_count || 0), 0);
+  const builtInCount = SEED_TEMPLATES.length;
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-7">
@@ -107,6 +119,7 @@ function AdminDashboardContent() {
         </Link>
       </div>
 
+<<<<<<< HEAD
       {/* Metrics Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="p-4 rounded-xl bg-white border border-line space-y-1 shadow-2xs">
@@ -129,8 +142,50 @@ function AdminDashboardContent() {
           <p className="text-xs font-bold text-ink pt-2">
             {isSupabaseConfigured ? 'Supabase Postgres (Cloud)' : 'Local Engine (IndexedDB)'}
           </p>
+=======
+      {/* Metrics Row (real numbers, calculated from the data) */}
+      {loading && !stats && <p className="text-xs text-pencil">Loading statistics...</p>}
+      {stats && (
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="p-4 rounded-xl bg-white border border-line space-y-1">
+            <div className="text-[10px] text-pencil">Templates</div>
+            <p className="text-2xl font-bold text-ink">{stats.totalTemplates}</p>
+            <p className="text-[10px] text-pencil">{stats.builtInTemplates} built-in, {stats.communityTemplates} community</p>
+          </div>
+
+          <div className="p-4 rounded-xl bg-white border border-line space-y-1">
+            <div className="text-[10px] text-pencil">Downloads</div>
+            <p className="text-2xl font-bold text-ink">{stats.totalDownloads.toLocaleString()}</p>
+            <p className="text-[10px] text-pencil">{stats.totalViews.toLocaleString()} views</p>
+          </div>
+
+          <div className="p-4 rounded-xl bg-white border border-line space-y-1">
+            <div className="text-[10px] text-pencil">Likes</div>
+            <p className="text-2xl font-bold text-ink">{stats.totalLikes.toLocaleString()}</p>
+            <p className="text-[10px] text-pencil">{stats.totalRemixes.toLocaleString()} remixes</p>
+          </div>
+
+          <div className="p-4 rounded-xl bg-white border border-line space-y-1">
+            <div className="text-[10px] text-pencil">
+              {stats.registeredUsers !== null ? 'Registered users' : 'Contributors'}
+            </div>
+            <p className="text-2xl font-bold text-ink">
+              {(stats.registeredUsers !== null ? stats.registeredUsers : stats.contributors).toLocaleString()}
+            </p>
+            <p className="text-[10px] text-pencil">
+              {stats.registeredUsers !== null ? `${stats.contributors} published a template` : 'Connect Supabase to count users'}
+            </p>
+          </div>
+
+          <div className="p-4 rounded-xl bg-white border border-line space-y-1">
+            <div className="text-[10px] text-pencil">Storage</div>
+            <p className="text-xs font-bold text-ink pt-2">
+              {stats.storage === 'cloud' ? 'Supabase (cloud)' : 'This browser (localStorage)'}
+            </p>
+          </div>
+>>>>>>> a6a0a74 (Update website content and layout)
         </div>
-      </div>
+      )}
 
       {/* Supabase Styles Cloud Sync Panel */}
       <div className="p-5 rounded-xl bg-white border border-line shadow-2xs space-y-3">
@@ -151,7 +206,11 @@ function AdminDashboardContent() {
                 </span>
               </div>
               <p className="text-xs text-soft mt-0.5">
+<<<<<<< HEAD
                 Populate all 24 production portfolio styles, responsive layouts, and CSS engines into your Supabase database.
+=======
+                Populate all {builtInCount} built-in portfolio styles into your Supabase database.
+>>>>>>> a6a0a74 (Update website content and layout)
               </p>
             </div>
           </div>
@@ -171,7 +230,7 @@ function AdminDashboardContent() {
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-ink hover:bg-ink-2 text-white text-xs font-semibold cursor-pointer disabled:opacity-50 transition-all shadow-2xs"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
-              <span>{syncing ? 'Syncing to Supabase...' : 'Sync 24 Styles to Supabase'}</span>
+              <span>{syncing ? 'Syncing to Supabase...' : `Sync ${builtInCount} Styles to Supabase`}</span>
             </button>
           </div>
         </div>
@@ -196,7 +255,11 @@ function AdminDashboardContent() {
             <div className="p-4 border-b border-line flex items-center justify-between bg-paper">
               <div className="flex items-center gap-2">
                 <FileCode className="w-4 h-4 text-accent" />
+<<<<<<< HEAD
                 <h3 className="font-bold text-sm text-ink">Supabase SQL Seed Script (24 Styles)</h3>
+=======
+                <h3 className="font-bold text-sm text-ink">Supabase SQL Seed Script ({builtInCount} Styles)</h3>
+>>>>>>> a6a0a74 (Update website content and layout)
               </div>
               <button
                 onClick={() => setShowSqlModal(false)}
@@ -295,13 +358,19 @@ function AdminDashboardContent() {
                     >
                       <Eye className="w-3.5 h-3.5" />
                     </Link>
-                    <button
-                      onClick={() => handleDelete(t.id, t.title)}
-                      className="p-1.5 rounded-md text-red-500 hover:text-red-700 hover:bg-red-50 border border-red-200 cursor-pointer shadow-2xs"
-                      title="Delete"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    {dbService.isBuiltIn(t.id) ? (
+                      <span className="inline-block px-2 py-1 text-[10px] text-pencil" title="Built-in templates come from the code and cannot be deleted">
+                        Built-in
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => handleDelete(t.id, t.title)}
+                        className="p-1.5 rounded-md text-red-500 hover:text-red-700 hover:bg-red-50 border border-red-200 cursor-pointer shadow-2xs"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

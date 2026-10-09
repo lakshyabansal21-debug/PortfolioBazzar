@@ -1,11 +1,13 @@
+/**
+ * ResetPasswordPage.jsx: Ask for a password-reset email.
+ */
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { KeyRound, Check, ArrowLeft, ShieldCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Check, ArrowLeft } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../supabase/client.js';
 import { useToast } from '../context/ToastContext.jsx';
 
 export default function ResetPasswordPage() {
-  const navigate = useNavigate();
   const { addToast } = useToast();
 
   const [email, setEmail] = useState('');

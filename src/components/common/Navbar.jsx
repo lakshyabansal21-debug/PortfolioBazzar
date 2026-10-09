@@ -1,28 +1,31 @@
+/**
+ * Navbar.jsx: Top navigation bar: links, search button (Ctrl/Cmd+K), user menu, and the mobile menu.
+ */
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { 
-  Search, 
-  Upload, 
-  User, 
-  LogOut, 
-  ShieldCheck, 
-  Menu, 
-  X, 
+import {
+  Search,
+  Upload,
+  User,
+  LogOut,
+  ShieldCheck,
+  Menu,
+  X,
   Plus,
   Compass,
   Wand2,
   Code2,
-  Layers,
-  Sparkles
+  Layers
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import AuthModal from '../auth/AuthModal.jsx';
 import SearchModal from './SearchModal.jsx';
+import { getAvatarUrl } from '../../utils/avatar.js';
 
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, profile, isAdmin, signOut, isSupabaseConfigured } = useAuth();
+  const { user, profile, isAdmin, signOut } = useAuth();
   
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login');
@@ -147,7 +150,7 @@ export default function Navbar() {
                     {profile?.username || user.email?.split('@')[0]}
                   </span>
                   <img
-                    src={profile?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'}
+                    src={getAvatarUrl(profile?.avatar_url, profile?.username || user.email)}
                     alt="Avatar"
                     className="w-6 h-6 rounded-full object-cover border border-line"
                   />

@@ -1,3 +1,6 @@
+/**
+ * main.jsx: Entry point: mounts <App /> into the #root element of index.html.
+ */
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';

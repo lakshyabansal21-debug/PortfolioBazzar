@@ -1,3 +1,6 @@
+/**
+ * MainLayout.jsx: Layout for normal pages: Navbar on top, the current page in the middle (<Outlet />), Footer at the bottom.
+ */
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from '../components/common/Navbar.jsx';

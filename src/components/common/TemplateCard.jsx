@@ -1,10 +1,23 @@
+/**
+ * TemplateCard.jsx: One template card used in grids: thumbnail, badges, buttons, tags, creator and counters.
+ */
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Download, ExternalLink, Star, ArrowUpRight, Wand2 } from 'lucide-react';
+import {
+  Download,
+  ExternalLink,
+  Star,
+  Wand2
+} from 'lucide-react';
 import { dbService } from '../../services/dbService.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import useTilt from '../../hooks/useTilt.js';
+<<<<<<< HEAD
+=======
+import { getAvatarUrl } from '../../utils/avatar.js';
+import { DEFAULT_THUMBNAIL } from '../../config/siteConfig.js';
+>>>>>>> a6a0a74 (Update website content and layout)
 
 // One calm badge style for every category (the thumbnail already carries the colour)
 const CATEGORY_NAMES = [
@@ -17,20 +30,26 @@ export const CATEGORY_BADGE_STYLES = Object.fromEntries([
   ['Default', 'bg-white text-ink border-line-2']
 ]);
 
-export default function TemplateCard({ template, onLikeChange }) {
+/** One template in a grid: thumbnail, badges, "Use template" and "Live Site" buttons, tags, creator, counters. */
+export default function TemplateCard({ template }) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { addToast } = useToast();
 
+<<<<<<< HEAD
   const [likesCount, setLikesCount] = useState(template.likes_count || 0);
   const [isLiked, setIsLiked] = useState(dbService.isLiked(template.id));
   const [isFav, setIsFav] = useState(dbService.isFavorite(template.id));
+=======
+  const likesCount = template.likes_count || 0;
+  const [isFav, setIsFav] = useState(dbService.isFavorite(template.id, user?.id));
+>>>>>>> a6a0a74 (Update website content and layout)
   const tiltRef = useTilt(5);
 
   const handleFavorite = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const newFav = await dbService.toggleFavorite(template.id);
+    const newFav = await dbService.toggleFavorite(template.id, user?.id);
     setIsFav(newFav);
     addToast(newFav ? `Added "${template.title}" to saved` : `Removed from saved`, 'info');
   };
@@ -65,7 +84,7 @@ export default function TemplateCard({ template, onLikeChange }) {
           aria-label={`View ${template.title}`}
         >
           <img
-            src={template.thumbnail_url || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=800&q=80'}
+            src={template.thumbnail_url || DEFAULT_THUMBNAIL}
             alt={template.title}
             className="w-full h-full object-cover object-top transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04]"
             loading="lazy"
@@ -155,7 +174,7 @@ export default function TemplateCard({ template, onLikeChange }) {
         <div className="mt-4 pt-2.5 border-t border-line flex items-center justify-between text-xs text-pencil">
           <div className="flex items-center gap-1.5 min-w-0">
             <img
-              src={template.creator_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'}
+              src={getAvatarUrl(template.creator_avatar, template.creator_name)}
               alt={template.creator_name}
               className="w-4 h-4 rounded-full object-cover border border-line"
             />

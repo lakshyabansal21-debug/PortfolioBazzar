@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+=======
+/**
+ * FillDetailsForm.jsx: Editor form that shows only the details the creator marked as editable, and applies them to the HTML.
+ */
+>>>>>>> a6a0a74 (Update website content and layout)
 import React, { useEffect, useMemo, useState } from 'react';
 import { Check, UserCheck } from 'lucide-react';
 import { readFieldDefs, applyFieldValues } from '../../utils/editableFields.js';

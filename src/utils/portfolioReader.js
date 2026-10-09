@@ -34,7 +34,11 @@ const KIND_RULES = [
   ['hero', /hero|banner|landing|welcome|\bhome\b/i]
 ];
 
+<<<<<<< HEAD
 export const KIND_LABELS = {
+=======
+const KIND_LABELS = {
+>>>>>>> a6a0a74 (Update website content and layout)
   skills: 'Skills',
   experience: 'Experience',
   education: 'Education',

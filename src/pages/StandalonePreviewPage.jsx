@@ -1,16 +1,17 @@
+/**
+ * StandalonePreviewPage.jsx: Full-screen preview of one portfolio (/site/:id and /preview/:id) with device size buttons and download.
+ */
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, 
-  Code2, 
-  Download, 
-  Monitor, 
-  Tablet, 
-  Smartphone, 
-  ChevronUp, 
-  ChevronDown, 
-  ExternalLink,
-  Sparkles
+import {
+  ArrowLeft,
+  Code2,
+  Download,
+  Monitor,
+  Tablet,
+  Smartphone,
+  ChevronUp,
+  ChevronDown
 } from 'lucide-react';
 import { dbService } from '../services/dbService.js';
 import { assemblePreviewHtml } from '../utils/previewHelper.js';

@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+=======
+/**
+ * HeroStack.jsx: Landing hero: three template "sheets" stacked in 3D. Click a sheet to bring it to the front.
+ */
+>>>>>>> a6a0a74 (Update website content and layout)
 import React, { useState } from 'react';
 import useTilt from '../../hooks/useTilt.js';
 

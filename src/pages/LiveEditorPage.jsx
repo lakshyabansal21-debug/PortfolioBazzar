@@ -1,31 +1,25 @@
+<<<<<<< HEAD
+=======
+/**
+ * LiveEditorPage.jsx: The editor: customise a built-in or uploaded template with live preview (form, content tab, click-to-edit, sections, visual, raw code), then save, remix or download.
+ */
+>>>>>>> a6a0a74 (Update website content and layout)
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { 
-  Code2, 
-  Download, 
-  Eye, 
-  Copy, 
-  Check, 
-  Monitor, 
-  Tablet, 
-  Smartphone, 
-  RotateCcw, 
-  Layers, 
-  Palette, 
-  MoveUp, 
-  MoveDown,
-  Maximize2, 
+import {
+  Download,
+  Monitor,
+  Tablet,
+  Smartphone,
+  RotateCcw,
+  Maximize2,
   Minimize2,
-  Sliders,
-  FileCode,
   ArrowLeft,
   Sparkles,
   Wand2,
   ExternalLink,
   Save,
   UserCheck,
-  Edit3,
-  Globe,
   Mail,
   Github,
   Linkedin,
@@ -43,6 +37,13 @@ import { dbService } from '../services/dbService.js';
 import { assemblePreviewHtml, buildVisualOverrides } from '../utils/previewHelper.js';
 import { downloadPortfolioZip, downloadSingleHtml } from '../utils/zipExport.js';
 import ContentEditor from '../components/portfolio/ContentEditor.jsx';
+<<<<<<< HEAD
+=======
+import TemplateInfoTab from '../components/editor/TemplateInfoTab.jsx';
+import VisualTab from '../components/editor/VisualTab.jsx';
+import SectionsTab from '../components/editor/SectionsTab.jsx';
+import CodeTab from '../components/editor/CodeTab.jsx';
+>>>>>>> a6a0a74 (Update website content and layout)
 import FillDetailsForm from '../components/portfolio/FillDetailsForm.jsx';
 import { readFieldDefs } from '../utils/editableFields.js';
 import {
@@ -834,6 +835,7 @@ export default function LiveEditorPage() {
 
             {/* TEMPLATE SETTINGS METADATA TAB */}
             {activeSidebarTab === 'metadata' && loadedCustomTemplate && (
+<<<<<<< HEAD
               <div className="space-y-4">
                 <div className="p-3 bg-paper border border-line rounded-xl">
                   <h3 className="text-xs font-bold text-ink">Template Settings</h3>
@@ -906,10 +908,19 @@ export default function LiveEditorPage() {
                   <span>{isSavingDb ? 'Saving Changes...' : 'Save Template Settings'}</span>
                 </button>
               </div>
+=======
+              <TemplateInfoTab
+                templateMeta={templateMeta}
+                setTemplateMeta={setTemplateMeta}
+                onSave={handleSaveToDatabase}
+                saving={isSavingDb}
+              />
+>>>>>>> a6a0a74 (Update website content and layout)
             )}
 
             {/* VISUAL CONFIG TAB */}
             {activeSidebarTab === 'visual' && (
+<<<<<<< HEAD
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-semibold text-ink mb-1.5">Color Accent Token</label>
@@ -987,6 +998,14 @@ export default function LiveEditorPage() {
                   </div>
                 </div>
               </div>
+=======
+              <VisualTab
+                accentColor={accentColor}
+                setAccentColor={setAccentColor}
+                customFont={customFont}
+                setCustomFont={setCustomFont}
+              />
+>>>>>>> a6a0a74 (Update website content and layout)
             )}
 
             {/* CONTENT & SKILLS TAB (reads any uploaded portfolio) */}
@@ -1001,6 +1020,7 @@ export default function LiveEditorPage() {
 
             {/* SECTIONS REORDERING TAB (reads the real page structure) */}
             {activeSidebarTab === 'sections' && (
+<<<<<<< HEAD
               <div className="space-y-3">
                 <p className="text-xs text-soft">
                   Reorder or hide the main parts of this page. Changes apply to the preview and to your download.
@@ -1055,10 +1075,14 @@ export default function LiveEditorPage() {
                   ))}
                 </div>
               </div>
+=======
+              <SectionsTab pageBlocks={pageBlocks} onMove={handleMoveBlock} onToggle={handleToggleBlock} />
+>>>>>>> a6a0a74 (Update website content and layout)
             )}
 
             {/* RAW CODE TAB */}
             {activeSidebarTab === 'code' && (
+<<<<<<< HEAD
               <div className="h-full flex flex-col space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1 bg-paper-2 p-0.5 rounded-lg border border-line">
@@ -1111,6 +1135,20 @@ export default function LiveEditorPage() {
                   )}
                 </div>
               </div>
+=======
+              <CodeTab
+                codeTab={codeTab}
+                setCodeTab={setCodeTab}
+                html={activeHtml}
+                css={activeCss}
+                js={activeJs}
+                onChangeHtml={setCustomHtml}
+                onChangeCss={setCustomCss}
+                onChangeJs={setCustomJs}
+                copiedTab={copiedTab}
+                onCopy={handleCopy}
+              />
+>>>>>>> a6a0a74 (Update website content and layout)
             )}
 
           </div>

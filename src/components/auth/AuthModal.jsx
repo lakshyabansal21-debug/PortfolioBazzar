@@ -1,30 +1,27 @@
+/**
+ * AuthModal.jsx: Login / sign up / forgot-password popup, plus a settings tab to connect your own Supabase project.
+ */
 import React, { useState, useEffect } from 'react';
-import { 
-  X, 
-  Mail, 
-  Lock, 
-  User, 
-  ArrowRight, 
-  Github, 
-  Database, 
-  CheckCircle2, 
-  AlertCircle, 
-  RefreshCw, 
-  ChevronDown, 
-  ChevronUp, 
-  ExternalLink,
-  ShieldCheck,
+import {
+  X,
+  Mail,
+  Lock,
+  User,
+  Database,
+  AlertCircle,
+  RefreshCw,
+  ChevronDown,
+  ChevronUp,
   Send,
   Copy
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
-import { 
-  supabaseUrl, 
-  isSupabaseConfigured, 
-  saveCustomSupabase, 
-  clearCustomSupabase, 
-  testSupabaseConnection 
+import {
+  supabaseUrl,
+  saveCustomSupabase,
+  clearCustomSupabase,
+  testSupabaseConnection
 } from '../../supabase/client.js';
 
 export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {

@@ -1,3 +1,6 @@
+/**
+ * zipExport.js: Download helpers: a ZIP (index.html, style.css, script.js, README, assets/) or one single HTML file.
+ */
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { buildSingleFileHtml } from './portfolioReader.js';

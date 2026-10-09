@@ -163,9 +163,8 @@ export const DEFAULT_USER_DATA = {
 };
 
 // 1. MINIMAL TEMPLATE ENGINE
-export function generateMinimalTemplate(data = DEFAULT_USER_DATA) {
+function generateMinimalTemplate(data = DEFAULT_USER_DATA) {
   const p = data.personal || DEFAULT_USER_DATA.personal;
-  const primary = data.customization?.primaryColor || '#18181b';
   const font = data.customization?.font || 'Plus Jakarta Sans, sans-serif';
 
   const html = `<!DOCTYPE html>
@@ -615,10 +614,8 @@ document.addEventListener('DOMContentLoaded', () => {
 }
 
 // 2. DEVELOPER TEMPLATE ENGINE (Terminal & IDE Inspired Dark Theme)
-export function generateDeveloperTemplate(data = DEFAULT_USER_DATA) {
+function generateDeveloperTemplate(data = DEFAULT_USER_DATA) {
   const p = data.personal || DEFAULT_USER_DATA.personal;
-  const primary = data.customization?.primaryColor || '#10b981';
-  const font = data.customization?.font || 'JetBrains Mono, monospace';
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -995,9 +992,8 @@ console.log('Terminal session initiated: welcome developer!');
 }
 
 // 3. STUDENT TEMPLATE ENGINE (Vibrant, Academic, Coursework, Roadmap)
-export function generateStudentTemplate(data = DEFAULT_USER_DATA) {
+function generateStudentTemplate(data = DEFAULT_USER_DATA) {
   const p = data.personal || DEFAULT_USER_DATA.personal;
-  const primary = data.customization?.primaryColor || '#3b82f6';
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -1118,7 +1114,7 @@ body.theme-student {
 }
 
 // 4. CORPORATE TEMPLATE ENGINE (Executive, Crisp, Metric-Driven)
-export function generateCorporateTemplate(data = DEFAULT_USER_DATA) {
+function generateCorporateTemplate(data = DEFAULT_USER_DATA) {
   const p = data.personal || DEFAULT_USER_DATA.personal;
 
   const html = `<!DOCTYPE html>
@@ -1227,7 +1223,7 @@ body.theme-corp { font-family: 'Inter', sans-serif; background: #f1f5f9; color: 
 }
 
 // 5. DESIGNER TEMPLATE ENGINE (Visual-First, Magnetic Cards, Expressive)
-export function generateDesignerTemplate(data = DEFAULT_USER_DATA) {
+function generateDesignerTemplate(data = DEFAULT_USER_DATA) {
   const p = data.personal || DEFAULT_USER_DATA.personal;
 
   const html = `<!DOCTYPE html>
@@ -1306,7 +1302,7 @@ body.theme-designer { font-family: 'Plus Jakarta Sans', sans-serif; background: 
 }
 
 // 6. LUXURY TEMPLATE ENGINE (Obsidian, Champagne Gold, High-End Editorial)
-export function generateLuxuryTemplate(data = DEFAULT_USER_DATA) {
+function generateLuxuryTemplate(data = DEFAULT_USER_DATA) {
   const p = data.personal || DEFAULT_USER_DATA.personal;
 
   const html = `<!DOCTYPE html>
@@ -1396,7 +1392,7 @@ body.theme-luxury { background-color: #07080a; color: #e5e5e5; font-family: 'Mon
 }
 
 // 7. CYBERPUNK TEMPLATE ENGINE (Neon Cyan, Glitch, Scanlines, HUD)
-export function generateCyberpunkTemplate(data = DEFAULT_USER_DATA) {
+function generateCyberpunkTemplate(data = DEFAULT_USER_DATA) {
   const p = data.personal || DEFAULT_USER_DATA.personal;
 
   const html = `<!DOCTYPE html>
@@ -1496,7 +1492,7 @@ body.theme-cyberpunk {
 }
 
 // 8. GLASSMORPHISM TEMPLATE ENGINE (Translucent Frosted Panels, Blurred Mesh)
-export function generateGlassmorphismTemplate(data = DEFAULT_USER_DATA) {
+function generateGlassmorphismTemplate(data = DEFAULT_USER_DATA) {
   const p = data.personal || DEFAULT_USER_DATA.personal;
 
   const html = `<!DOCTYPE html>
@@ -1618,7 +1614,7 @@ body.theme-glass {
 }
 
 // 9. CREATIVE TEMPLATE ENGINE (Neo-Brutalist, Chunky Borders, Playful)
-export function generateCreativeTemplate(data = DEFAULT_USER_DATA) {
+function generateCreativeTemplate(data = DEFAULT_USER_DATA) {
   const p = data.personal || DEFAULT_USER_DATA.personal;
 
   const html = `<!DOCTYPE html>
@@ -1711,7 +1707,7 @@ body.theme-creative {
 }
 
 // 10. PHOTOGRAPHER TEMPLATE ENGINE (Masonry, Lightbox feel, Clean Minimalist)
-export function generatePhotographerTemplate(data = DEFAULT_USER_DATA) {
+function generatePhotographerTemplate(data = DEFAULT_USER_DATA) {
   const p = data.personal || DEFAULT_USER_DATA.personal;
 
   const html = `<!DOCTYPE html>
@@ -1772,7 +1768,7 @@ body.theme-photo { background: #000; color: #e5e5e5; font-family: 'Plus Jakarta 
 }
 
 // 11. DARK TEMPLATE ENGINE (Deep Stealth, Obsidian, Emerald/Cyan Glow)
-export function generateDarkTemplate(data = DEFAULT_USER_DATA) {
+function generateDarkTemplate(data = DEFAULT_USER_DATA) {
   const p = data.personal || DEFAULT_USER_DATA.personal;
 
   const html = `<!DOCTYPE html>
@@ -1850,7 +1846,7 @@ body.theme-dark-stealth { background: #08090c; color: #e2e8f0; font-family: 'Plu
 }
 
 // 12. 3D TEMPLATE ENGINE (Isometric Layers, Dynamic Tilt Interaction)
-export function generate3DTemplate(data = DEFAULT_USER_DATA) {
+function generate3DTemplate(data = DEFAULT_USER_DATA) {
   const p = data.personal || DEFAULT_USER_DATA.personal;
 
   const html = `<!DOCTYPE html>

@@ -1,9 +1,19 @@
+/**
+ * ExplorePage.jsx: Browse all templates with search, category, difficulty, sort and pagination (state is kept in the URL).
+ */
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, X, ChevronLeft, ChevronRight, SlidersHorizontal, Layers, RotateCcw } from 'lucide-react';
+import {
+  Search,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Layers,
+  RotateCcw
+} from 'lucide-react';
 import { dbService } from '../services/dbService.js';
 import { TEMPLATE_CATEGORIES } from '../services/templateEngines.js';
-import TemplateCard, { CATEGORY_BADGE_STYLES } from '../components/common/TemplateCard.jsx';
+import TemplateCard from '../components/common/TemplateCard.jsx';
 
 export default function ExplorePage() {
   const [searchParams, setSearchParams] = useSearchParams();

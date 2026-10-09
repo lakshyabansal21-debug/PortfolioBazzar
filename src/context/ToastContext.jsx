@@ -1,3 +1,6 @@
+/**
+ * ToastContext.jsx: Small popup messages. Use it anywhere with: const { addToast } = useToast(); addToast('Saved', 'success');
+ */
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
 

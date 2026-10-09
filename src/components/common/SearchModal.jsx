@@ -1,8 +1,17 @@
+/**
+ * SearchModal.jsx: Quick-search popup (Ctrl/Cmd+K): searches templates as you type and remembers recent searches.
+ */
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, X, ArrowRight, Layers, Code, Sparkles, Clock } from 'lucide-react';
+import {
+  Search,
+  X,
+  ArrowRight,
+  Layers,
+  Code,
+  Clock
+} from 'lucide-react';
 import { dbService } from '../../services/dbService.js';
-import { TEMPLATE_CATEGORIES } from '../../services/templateEngines.js';
 
 export default function SearchModal({ isOpen, onClose }) {
   const navigate = useNavigate();

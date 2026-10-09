@@ -1,17 +1,15 @@
+<<<<<<< HEAD
+=======
+/**
+ * UploadPage.jsx: Publish your own template: import or paste HTML/CSS/JS, mark editable details, preview and submit.
+ */
+>>>>>>> a6a0a74 (Update website content and layout)
 import React, { useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Upload, 
-  Code2, 
-  Eye, 
-  Check, 
-  Image as ImageIcon,
-  ArrowRight,
-  X,
-  Plus,
-  Sparkles,
-  Layers,
-  CheckCircle2
+import {
+  Upload,
+  Eye,
+  ArrowRight
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { TEMPLATE_CATEGORIES } from '../services/templateEngines.js';
@@ -21,6 +19,10 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import EditableFieldsBuilder from '../components/portfolio/EditableFieldsBuilder.jsx';
 import { embedFieldDefs, readFieldDefs } from '../utils/editableFields.js';
+<<<<<<< HEAD
+=======
+import { DEFAULT_UPLOAD_THUMBNAIL } from '../config/siteConfig.js';
+>>>>>>> a6a0a74 (Update website content and layout)
 
 export default function UploadPage() {
   const navigate = useNavigate();
@@ -31,7 +33,7 @@ export default function UploadPage() {
   const [category, setCategory] = useState('Developer');
   const [difficulty, setDifficulty] = useState('Intermediate');
   const [description, setDescription] = useState('');
-  const [thumbnailUrl, setThumbnailUrl] = useState('https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80');
+  const [thumbnailUrl, setThumbnailUrl] = useState(DEFAULT_UPLOAD_THUMBNAIL);
   const [tags, setTags] = useState(['HTML5', 'CSS3', 'JavaScript']);
   const [tagInput, setTagInput] = useState('');
   
@@ -216,9 +218,9 @@ body {
         html_code: embedFieldDefs(htmlCode, editableFields),
         css_code: cssCode,
         js_code: jsCode,
-        creator_id: user?.id || 'guest-creator',
+        creator_id: user?.id || 'guest',
         creator_name: profile?.username || user?.email?.split('@')[0] || 'Community Designer',
-        creator_avatar: profile?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'
+        creator_avatar: profile?.avatar_url || null
       });
 
       confetti({ particleCount: 100, spread: 60 });

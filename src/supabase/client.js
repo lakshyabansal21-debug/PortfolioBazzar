@@ -40,7 +40,7 @@ const rawAnonKey = (
 ).trim();
 
 export const supabaseUrl = resolveSupabaseUrl(rawUrl, rawAnonKey);
-export const supabaseAnonKey = rawAnonKey;
+const supabaseAnonKey = rawAnonKey;
 
 export const isSupabaseConfigured = Boolean(
   supabaseUrl && 
@@ -90,7 +90,7 @@ export async function testSupabaseConnection() {
   try {
     const t0 = performance.now();
     // Test auth settings endpoint or profiles table
-    const { count, error } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+    const { error } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
     const latency = Math.round(performance.now() - t0);
 
     if (error && error.code !== 'PGRST116') {

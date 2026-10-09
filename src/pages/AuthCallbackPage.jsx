@@ -1,3 +1,6 @@
+/**
+ * AuthCallbackPage.jsx: Where Google / GitHub login comes back to. Finishes the sign in and returns the user to the page they came from.
+ */
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase/client.js';

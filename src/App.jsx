@@ -1,3 +1,6 @@
+/**
+ * App.jsx: App skeleton: providers (router, auth, toasts) and the list of all routes.
+ */
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext.jsx';

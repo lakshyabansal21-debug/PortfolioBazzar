@@ -1,35 +1,32 @@
+/**
+ * TemplateDetailsPage.jsx: One template: live preview, code tabs, like / favorite / download / share, reviews, and related templates.
+ */
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { 
-  Heart, 
-  Download, 
-  Share2, 
-  Code2, 
-  Monitor, 
-  Tablet, 
-  Smartphone, 
-  Check, 
-  Copy, 
+import { getAvatarUrl } from '../utils/avatar.js';
+import { getSiteHost } from '../config/siteConfig.js';
+import {
+  Heart,
+  Download,
+  Share2,
+  Code2,
+  Monitor,
+  Tablet,
+  Smartphone,
+  Check,
+  Copy,
   ArrowLeft,
   ExternalLink,
-  MessageSquare,
-  Send,
   Star,
   Maximize2,
   Minimize2,
-  Layers,
-  Sparkles,
-  Info,
-  Wand2,
-  CheckCircle2,
   Edit3,
   X,
   UserCheck,
   Save,
   Mail,
   Github,
-  Linkedin,
-  Twitter
+  Linkedin
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { dbService } from '../services/dbService.js';
@@ -58,6 +55,17 @@ export default function TemplateDetailsPage() {
   const [copiedCode, setCopiedCode] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [relatedTemplates, setRelatedTemplates] = useState([]);
+
+  // Whether the current user liked / saved this template (re-checked when the user logs in or out)
+  useEffect(() => {
+    if (!template) return undefined;
+    let cancelled = false;
+    dbService.isLiked(template.id, user?.id).then((liked) => {
+      if (!cancelled) setIsLiked(liked);
+    });
+    setIsFav(dbService.isFavorite(template.id, user?.id));
+    return () => { cancelled = true; };
+  }, [template?.id, user?.id]);
 
   // Reviews state
   const [comments, setComments] = useState([]);
@@ -157,11 +165,6 @@ export default function TemplateDetailsPage() {
             setTemplate(data);
             setLikesCount(data.likes_count || 0);
             try {
-              setIsLiked(dbService.isLiked(data.id));
-              setIsFav(dbService.isFavorite(data.id));
-            } catch (e) {}
-
-            try {
               const comms = await dbService.getComments(data.id);
               setComments(comms || []);
             } catch (e) {
@@ -225,7 +228,16 @@ export default function TemplateDetailsPage() {
 
   const handleLike = async () => {
     if (!template) return;
-    const res = await dbService.toggleLike(template.id, user?.id || 'guest');
+    const res = await dbService.toggleLike(template.id, user?.id);
+    if (res.requiresLogin) {
+      setLikesCount(res.count);
+      addToast('Please sign in to like this template', 'info');
+      return;
+    }
+    if (res.error) {
+      addToast(`Could not update your like: ${res.error}`, 'error');
+      return;
+    }
     setIsLiked(res.hasLiked);
     setLikesCount(res.count);
     if (res.hasLiked) {
@@ -235,7 +247,7 @@ export default function TemplateDetailsPage() {
 
   const handleFavorite = async () => {
     if (!template) return;
-    const fav = await dbService.toggleFavorite(template.id);
+    const fav = await dbService.toggleFavorite(template.id, user?.id);
     setIsFav(fav);
     addToast(fav ? 'Saved to your favorites' : 'Removed from favorites', 'info');
   };
@@ -278,10 +290,11 @@ export default function TemplateDetailsPage() {
     if (!newComment.trim()) return;
 
     setSubmittingComment(true);
+    const authorName = profile?.username || user?.email?.split('@')[0] || 'Guest';
     const added = await dbService.addComment(template.id, {
-      user_id: user?.id || 'guest',
-      user_name: profile?.username || user?.email?.split('@')[0] || 'Developer Guest',
-      user_avatar: profile?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80',
+      user_id: user?.id,
+      user_name: authorName,
+      user_avatar: profile?.avatar_url || null,
       content: newComment.trim(),
       rating: newRating
     });
@@ -381,7 +394,7 @@ export default function TemplateDetailsPage() {
           <div className="flex flex-wrap items-center gap-4 text-xs text-pencil pt-2 border-t border-line">
             <div className="flex items-center gap-2">
               <img
-                src={template.creator_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'}
+                src={getAvatarUrl(template.creator_avatar, template.creator_name)}
                 alt=""
                 className="w-5 h-5 rounded-full object-cover border border-line"
               />
@@ -452,7 +465,11 @@ export default function TemplateDetailsPage() {
               className="text-[11px] font-mono text-pencil hover:text-accent flex items-center gap-1 transition-colors min-w-0"
               title="Open standalone live website"
             >
+<<<<<<< HEAD
               <span className="truncate hidden sm:inline">portfoliohub.dev/site/{template.id?.substring(0, 8) || 'preview'}</span>
+=======
+              <span className="truncate hidden sm:inline">{getSiteHost()}/site/{template.id?.substring(0, 8) || 'preview'}</span>
+>>>>>>> a6a0a74 (Update website content and layout)
               <ExternalLink className="w-2.5 h-2.5" />
             </a>
           </div>
@@ -708,14 +725,18 @@ export default function TemplateDetailsPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <img
-                            src={comm.user_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'}
+                            src={getAvatarUrl(comm.user_avatar, comm.user_name)}
                             alt=""
                             className="w-6 h-6 rounded-full object-cover border border-line"
                           />
                           <span className="text-xs font-bold text-ink">{comm.user_name}</span>
                         </div>
                         <div className="flex items-center gap-0.5">
+<<<<<<< HEAD
                           {[...Array(comm.rating || 5)].map((_, i) => (
+=======
+                          {[...Array(comm.rating || 0)].map((_, i) => (
+>>>>>>> a6a0a74 (Update website content and layout)
                             <Star key={i} className="w-3.5 h-3.5 fill-hl text-accent" />
                           ))}
                         </div>

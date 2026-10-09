@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+=======
+/**
+ * EditableFieldsBuilder.jsx: Upload page section where the creator marks which details (name, email, links...) the next person can change.
+ */
+>>>>>>> a6a0a74 (Update website content and layout)
 import React, { useMemo } from 'react';
 import { Plus, Trash2, Wand2, CheckCircle2, AlertTriangle, Link2 } from 'lucide-react';
 import { FIELD_TYPES, suggestFields, countOccurrences } from '../../utils/editableFields.js';

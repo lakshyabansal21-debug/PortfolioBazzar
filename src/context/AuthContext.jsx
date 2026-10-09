@@ -1,3 +1,8 @@
+/**
+ * AuthContext.jsx: Login state for the whole app (user, profile, session, isAdmin) plus sign in / sign up / sign out.
+ * Works with Supabase when it is configured, and with a local demo user when it is not.
+ * Use it anywhere with: const { user, isAdmin } = useAuth();
+ */
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '../supabase/client.js';
 

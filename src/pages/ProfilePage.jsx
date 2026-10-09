@@ -1,23 +1,18 @@
+/**
+ * ProfilePage.jsx: The signed-in user's profile: their uploads, favorites and basic stats; edit username and bio.
+ */
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  User, 
-  Mail, 
-  Calendar, 
-  Star, 
-  Heart, 
-  Download, 
-  Layers, 
-  Edit3, 
-  Check, 
+import {
+  Mail,
+  Star,
+  Download,
+  Edit3,
   Plus,
-  Github,
-  Globe,
-  Linkedin,
-  Clock,
-  Sparkles,
-  ArrowRight
+  Clock
 } from 'lucide-react';
+import { getAvatarUrl } from '../utils/avatar.js';
+import { isSupabaseConfigured } from '../supabase/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { dbService } from '../services/dbService.js';
 import { useToast } from '../context/ToastContext.jsx';
@@ -41,15 +36,16 @@ export default function ProfilePage() {
   useEffect(() => {
     async function loadData() {
       setLoading(true);
-      const allRes = await dbService.getTemplates({ limit: 100 });
+      const allRes = await dbService.getTemplates({ limit: 1000 });
       const all = allRes.templates || [];
 
       // Filter favorites
-      const favs = all.filter(t => dbService.isFavorite(t.id));
+      const favs = all.filter(t => dbService.isFavorite(t.id, user?.id));
       setFavoriteTemplates(favs);
 
       // Filter uploads
-      const uploads = all.filter(t => t.creator_id === user?.id || t.creator_name === profile?.username);
+      // Supabase rows store the owner in `user_id`, local uploads in `creator_id`
+      const uploads = user ? all.filter(t => t.creator_id === user.id || t.user_id === user.id) : [];
       setUploadedTemplates(uploads);
 
       setLoading(false);
@@ -70,10 +66,11 @@ export default function ProfilePage() {
 
   const displayName = profile?.username || user?.email?.split('@')[0] || 'Developer';
   const displayUsername = user?.email?.split('@')[0] || 'dev';
-  const displayAvatar = profile?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80';
+  const displayAvatar = getAvatarUrl(profile?.avatar_url, displayName);
 
   const totalDownloads = uploadedTemplates.reduce((acc, curr) => acc + (curr.downloads_count || 0), 0);
-  const totalStars = uploadedTemplates.reduce((acc, curr) => acc + (curr.likes_count || 0), 0) + favoriteTemplates.length;
+  // "stars" = likes received on the templates I published
+  const totalStars = uploadedTemplates.reduce((acc, curr) => acc + (curr.likes_count || 0), 0);
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-7">
@@ -95,16 +92,21 @@ export default function ProfilePage() {
                 <span className="font-mono text-xs text-pencil">@{displayUsername}</span>
                 <span className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  Supabase Synced
+                  {isSupabaseConfigured ? 'Cloud account' : 'Saved on this device'}
                 </span>
               </div>
 
               <p className="text-xs sm:text-sm text-soft max-w-xl leading-relaxed">
+<<<<<<< HEAD
                 {profile?.bio || 'Building minimalist developer portfolios and lightweight web architectures.'}
+=======
+                {profile?.bio || 'No bio yet. Use "Edit profile" to add one.'}
+>>>>>>> a6a0a74 (Update website content and layout)
               </p>
 
               {/* Social & Contact Links */}
               <div className="flex flex-wrap items-center gap-4 pt-1 text-xs text-soft">
+<<<<<<< HEAD
                 <a
                   href="https://github.com"
                   target="_blank"
@@ -123,9 +125,11 @@ export default function ProfilePage() {
                   <Linkedin className="w-3.5 h-3.5 text-pencil" />
                   <span>linkedin</span>
                 </a>
+=======
+>>>>>>> a6a0a74 (Update website content and layout)
                 <span className="flex items-center gap-1.5 text-pencil">
                   <Mail className="w-3.5 h-3.5" />
-                  <span>{user?.email || 'developer@portfoliohub.dev'}</span>
+                  <span>{user?.email || 'No email'}</span>
                 </span>
               </div>
             </div>

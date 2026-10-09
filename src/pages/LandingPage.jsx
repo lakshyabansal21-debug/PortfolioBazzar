@@ -1,26 +1,20 @@
+/**
+ * LandingPage.jsx: Home page: hero, live demo preview with style tabs, and featured templates.
+ */
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  ArrowRight, 
-  Code2, 
-  Layers, 
-  Download, 
-  Sparkles, 
-  Monitor, 
-  Smartphone, 
-  Tablet, 
-  Check, 
-  ExternalLink,
+import {
+  ArrowRight,
+  Code2,
+  Layers,
+  Monitor,
+  Smartphone,
+  Tablet,
   ChevronRight,
-  Terminal,
-  Cpu,
-  Palette,
   Shield,
   Zap,
-  ArrowUpRight,
   FileCode2,
   Sliders,
-  CheckCircle2,
   Wand2
 } from 'lucide-react';
 import { dbService } from '../services/dbService.js';
@@ -28,6 +22,10 @@ import { TEMPLATE_CATEGORIES, generatePortfolioCode, DEFAULT_USER_DATA } from '.
 import { assemblePreviewHtml } from '../utils/previewHelper.js';
 import TemplateCard, { CATEGORY_BADGE_STYLES } from '../components/common/TemplateCard.jsx';
 import HeroStack from '../components/common/HeroStack.jsx';
+<<<<<<< HEAD
+=======
+import { getSiteHost } from '../config/siteConfig.js';
+>>>>>>> a6a0a74 (Update website content and layout)
 
 export default function LandingPage() {
   const [featuredTemplates, setFeaturedTemplates] = useState([]);
@@ -170,7 +168,11 @@ export default function LandingPage() {
 
             {/* Center: Fake URL bar */}
             <div className="hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-md bg-white border border-line text-[11px] font-mono text-pencil max-w-xs truncate shadow-2xs">
+<<<<<<< HEAD
               <span className="text-ink font-semibold">portfoliohub.dev</span>
+=======
+              <span className="text-ink font-semibold">{getSiteHost()}</span>
+>>>>>>> a6a0a74 (Update website content and layout)
               <span>/live/{selectedPreview.key.toLowerCase()}</span>
             </div>
 
@@ -502,7 +504,11 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-sm font-bold text-ink">Instant Load Times</h3>
                 <p className="text-xs text-soft leading-relaxed">
+<<<<<<< HEAD
                   Clean HTML and modular CSS render in under 100ms. Perfect scores on Google Lighthouse without performance tuning.
+=======
+                  Plain HTML and CSS, with no framework and no build step, keep every page light and quick to load.
+>>>>>>> a6a0a74 (Update website content and layout)
                 </p>
               </div>
 
