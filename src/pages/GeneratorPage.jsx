@@ -255,11 +255,7 @@ export default function GeneratorPage() {
             <div className="space-y-4">
               <div>
                 <h2 className="text-sm font-bold text-ink">Choose Portfolio Engine</h2>
-<<<<<<< HEAD
-                <p className="text-xs text-soft mt-0.5">Select from 24 hand-crafted responsive architectures with rich CSS transforms and animations.</p>
-=======
                 <p className="text-xs text-soft mt-0.5">Select from {TEMPLATE_CATEGORIES.length} hand-crafted responsive architectures with rich CSS transforms and animations.</p>
->>>>>>> a6a0a74 (Update website content and layout)
               </div>
 
               <div className="grid grid-cols-2 gap-2.5 max-h-[500px] overflow-y-auto pr-1">

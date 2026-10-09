@@ -1,9 +1,6 @@
-<<<<<<< HEAD
-=======
 /**
  * UploadPage.jsx: Publish your own template: import or paste HTML/CSS/JS, mark editable details, preview and submit.
  */
->>>>>>> a6a0a74 (Update website content and layout)
 import React, { useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -19,10 +16,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import EditableFieldsBuilder from '../components/portfolio/EditableFieldsBuilder.jsx';
 import { embedFieldDefs, readFieldDefs } from '../utils/editableFields.js';
-<<<<<<< HEAD
-=======
 import { DEFAULT_UPLOAD_THUMBNAIL } from '../config/siteConfig.js';
->>>>>>> a6a0a74 (Update website content and layout)
 
 export default function UploadPage() {
   const navigate = useNavigate();

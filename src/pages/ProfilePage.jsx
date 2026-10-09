@@ -97,36 +97,11 @@ export default function ProfilePage() {
               </div>
 
               <p className="text-xs sm:text-sm text-soft max-w-xl leading-relaxed">
-<<<<<<< HEAD
-                {profile?.bio || 'Building minimalist developer portfolios and lightweight web architectures.'}
-=======
                 {profile?.bio || 'No bio yet. Use "Edit profile" to add one.'}
->>>>>>> a6a0a74 (Update website content and layout)
               </p>
 
               {/* Social & Contact Links */}
               <div className="flex flex-wrap items-center gap-4 pt-1 text-xs text-soft">
-<<<<<<< HEAD
-                <a
-                  href="https://github.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-1.5 hover:text-ink transition-colors"
-                >
-                  <Github className="w-3.5 h-3.5 text-pencil" />
-                  <span>github.com/{displayUsername}</span>
-                </a>
-                <a
-                  href="https://linkedin.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-1.5 hover:text-ink transition-colors"
-                >
-                  <Linkedin className="w-3.5 h-3.5 text-pencil" />
-                  <span>linkedin</span>
-                </a>
-=======
->>>>>>> a6a0a74 (Update website content and layout)
                 <span className="flex items-center gap-1.5 text-pencil">
                   <Mail className="w-3.5 h-3.5" />
                   <span>{user?.email || 'No email'}</span>

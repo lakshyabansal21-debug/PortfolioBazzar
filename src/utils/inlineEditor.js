@@ -13,11 +13,7 @@
  *
  * The page's own clicks / links are blocked while editing so nothing navigates away.
  */
-<<<<<<< HEAD
-export const INLINE_EDITOR_SCRIPT = String.raw`
-=======
 const INLINE_EDITOR_SCRIPT = String.raw`
->>>>>>> a6a0a74 (Update website content and layout)
 (function () {
   if (window.__phEditor) return;
   window.__phEditor = true;

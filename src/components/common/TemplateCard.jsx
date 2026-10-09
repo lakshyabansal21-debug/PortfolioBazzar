@@ -13,11 +13,8 @@ import { dbService } from '../../services/dbService.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import useTilt from '../../hooks/useTilt.js';
-<<<<<<< HEAD
-=======
 import { getAvatarUrl } from '../../utils/avatar.js';
 import { DEFAULT_THUMBNAIL } from '../../config/siteConfig.js';
->>>>>>> a6a0a74 (Update website content and layout)
 
 // One calm badge style for every category (the thumbnail already carries the colour)
 const CATEGORY_NAMES = [
@@ -36,14 +33,8 @@ export default function TemplateCard({ template }) {
   const { user } = useAuth();
   const { addToast } = useToast();
 
-<<<<<<< HEAD
-  const [likesCount, setLikesCount] = useState(template.likes_count || 0);
-  const [isLiked, setIsLiked] = useState(dbService.isLiked(template.id));
-  const [isFav, setIsFav] = useState(dbService.isFavorite(template.id));
-=======
   const likesCount = template.likes_count || 0;
   const [isFav, setIsFav] = useState(dbService.isFavorite(template.id, user?.id));
->>>>>>> a6a0a74 (Update website content and layout)
   const tiltRef = useTilt(5);
 
   const handleFavorite = async (e) => {

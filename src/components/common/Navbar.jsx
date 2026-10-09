@@ -46,7 +46,7 @@ export default function Navbar() {
   }, []);
 
   const navLinks = [
-    // { name: 'Explore', path: '/explore', icon: Compass },
+    { name: 'Explore', path: '/explore', icon: Compass },
     { name: 'Templates', path: '/explore?sort=popular', icon: Layers },
     { name: 'Generator', path: '/generator', icon: Wand2 },
     { name: 'Editor', path: '/editor', icon: Code2 },

@@ -3,19 +3,9 @@
  */
 import React, { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-<<<<<<< HEAD
-import { 
-  ShieldCheck, 
-  Layers, 
-  Download, 
-  Star, 
-  Trash2, 
-  Eye, 
-=======
 import {
   Trash2,
   Eye,
->>>>>>> a6a0a74 (Update website content and layout)
   Database,
   Plus,
   RefreshCw,
@@ -119,30 +109,6 @@ function AdminDashboardContent() {
         </Link>
       </div>
 
-<<<<<<< HEAD
-      {/* Metrics Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="p-4 rounded-xl bg-white border border-line space-y-1 shadow-2xs">
-          <div className="text-[10px] font-mono text-pencil uppercase tracking-wider">Active Templates</div>
-          <p className="text-2xl font-bold text-ink">{templates.length}</p>
-        </div>
-
-        <div className="p-4 rounded-xl bg-white border border-line space-y-1 shadow-2xs">
-          <div className="text-[10px] font-mono text-pencil uppercase tracking-wider">Total Downloads</div>
-          <p className="text-2xl font-bold text-ink">{totalDownloads.toLocaleString()}</p>
-        </div>
-
-        <div className="p-4 rounded-xl bg-white border border-line space-y-1 shadow-2xs">
-          <div className="text-[10px] font-mono text-pencil uppercase tracking-wider">Community Stars</div>
-          <p className="text-2xl font-bold text-ink">{totalLikes.toLocaleString()}</p>
-        </div>
-
-        <div className="p-4 rounded-xl bg-white border border-line space-y-1 shadow-2xs">
-          <div className="text-[10px] font-mono text-pencil uppercase tracking-wider">Storage Engine</div>
-          <p className="text-xs font-bold text-ink pt-2">
-            {isSupabaseConfigured ? 'Supabase Postgres (Cloud)' : 'Local Engine (IndexedDB)'}
-          </p>
-=======
       {/* Metrics Row (real numbers, calculated from the data) */}
       {loading && !stats && <p className="text-xs text-pencil">Loading statistics...</p>}
       {stats && (
@@ -183,7 +149,6 @@ function AdminDashboardContent() {
               {stats.storage === 'cloud' ? 'Supabase (cloud)' : 'This browser (localStorage)'}
             </p>
           </div>
->>>>>>> a6a0a74 (Update website content and layout)
         </div>
       )}
 
@@ -206,11 +171,7 @@ function AdminDashboardContent() {
                 </span>
               </div>
               <p className="text-xs text-soft mt-0.5">
-<<<<<<< HEAD
-                Populate all 24 production portfolio styles, responsive layouts, and CSS engines into your Supabase database.
-=======
                 Populate all {builtInCount} built-in portfolio styles into your Supabase database.
->>>>>>> a6a0a74 (Update website content and layout)
               </p>
             </div>
           </div>
@@ -255,11 +216,7 @@ function AdminDashboardContent() {
             <div className="p-4 border-b border-line flex items-center justify-between bg-paper">
               <div className="flex items-center gap-2">
                 <FileCode className="w-4 h-4 text-accent" />
-<<<<<<< HEAD
-                <h3 className="font-bold text-sm text-ink">Supabase SQL Seed Script (24 Styles)</h3>
-=======
                 <h3 className="font-bold text-sm text-ink">Supabase SQL Seed Script ({builtInCount} Styles)</h3>
->>>>>>> a6a0a74 (Update website content and layout)
               </div>
               <button
                 onClick={() => setShowSqlModal(false)}

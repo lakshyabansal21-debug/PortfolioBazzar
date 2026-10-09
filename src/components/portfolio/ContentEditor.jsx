@@ -1,9 +1,6 @@
-<<<<<<< HEAD
-=======
 /**
  * ContentEditor.jsx: Editor tab "Content & Skills": edit text, links, images, skills and project cards of any template.
  */
->>>>>>> a6a0a74 (Update website content and layout)
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import {
   Plus,

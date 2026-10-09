@@ -465,11 +465,7 @@ export default function TemplateDetailsPage() {
               className="text-[11px] font-mono text-pencil hover:text-accent flex items-center gap-1 transition-colors min-w-0"
               title="Open standalone live website"
             >
-<<<<<<< HEAD
-              <span className="truncate hidden sm:inline">portfoliohub.dev/site/{template.id?.substring(0, 8) || 'preview'}</span>
-=======
               <span className="truncate hidden sm:inline">{getSiteHost()}/site/{template.id?.substring(0, 8) || 'preview'}</span>
->>>>>>> a6a0a74 (Update website content and layout)
               <ExternalLink className="w-2.5 h-2.5" />
             </a>
           </div>
@@ -732,11 +728,7 @@ export default function TemplateDetailsPage() {
                           <span className="text-xs font-bold text-ink">{comm.user_name}</span>
                         </div>
                         <div className="flex items-center gap-0.5">
-<<<<<<< HEAD
-                          {[...Array(comm.rating || 5)].map((_, i) => (
-=======
                           {[...Array(comm.rating || 0)].map((_, i) => (
->>>>>>> a6a0a74 (Update website content and layout)
                             <Star key={i} className="w-3.5 h-3.5 fill-hl text-accent" />
                           ))}
                         </div>

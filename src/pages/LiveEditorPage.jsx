@@ -1,9 +1,6 @@
-<<<<<<< HEAD
-=======
 /**
  * LiveEditorPage.jsx: The editor: customise a built-in or uploaded template with live preview (form, content tab, click-to-edit, sections, visual, raw code), then save, remix or download.
  */
->>>>>>> a6a0a74 (Update website content and layout)
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import {
@@ -37,13 +34,10 @@ import { dbService } from '../services/dbService.js';
 import { assemblePreviewHtml, buildVisualOverrides } from '../utils/previewHelper.js';
 import { downloadPortfolioZip, downloadSingleHtml } from '../utils/zipExport.js';
 import ContentEditor from '../components/portfolio/ContentEditor.jsx';
-<<<<<<< HEAD
-=======
 import TemplateInfoTab from '../components/editor/TemplateInfoTab.jsx';
 import VisualTab from '../components/editor/VisualTab.jsx';
 import SectionsTab from '../components/editor/SectionsTab.jsx';
 import CodeTab from '../components/editor/CodeTab.jsx';
->>>>>>> a6a0a74 (Update website content and layout)
 import FillDetailsForm from '../components/portfolio/FillDetailsForm.jsx';
 import { readFieldDefs } from '../utils/editableFields.js';
 import {
@@ -835,177 +829,22 @@ export default function LiveEditorPage() {
 
             {/* TEMPLATE SETTINGS METADATA TAB */}
             {activeSidebarTab === 'metadata' && loadedCustomTemplate && (
-<<<<<<< HEAD
-              <div className="space-y-4">
-                <div className="p-3 bg-paper border border-line rounded-xl">
-                  <h3 className="text-xs font-bold text-ink">Template Settings</h3>
-                  <p className="text-[11px] text-soft">
-                    Rename this template, change author attribution, or update the catalog description.
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-ink mb-1">
-                    Template Title <span className="text-accent">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={templateMeta.title}
-                    onChange={(e) => setTemplateMeta({ ...templateMeta, title: e.target.value })}
-                    placeholder="e.g. Modern Developer Showcase"
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-ink mb-1">
-                    Creator / Author Name
-                  </label>
-                  <input
-                    type="text"
-                    value={templateMeta.creator_name}
-                    onChange={(e) => setTemplateMeta({ ...templateMeta, creator_name: e.target.value })}
-                    placeholder="e.g. Lakshya Bansal"
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-ink mb-1">
-                    Template Category
-                  </label>
-                  <select
-                    value={templateMeta.category}
-                    onChange={(e) => setTemplateMeta({ ...templateMeta, category: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white cursor-pointer focus:outline-none focus:border-accent"
-                  >
-                    {TEMPLATE_CATEGORIES.map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-ink mb-1">
-                    Catalog Description
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={templateMeta.description}
-                    onChange={(e) => setTemplateMeta({ ...templateMeta, description: e.target.value })}
-                    placeholder="Describe what makes this portfolio template standout..."
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white focus:outline-none focus:border-accent resize-y"
-                  />
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleSaveToDatabase}
-                  disabled={isSavingDb}
-                  className="w-full py-2 px-3 rounded-lg bg-ink hover:bg-ink-2 text-white text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer disabled:opacity-50"
-                >
-                  <Save className="w-3.5 h-3.5 text-hl" />
-                  <span>{isSavingDb ? 'Saving Changes...' : 'Save Template Settings'}</span>
-                </button>
-              </div>
-=======
               <TemplateInfoTab
                 templateMeta={templateMeta}
                 setTemplateMeta={setTemplateMeta}
                 onSave={handleSaveToDatabase}
                 saving={isSavingDb}
               />
->>>>>>> a6a0a74 (Update website content and layout)
             )}
 
             {/* VISUAL CONFIG TAB */}
             {activeSidebarTab === 'visual' && (
-<<<<<<< HEAD
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-ink mb-1.5">Color Accent Token</label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={accentColor || '#F59E0B'}
-                      onChange={(e) => setAccentColor(e.target.value)}
-                      className="w-9 h-9 rounded-lg border border-line cursor-pointer p-0.5 bg-white"
-                    />
-                    <input
-                      type="text"
-                      value={accentColor || ''}
-                      placeholder="Template default"
-                      onChange={(e) => setAccentColor(e.target.value)}
-                      className="flex-1 px-3 py-1.5 text-xs rounded-lg border border-line font-mono uppercase text-ink focus:outline-none focus:border-accent"
-                    />
-                  </div>
-                  {/* Preset color chips */}
-                  <div className="flex items-center gap-1.5 pt-2">
-                    {['#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899', '#18181B'].map(col => (
-                      <button
-                        key={col}
-                        type="button"
-                        onClick={() => setAccentColor(col)}
-                        style={{ backgroundColor: col }}
-                        className="w-5 h-5 rounded-full border border-black/10 cursor-pointer hover:scale-110 transition-transform"
-                        title={col}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-ink mb-1.5">Primary Typography</label>
-                  <select
-                    value={customFont || ''}
-                    onChange={(e) => setCustomFont(e.target.value || null)}
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink bg-white cursor-pointer focus:outline-none focus:border-accent"
-                  >
-                    <option value="">Template default font</option>
-                    <option value="Plus Jakarta Sans">Plus Jakarta Sans (Balanced Humanist)</option>
-                    <option value="Inter">Inter (Technical Precision)</option>
-                    <option value="Geist">Geist (Developer Sans)</option>
-                    <option value="Playfair Display">Playfair Display (Editorial Serif)</option>
-                    <option value="JetBrains Mono">JetBrains Mono (CLI Code)</option>
-                  </select>
-                </div>
-
-                <div className="pt-3 border-t border-line space-y-3">
-                  <span className="text-xs font-bold text-ink">Quick Profile Overrides</span>
-                  <div>
-                    <label className="block text-[11px] font-semibold text-soft mb-1">Your Name</label>
-                    <input
-                      type="text"
-                      value={userData.personal.name}
-                      onChange={(e) => setUserData({
-                        ...userData,
-                        personal: { ...userData.personal, name: e.target.value }
-                      })}
-                      className="w-full px-3 py-1.5 text-xs rounded-lg border border-line text-ink focus:outline-none focus:border-accent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-semibold text-soft mb-1">Professional Headline</label>
-                    <input
-                      type="text"
-                      value={userData.personal.title}
-                      onChange={(e) => setUserData({
-                        ...userData,
-                        personal: { ...userData.personal, title: e.target.value }
-                      })}
-                      className="w-full px-3 py-1.5 text-xs rounded-lg border border-line text-ink focus:outline-none focus:border-accent"
-                    />
-                  </div>
-                </div>
-              </div>
-=======
               <VisualTab
                 accentColor={accentColor}
                 setAccentColor={setAccentColor}
                 customFont={customFont}
                 setCustomFont={setCustomFont}
               />
->>>>>>> a6a0a74 (Update website content and layout)
             )}
 
             {/* CONTENT & SKILLS TAB (reads any uploaded portfolio) */}
@@ -1020,122 +859,11 @@ export default function LiveEditorPage() {
 
             {/* SECTIONS REORDERING TAB (reads the real page structure) */}
             {activeSidebarTab === 'sections' && (
-<<<<<<< HEAD
-              <div className="space-y-3">
-                <p className="text-xs text-soft">
-                  Reorder or hide the main parts of this page. Changes apply to the preview and to your download.
-                </p>
-
-                {pageBlocks.length < 2 && (
-                  <div className="p-3 rounded-xl border border-line bg-paper text-xs text-soft">
-                    No separate sections were found in this HTML (the page may be built by JavaScript). Use the Raw Code tab to edit it.
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  {pageBlocks.map((blk, idx) => (
-                    <div
-                      key={`${blk.index}-${blk.label}`}
-                      className="flex items-center justify-between p-3 rounded-xl border border-line bg-paper"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <button
-                          onClick={() => handleToggleBlock(blk.index)}
-                          title={blk.hidden ? 'Show section' : 'Hide section'}
-                          className={`w-4 h-4 rounded border flex items-center justify-center cursor-pointer ${
-                            !blk.hidden ? 'bg-ink border-ink text-white' : 'bg-white border-line'
-                          }`}
-                        >
-                          {!blk.hidden && <Check className="w-3 h-3 font-bold" />}
-                        </button>
-                        <span className={`text-xs font-semibold ${!blk.hidden ? 'text-ink' : 'text-pencil line-through'}`}>
-                          {blk.label}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleMoveBlock(blk.index, -1)}
-                          disabled={idx === 0}
-                          className="p-1 text-pencil hover:text-ink disabled:opacity-30 cursor-pointer hover:bg-paper-2 rounded"
-                          title="Move section up"
-                        >
-                          <MoveUp className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleMoveBlock(blk.index, 1)}
-                          disabled={idx === pageBlocks.length - 1}
-                          className="p-1 text-pencil hover:text-ink disabled:opacity-30 cursor-pointer hover:bg-paper-2 rounded"
-                          title="Move section down"
-                        >
-                          <MoveDown className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-=======
               <SectionsTab pageBlocks={pageBlocks} onMove={handleMoveBlock} onToggle={handleToggleBlock} />
->>>>>>> a6a0a74 (Update website content and layout)
             )}
 
             {/* RAW CODE TAB */}
             {activeSidebarTab === 'code' && (
-<<<<<<< HEAD
-              <div className="h-full flex flex-col space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1 bg-paper-2 p-0.5 rounded-lg border border-line">
-                    {['html', 'css', 'js'].map((tab) => (
-                      <button
-                        key={tab}
-                        onClick={() => setCodeTab(tab)}
-                        className={`px-2.5 py-0.5 rounded text-[11px] font-mono cursor-pointer transition-colors ${
-                          codeTab === tab ? 'bg-white text-ink font-bold shadow-2xs' : 'text-pencil hover:text-ink'
-                        }`}
-                      >
-                        {tab.toUpperCase()}
-                      </button>
-                    ))}
-                  </div>
-
-                  <button
-                    onClick={() => handleCopy(codeTab === 'html' ? activeHtml : codeTab === 'css' ? activeCss : activeJs, codeTab)}
-                    className="flex items-center gap-1 text-[11px] font-semibold text-soft hover:text-ink cursor-pointer"
-                  >
-                    {copiedTab === codeTab ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
-                    <span>Copy {codeTab.toUpperCase()}</span>
-                  </button>
-                </div>
-
-                <div className="flex-1 min-h-[400px] rounded-xl bg-ink p-3 overflow-hidden flex flex-col border border-zinc-800">
-                  {codeTab === 'html' && (
-                    <textarea
-                      value={activeHtml}
-                      onChange={(e) => setCustomHtml(e.target.value)}
-                      className="w-full h-full bg-transparent text-zinc-200 font-mono text-xs focus:outline-none resize-none p-1 leading-relaxed"
-                      spellCheck={false}
-                    />
-                  )}
-                  {codeTab === 'css' && (
-                    <textarea
-                      value={activeCss}
-                      onChange={(e) => setCustomCss(e.target.value)}
-                      className="w-full h-full bg-transparent text-zinc-200 font-mono text-xs focus:outline-none resize-none p-1 leading-relaxed"
-                      spellCheck={false}
-                    />
-                  )}
-                  {codeTab === 'js' && (
-                    <textarea
-                      value={activeJs}
-                      onChange={(e) => setCustomJs(e.target.value)}
-                      className="w-full h-full bg-transparent text-zinc-200 font-mono text-xs focus:outline-none resize-none p-1 leading-relaxed"
-                      spellCheck={false}
-                    />
-                  )}
-                </div>
-              </div>
-=======
               <CodeTab
                 codeTab={codeTab}
                 setCodeTab={setCodeTab}
@@ -1148,7 +876,6 @@ export default function LiveEditorPage() {
                 copiedTab={copiedTab}
                 onCopy={handleCopy}
               />
->>>>>>> a6a0a74 (Update website content and layout)
             )}
 
           </div>
