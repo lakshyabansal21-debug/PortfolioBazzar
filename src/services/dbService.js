@@ -36,14 +36,6 @@ const EDITABLE_CLOUD_FIELDS = [
   'html_code', 'css_code', 'js_code', 'is_featured', 'is_approved', 'is_public'
 ];
 
-/** Columns needed to draw template cards and tables (everything except the heavy code columns). */
-const LIST_COLUMNS = [
-  'id', 'user_id', 'creator_name', 'title', 'description', 'category', 'difficulty', 'tags',
-  'thumbnail_url', 'preview_images', 'is_featured', 'is_approved', 'is_public',
-  'likes_count', 'downloads_count', 'views_count', 'remixes_count', 'remixed_from_id',
-  'created_at', 'updated_at'
-].join(',');
-
 /** Views counted in this browser session (so a refresh does not add another view). */
 const viewedThisSession = new Set();
 
@@ -57,9 +49,24 @@ function sameId(a, b) {
   return String(a) === String(b);
 }
 
-/** Should we talk to Supabase for this template? (configured, and the id is a real row id) */
+/** Columns needed to draw template cards and tables (everything except the heavy code columns). */
+const LIST_COLUMNS = [
+  'id', 'user_id', 'creator_name', 'title', 'description', 'category', 'difficulty', 'tags',
+  'thumbnail_url', 'preview_images', 'is_featured', 'is_approved', 'is_public',
+  'likes_count', 'downloads_count', 'views_count', 'remixes_count', 'remixed_from_id',
+  'created_at', 'updated_at'
+].join(',');
+
+/**
+ * Ids of templates that were loaded from Supabase in this session.
+ * Needed because `templates.id` is TEXT: a built-in template that was synced to Supabase keeps an id like
+ * "tmpl-minimal-01", which is not a UUID but still lives in the cloud.
+ */
+const cloudIds = new Set();
+
+/** Should we talk to Supabase for this template? (configured, and the row is known to be in the cloud) */
 function isCloudTemplate(templateId) {
-  return isSupabaseConfigured && isUuid(templateId);
+  return isSupabaseConfigured && (cloudIds.has(templateId) || isUuid(templateId));
 }
 
 /** Local list of templates. Creates it from the seeds the first time, and resets old seed copies after an update. */
@@ -237,7 +244,10 @@ export const dbService = {
         // If the live table is missing one of these columns, fall back to select('*').
         let { data, error } = await supabase.from('templates').select(LIST_COLUMNS).eq('is_approved', true);
         if (error) ({ data, error } = await supabase.from('templates').select('*').eq('is_approved', true));
-        if (!error && Array.isArray(data)) data.forEach(add);
+        if (!error && Array.isArray(data)) {
+          data.forEach((row) => cloudIds.add(row.id));
+          data.forEach(add);
+        }
       } catch (e) {
         console.warn('Supabase templates fetch notice:', e);
       }
@@ -264,9 +274,15 @@ export const dbService = {
 
     if (isSupabaseConfigured) {
       try {
-        const query = supabase.from('templates').select('*');
-        const { data, error } = isUuid(id) ? await query.eq('id', id).maybeSingle() : await query.ilike('title', id).maybeSingle();
-        if (!error && data) found = data;
+        // `templates.id` is TEXT, so look the id up first and fall back to the title
+        const byId = await supabase.from('templates').select('*').eq('id', id).maybeSingle();
+        const { data, error } = byId.data
+          ? byId
+          : await supabase.from('templates').select('*').ilike('title', id).maybeSingle();
+        if (!error && data) {
+          found = data;
+          cloudIds.add(data.id);
+        }
       } catch (e) {
         console.warn('Supabase getTemplateById notice:', e);
       }
@@ -334,6 +350,7 @@ export const dbService = {
 
         const { data, error } = await supabase.from('templates').insert(payload).select().maybeSingle();
         if (!error && data) {
+          cloudIds.add(data.id);
           // keep the local copy in sync with the real row (new id etc.)
           const synced = { ...template, ...data };
           saveLocalTemplates(loadLocalTemplates().map((t) => (t.id === template.id ? synced : t)));
@@ -425,7 +442,7 @@ export const dbService = {
             html_code: remix.html_code || '',
             css_code: remix.css_code || '',
             js_code: remix.js_code || '',
-            remixed_from_id: isUuid(originalTemplate.id) ? originalTemplate.id : null,
+            remixed_from_id: isCloudTemplate(originalTemplate.id) ? originalTemplate.id : null,
             user_id: user.id,
             is_approved: true,
             is_public: true
@@ -433,6 +450,7 @@ export const dbService = {
           .select()
           .maybeSingle();
         if (!error && data) {
+          cloudIds.add(data.id);
           const synced = { ...remix, ...data };
           saveLocalTemplates(loadLocalTemplates().map((t) => (t.id === remix.id ? synced : t)));
           return synced;
@@ -553,19 +571,34 @@ export const dbService = {
 
   /**
    * Comments of a template, newest first.
-   * Reads the Supabase `comments` table (if it exists) and the comments saved in this browser.
+   * Reads the Supabase `comments` table (author name and photo come from `profiles`)
+   * and the comments saved in this browser.
    */
   async getComments(templateId) {
     const local = readJson(KEYS.comments, {})[templateId] || [];
     let cloud = [];
     if (isSupabaseConfigured) {
       try {
-        const { data, error } = await supabase
+        // `profiles(...)` joins the author, because `comments` only stores user_id
+        let { data, error } = await supabase
           .from('comments')
-          .select('*')
+          .select('*, profiles(username, avatar_url)')
           .eq('template_id', String(templateId))
           .order('created_at', { ascending: false });
-        if (!error && Array.isArray(data)) cloud = data;
+        if (error) {
+          ({ data, error } = await supabase
+            .from('comments')
+            .select('*')
+            .eq('template_id', String(templateId))
+            .order('created_at', { ascending: false }));
+        }
+        if (!error && Array.isArray(data)) {
+          cloud = data.map((row) => ({
+            ...row,
+            user_name: row.user_name || row.profiles?.username || 'Anonymous',
+            user_avatar: row.user_avatar || row.profiles?.avatar_url || null
+          }));
+        }
       } catch (e) {
         console.warn('Supabase comments fetch notice:', e);
       }
@@ -575,31 +608,39 @@ export const dbService = {
 
   /**
    * Add a comment. `comment` = { user_id, user_name, user_avatar, content, rating }.
-   * Goes to Supabase when possible, otherwise it is saved in this browser.
+   * A signed-in user's comment goes to Supabase (only user_id, content and rating are stored,
+   * the name and photo are read back from `profiles`). Otherwise it is saved in this browser.
    * @returns the saved comment
    */
   async addComment(templateId, comment) {
-    const record = {
-      template_id: String(templateId),
-      user_id: comment.user_id || GUEST,
-      user_name: comment.user_name || 'Anonymous',
-      user_avatar: comment.user_avatar || null,
-      content: String(comment.content || '').trim(),
-      rating: comment.rating || null
-    };
-    if (!record.content) return null;
+    const content = String(comment.content || '').trim();
+    if (!content) return null;
+    const authorName = comment.user_name || 'Anonymous';
+    const authorAvatar = comment.user_avatar || null;
 
-    if (isSupabaseConfigured && isUuid(record.user_id)) {
+    if (isCloudTemplate(templateId) && isUuid(comment.user_id)) {
+      const row = { template_id: String(templateId), user_id: comment.user_id, content };
       try {
-        const { data, error } = await supabase.from('comments').insert(record).select().maybeSingle();
-        if (!error && data) return data;
-        if (error) console.warn('Supabase comment notice (is the comments table created?):', error.message);
+        // first try with the rating column; if the column does not exist yet, retry without it
+        let { data, error } = await supabase.from('comments').insert({ ...row, rating: comment.rating || null }).select().maybeSingle();
+        if (error) ({ data, error } = await supabase.from('comments').insert(row).select().maybeSingle());
+        if (!error && data) return { ...data, user_name: authorName, user_avatar: authorAvatar, rating: data.rating ?? comment.rating ?? null };
+        if (error) console.warn('Supabase comment notice:', error.message);
       } catch (e) {
         console.warn('Supabase comment error:', e);
       }
     }
 
-    const saved = { ...record, id: `c-${Date.now()}`, created_at: new Date().toISOString() };
+    const saved = {
+      id: `c-${Date.now()}`,
+      template_id: String(templateId),
+      user_id: comment.user_id || GUEST,
+      user_name: authorName,
+      user_avatar: authorAvatar,
+      content,
+      rating: comment.rating || null,
+      created_at: new Date().toISOString()
+    };
     const all = readJson(KEYS.comments, {});
     writeJson(KEYS.comments, { ...all, [templateId]: [saved, ...(all[templateId] || [])] });
     return saved;
@@ -619,7 +660,7 @@ export const dbService = {
     let registeredUsers = null;
     if (isSupabaseConfigured) {
       try {
-        const { count, error } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+        const { count, error } = await supabase.from('profiles').select('id', { count: 'exact', head: true });
         if (!error) registeredUsers = count ?? 0;
       } catch (e) {
         console.warn('Supabase profiles count notice:', e);

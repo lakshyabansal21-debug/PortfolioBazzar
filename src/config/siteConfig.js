@@ -13,11 +13,13 @@
  *   VITE_PRIVACY_URL      privacy policy
  *   VITE_TERMS_URL        terms of use
  *   VITE_CHANGELOG_URL    changelog / releases
+ *   VITE_DEMO_ADMIN_EMAIL email that becomes admin in DEMO mode only (when Supabase is not configured)
  */
 const env = (typeof import.meta !== 'undefined' && import.meta.env) || {};
 
 export const SITE = {
   name: env.VITE_SITE_NAME || 'PortfolioHub',
+  demoAdminEmail: env.VITE_DEMO_ADMIN_EMAIL || 'admin@demo.local',
   links: {
     github: env.VITE_GITHUB_URL || '',
     twitter: env.VITE_TWITTER_URL || '',

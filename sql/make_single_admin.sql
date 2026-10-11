@@ -1,6 +1,10 @@
 -- =====================================================================
 -- PortfolioHub AI: make ONE person the admin (and nobody else)
 --
+-- SHORTCUT: once sql/002_privacy_and_comments.sql (or a fresh sql/schema.sql) is installed you can simply run
+--     SELECT public.set_site_admin('you@example.com');
+-- This file does the same thing with plain UPDATE statements and works on any version of the database.
+--
 -- HOW TO USE
 --   1. The person must first create an account on your site (sign up or Google sign-in)
 --      and confirm the email, so a row exists in auth.users / public.profiles.

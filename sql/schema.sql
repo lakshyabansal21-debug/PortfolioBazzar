@@ -62,7 +62,7 @@ BEGIN
     final_username,
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', final_username),
-    COALESCE(NEW.raw_user_meta_data->>'avatar_url', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80'),
+    NEW.raw_user_meta_data->>'avatar_url',   -- no stock photo: the site draws an initials avatar
     'user'
   )
   ON CONFLICT (id) DO UPDATE SET
@@ -164,6 +164,7 @@ CREATE TABLE IF NOT EXISTS public.comments (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+ALTER TABLE public.comments ADD COLUMN IF NOT EXISTS rating INT CHECK (rating BETWEEN 1 AND 5);
 
 -- 9. FOLLOWERS TABLE
 CREATE TABLE IF NOT EXISTS public.followers (
@@ -592,6 +593,12 @@ begin
     if tg_op = 'UPDATE' and new.role is distinct from old.role then
       raise exception 'Not allowed: roles can only be changed from the SQL editor.' using errcode = '42501';
     end if;
+    -- ban flag and counters: only an admin may change them (everyone else's edits are ignored)
+    if tg_op = 'UPDATE' and not public.is_admin() then
+      new.is_banned       := old.is_banned;
+      new.total_downloads := old.total_downloads;
+      new.total_likes     := old.total_likes;
+    end if;
   end if;
   return new;
 end;
@@ -783,3 +790,45 @@ create trigger templates_publish_rate before insert on public.templates
 -- ---------------------------------------------------------------------
 -- DONE. Verify with the queries at the bottom of sql/make_single_admin.sql
 -- ---------------------------------------------------------------------
+
+-- ---------------------------------------------------------------------
+-- 10) CHOOSE THE ONE ADMIN with a single command (SQL editor only)
+--       SELECT public.set_site_admin('you@example.com');
+--     The person must have signed up and signed in once. Running it again with another
+--     email moves the admin role. The website itself can never call this.
+-- ---------------------------------------------------------------------
+create or replace function public.set_site_admin(p_email text)
+returns text
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare target uuid;
+begin
+  if auth.uid() is not null then
+    raise exception 'set_site_admin can only be run from the Supabase SQL editor';
+  end if;
+  select id into target from auth.users where lower(email) = lower(trim(p_email));
+  if target is null then
+    raise exception 'No account with email %. Sign up on the website first.', p_email;
+  end if;
+  update public.profiles set role = 'user' where role = 'admin' and id <> target;
+  update public.profiles set role = 'admin' where id = target;
+  if not found then
+    raise exception 'That account has no profile row yet. Sign in on the website once, then run this again.';
+  end if;
+  return p_email || ' is now the admin';
+end;
+$$;
+revoke all on function public.set_site_admin(text) from public, anon, authenticated;
+
+-- ---------------------------------------------------------------------
+-- 11) PRIVACY: profiles are readable by everyone, which also exposed every user's email address.
+--     Hide the email column. (The website never needs other people's emails; a signed-in user
+--     already has their own email from the login session.)
+--     Table-level SELECT must be removed first, because a column grant cannot override it.
+-- ---------------------------------------------------------------------
+revoke select on public.profiles from anon, authenticated;
+grant select (id, username, full_name, avatar_url, bio, role, is_banned, total_downloads, total_likes,
+              website, github, linkedin, created_at, updated_at)
+  on public.profiles to anon, authenticated;
