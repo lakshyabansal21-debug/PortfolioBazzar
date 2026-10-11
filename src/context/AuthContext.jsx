@@ -5,8 +5,19 @@
  */
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '../supabase/client.js';
+import { SITE } from '../config/siteConfig.js';
+import { KEYS, readText, writeText, removeKey } from '../services/localStore.js';
 
 const AuthContext = createContext(null);
+
+/**
+ * Columns we read from `profiles`. `email` is left out on purpose: the database hides it from other
+ * users, and the app already has your own email from the login session.
+ */
+const PROFILE_COLUMNS = 'id, username, full_name, avatar_url, bio, role, is_banned, website, github, linkedin, created_at, updated_at';
+
+/** Profile fields a user is allowed to change about themselves (role etc. can never be sent from the app). */
+const EDITABLE_PROFILE_FIELDS = ['username', 'full_name', 'bio', 'avatar_url', 'website', 'github', 'linkedin'];
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -32,7 +43,7 @@ export function AuthProvider({ children }) {
         }
       } else {
         // Check local demo session
-        const savedDemo = localStorage.getItem('portfoliohub_auth_user');
+        const savedDemo = readText(KEYS.authUser);
         if (savedDemo) {
           try {
             const parsed = JSON.parse(savedDemo);
@@ -91,56 +102,54 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  // Fetch or automatically initialize profile row in public.profiles table
+  /**
+   * Load the signed-in user's profile row.
+   * The database creates the row when someone signs up (trigger handle_new_user). If it is
+   * missing (old account), we create it. We only create it when the read worked and found
+   * nothing: a failed read must never overwrite an existing profile (it could demote an admin).
+   */
   async function ensureProfile(userRecord, customUsername = '') {
     if (!isSupabaseConfigured || !userRecord?.id) return null;
 
     try {
-      // 1. Try to read existing profile
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select(PROFILE_COLUMNS)
         .eq('id', userRecord.id)
         .maybeSingle();
 
-      if (!error && data) {
+      if (error) {
+        console.warn('Profile read notice:', error.message);
+        return null;
+      }
+      if (data) {
         setProfile(data);
         return data;
       }
 
-      // 2. If row does not exist, insert initial profile row
-      const fallbackName = customUsername || 
-        userRecord.user_metadata?.username || 
-        userRecord.user_metadata?.full_name || 
-        userRecord.user_metadata?.name || 
-        userRecord.email?.split('@')[0] || 
+      // No row yet: create one. `role` is not sent, the database default ("user") applies.
+      const fallbackName = customUsername ||
+        userRecord.user_metadata?.username ||
+        userRecord.user_metadata?.full_name ||
+        userRecord.user_metadata?.name ||
+        userRecord.email?.split('@')[0] ||
         'Developer';
 
-      const initialProfile = {
+      const newProfile = {
         id: userRecord.id,
         username: fallbackName,
         email: userRecord.email,
         full_name: userRecord.user_metadata?.full_name || fallbackName,
-        avatar_url: userRecord.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
-        role: 'user',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        avatar_url: userRecord.user_metadata?.avatar_url || null
       };
 
-      const { data: created, error: insertErr } = await supabase
-        .from('profiles')
-        .upsert(initialProfile, { onConflict: 'id' })
-        .select()
-        .maybeSingle();
+      const { error: insertErr } = await supabase.from('profiles').upsert(newProfile, { onConflict: 'id', ignoreDuplicates: true });
+      if (insertErr) console.warn('Profile create notice:', insertErr.message);
 
-      if (!insertErr && created) {
-        setProfile(created);
-        return created;
-      } else {
-        // Fallback in-memory profile state if RLS or schema constraint requires it
-        setProfile(initialProfile);
-        return initialProfile;
-      }
+      const { data: created } = await supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', userRecord.id).maybeSingle();
+      const finalProfile = created || { ...newProfile, role: 'user' };
+      setProfile(finalProfile);
+      return finalProfile;
     } catch (e) {
       console.warn('Profile synchronization note:', e);
       return null;
@@ -150,7 +159,7 @@ export function AuthProvider({ children }) {
   async function fetchProfile(userId) {
     if (!isSupabaseConfigured) return;
     try {
-      const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
+      const { data, error } = await supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', userId).maybeSingle();
       if (!error && data) {
         setProfile(data);
       } else if (user) {
@@ -168,7 +177,7 @@ export function AuthProvider({ children }) {
       if (typeof window !== 'undefined') {
         const currentPath = window.location.pathname + window.location.search;
         if (!currentPath.includes('/auth/callback')) {
-          localStorage.setItem('portfoliohub_auth_return_url', currentPath);
+          writeText(KEYS.authReturnUrl, currentPath);
         }
       }
 
@@ -232,13 +241,13 @@ export function AuthProvider({ children }) {
         email: 'alex.creator@gmail.com',
         username: 'Alex Vance',
         full_name: 'Alex Vance',
-        role: 'admin',
-        avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
-        bio: 'Senior Full Stack Engineer & open-source template creator.'
+        role: 'user',
+        avatar_url: null,
+        bio: ''
       };
       setUser(demoUser);
       setProfile(demoUser);
-      localStorage.setItem('portfoliohub_auth_user', JSON.stringify(demoUser));
+      writeText(KEYS.authUser, JSON.stringify(demoUser));
       return { user: demoUser };
     }
   }
@@ -275,13 +284,14 @@ export function AuthProvider({ children }) {
         email,
         username: email.split('@')[0],
         full_name: email.split('@')[0],
-        role: email.includes('admin') ? 'admin' : 'user',
-        avatar_url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
-        bio: 'PortfolioHub AI Creator'
+        // Demo mode only (no Supabase): exactly one email, set by VITE_DEMO_ADMIN_EMAIL, is admin
+        role: SITE.demoAdminEmail && email.toLowerCase() === SITE.demoAdminEmail.toLowerCase() ? 'admin' : 'user',
+        avatar_url: null,
+        bio: ''
       };
       setUser(demoUser);
       setProfile(demoUser);
-      localStorage.setItem('portfoliohub_auth_user', JSON.stringify(demoUser));
+      writeText(KEYS.authUser, JSON.stringify(demoUser));
       return { user: demoUser };
     }
   }
@@ -338,7 +348,7 @@ export function AuthProvider({ children }) {
       };
       setUser(demoUser);
       setProfile(demoUser);
-      localStorage.setItem('portfoliohub_auth_user', JSON.stringify(demoUser));
+      writeText(KEYS.authUser, JSON.stringify(demoUser));
       return { user: demoUser, session: { user: demoUser }, requiresEmailConfirmation: false };
     }
   }
@@ -380,30 +390,31 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // Update Profile - guarantees persistence in public.profiles table in Supabase
-  async function updateProfile(rawUpdates) {
-    // Roles are managed in the database only; never send `role` from the browser.
-    const { role: _ignoredRole, ...updates } = rawUpdates || {};
-    const newProfile = { ...(profile || {}), ...updates };
+  /**
+   * Save changes to the user's own profile.
+   * Only the fields in EDITABLE_PROFILE_FIELDS are sent, so the app can never try to change
+   * `role` or `is_banned` (the database blocks that as well).
+   */
+  async function updateProfile(updates) {
+    const allowed = Object.fromEntries(
+      Object.entries(updates || {}).filter(([key]) => EDITABLE_PROFILE_FIELDS.includes(key))
+    );
+    const newProfile = { ...(profile || {}), ...allowed };
     setProfile(newProfile);
-    setUser(prev => ({ ...(prev || {}), ...updates }));
 
     if (isSupabaseConfigured && user?.id) {
-      try {
-        const { error } = await supabase
-          .from('profiles')
-          .upsert({ 
-            id: user.id, 
-            ...updates, 
-            updated_at: new Date().toISOString() 
-          }, { onConflict: 'id' });
-
-        if (error) console.warn('Profile update db error:', error);
-      } catch (e) {
-        console.warn('Profile update error:', e);
+      const { error } = await supabase
+        .from('profiles')
+        .update({ ...allowed, updated_at: new Date().toISOString() })
+        .eq('id', user.id);
+      if (error) {
+        console.warn('Profile update db error:', error);
+        throw new Error(error.message);
       }
     } else {
-      localStorage.setItem('portfoliohub_auth_user', JSON.stringify(newProfile));
+      const demoUser = { ...(user || {}), ...allowed };
+      setUser(demoUser);
+      writeText(KEYS.authUser, JSON.stringify(demoUser));
     }
     return newProfile;
   }
@@ -420,7 +431,7 @@ export function AuthProvider({ children }) {
     setUser(null);
     setProfile(null);
     setSession(null);
-    localStorage.removeItem('portfoliohub_auth_user');
+    removeKey(KEYS.authUser);
   }
 
   const value = {
@@ -428,9 +439,11 @@ export function AuthProvider({ children }) {
     profile,
     session,
     loading,
+    // With Supabase the profile row is the only source of truth. Demo mode (no Supabase) grants admin
+    // only on your own computer (`npm run dev`) and only to the VITE_DEMO_ADMIN_EMAIL account.
     isAdmin: isSupabaseConfigured
-      ? profile?.role === 'admin'                                        // real mode: only the role stored in the database
-      : import.meta.env.DEV && (profile?.role === 'admin' || user?.role === 'admin'), // demo mode: only on your own computer
+      ? profile?.role === 'admin'
+      : import.meta.env.DEV && user?.role === 'admin',
     signInWithOAuth,
     signInWithGoogle,
     signInWithPassword,

@@ -21,8 +21,15 @@ import {
   supabaseUrl,
   saveCustomSupabase,
   clearCustomSupabase,
-  testSupabaseConnection
+  testSupabaseConnection,
+  isSupabaseConfigured
 } from '../../supabase/client.js';
+
+/**
+ * The "Supabase Connection" panel is a developer tool. Visitors of a live site (Supabase already set in
+ * the environment) do not need it, so it only shows while developing or when Supabase is not configured yet.
+ */
+const SHOW_CONNECTION_PANEL = !isSupabaseConfigured || import.meta.env.DEV;
 
 export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
   const { 
@@ -500,6 +507,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
         )}
 
         {/* Collapsible Supabase Connection Manager & Cloud Guide */}
+        {SHOW_CONNECTION_PANEL && (
         <div className="mt-5 pt-3 border-t border-line">
           <button
             type="button"
@@ -663,6 +671,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
             </div>
           )}
         </div>
+        )}
 
       </div>
     </div>

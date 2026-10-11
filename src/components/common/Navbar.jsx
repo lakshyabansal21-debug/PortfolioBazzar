@@ -120,15 +120,17 @@ export default function Navbar() {
             {isAdmin && (
               <Link
                 to="/admin"
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold border transition-colors shadow-2xs ${
+                className={`flex items-center gap-1.5 whitespace-nowrap shrink-0 px-3 py-1.5 rounded-md text-xs font-semibold border transition-colors shadow-2xs ${
                   location.pathname === '/admin'
                     ? 'bg-ink text-white border-ink'
                     : 'bg-white text-ink border-ink/30 hover:bg-ink hover:text-white'
                 }`}
                 title="Open the admin dashboard"
+                aria-label="Admin dashboard"
               >
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Admin</span>
+                {/* text only when there is room (xl = 1280px and up), icon-only before that */}
+                <span className="hidden xl:inline">Admin</span>
               </Link>
             )}
 
@@ -137,7 +139,7 @@ export default function Navbar() {
             {/* Quick Search Button */}
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-white hover:bg-paper-2 border border-line hover:border-line-2 text-xs text-soft hover:text-ink transition-all cursor-pointer shadow-2xs"
+              className="flex items-center gap-2 whitespace-nowrap shrink-0 px-3 py-1.5 rounded-md bg-white hover:bg-paper-2 border border-line hover:border-line-2 text-xs text-soft hover:text-ink transition-all cursor-pointer shadow-2xs"
               title="Search Portfolios (Cmd+K)"
             >
               <Search className="w-3.5 h-3.5 text-pencil" />
@@ -164,7 +166,7 @@ export default function Navbar() {
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="flex items-center gap-2 p-1 pl-2.5 rounded-md border border-line bg-white hover:bg-paper-2 transition-colors text-xs font-medium text-ink cursor-pointer shadow-2xs"
                 >
-                  <span className="max-w-[120px] truncate">
+                  <span className="hidden xl:inline max-w-[120px] truncate">
                     {profile?.username || user.email?.split('@')[0]}
                   </span>
                   <img

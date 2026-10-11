@@ -1,3 +1,4 @@
+import { KEYS, readText, writeText, removeKey } from '../services/localStore.js';
 import { createClient } from '@supabase/supabase-js';
 
 // Resolve project URL, extracting project reference from JWT if needed
@@ -22,20 +23,18 @@ function resolveSupabaseUrl(rawUrl, anonKey) {
 }
 
 // Retrieve from localStorage if user configured custom connection in-app, or fall back to env vars
-const savedCustomUrl = typeof window !== 'undefined' ? localStorage.getItem('portfoliohub_supabase_url') : null;
-const savedCustomAnonKey = typeof window !== 'undefined' ? localStorage.getItem('portfoliohub_supabase_anon_key') : null;
+const savedCustomUrl = readText(KEYS.supabaseUrl);
+const savedCustomAnonKey = readText(KEYS.supabaseAnonKey);
 
 const rawUrl = (
   savedCustomUrl || 
   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) || 
-  (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_URL) || 
   ''
 ).trim();
 
 const rawAnonKey = (
   savedCustomAnonKey || 
   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_ANON_KEY) || 
-  (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_ANON_KEY) || 
   ''
 ).trim();
 
@@ -68,16 +67,16 @@ export const supabase = isSupabaseConfigured
 // Save custom Supabase credentials from UI dialog
 export function saveCustomSupabase(url, anonKey) {
   if (typeof window !== 'undefined') {
-    if (url) localStorage.setItem('portfoliohub_supabase_url', url.trim());
-    if (anonKey) localStorage.setItem('portfoliohub_supabase_anon_key', anonKey.trim());
+    if (url) writeText(KEYS.supabaseUrl, url.trim());
+    if (anonKey) writeText(KEYS.supabaseAnonKey, anonKey.trim());
   }
 }
 
 // Reset custom Supabase credentials
 export function clearCustomSupabase() {
   if (typeof window !== 'undefined') {
-    localStorage.removeItem('portfoliohub_supabase_url');
-    localStorage.removeItem('portfoliohub_supabase_anon_key');
+    removeKey(KEYS.supabaseUrl);
+    removeKey(KEYS.supabaseAnonKey);
   }
 }
 
@@ -90,7 +89,7 @@ export async function testSupabaseConnection() {
   try {
     const t0 = performance.now();
     // Test auth settings endpoint or profiles table
-    const { error } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+    const { error } = await supabase.from('profiles').select('id', { count: 'exact', head: true });
     const latency = Math.round(performance.now() - t0);
 
     if (error && error.code !== 'PGRST116') {

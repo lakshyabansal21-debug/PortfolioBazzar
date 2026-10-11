@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { TEMPLATE_CATEGORIES } from '../data/categories.js';
+import { safeUrl } from '../utils/url.js';
 import { dbService } from '../services/dbService.js';
 import { assemblePreviewHtml } from '../utils/previewHelper.js';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -20,6 +21,9 @@ import { DEFAULT_UPLOAD_THUMBNAIL } from '../config/siteConfig.js';
 
 // Each uploaded code file may be at most 1 MB (the database enforces the same limit)
 const MAX_UPLOAD_BYTES = 1024 * 1024;
+// html + css + js together may be at most 1 MB, and a template may have at most 10 tags
+const MAX_CODE_BYTES = 1024 * 1024;
+const MAX_TAGS = 10;
 
 export default function UploadPage() {
   const navigate = useNavigate();
@@ -207,6 +211,17 @@ body {
       return;
     }
 
+    const thumbnail = thumbnailUrl.trim() ? safeUrl(thumbnailUrl) : '';
+    if (thumbnailUrl.trim() && !thumbnail) {
+      addToast('The preview image link must be a normal web address (https://...)', 'error');
+      return;
+    }
+    const codeBytes = new Blob([htmlCode, cssCode, jsCode]).size;
+    if (codeBytes > MAX_CODE_BYTES) {
+      addToast(`Your code is ${(codeBytes / 1024 / 1024).toFixed(1)} MB. The limit is 1 MB (use smaller images or link to them).`, 'error');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const newTemplate = await dbService.createTemplate({
@@ -214,8 +229,8 @@ body {
         category,
         difficulty,
         description: description.trim() || 'A bespoke community-crafted developer portfolio template.',
-        thumbnail_url: thumbnailUrl.trim(),
-        tags: tags,
+        thumbnail_url: thumbnail,
+        tags: tags.slice(0, MAX_TAGS),
         html_code: embedFieldDefs(htmlCode, editableFields),
         css_code: cssCode,
         js_code: jsCode,

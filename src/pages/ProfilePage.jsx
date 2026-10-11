@@ -5,6 +5,9 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Mail,
+  Globe,
+  Github,
+  Linkedin,
   Star,
   Download,
   Edit3,
@@ -12,6 +15,7 @@ import {
   Clock
 } from 'lucide-react';
 import { getAvatarUrl } from '../utils/avatar.js';
+import { safeUrl } from '../utils/url.js';
 import { isSupabaseConfigured } from '../supabase/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { dbService } from '../services/dbService.js';
@@ -32,6 +36,10 @@ export default function ProfilePage() {
   const [editUsername, setEditUsername] = useState(profile?.username || '');
   const [editBio, setEditBio] = useState(profile?.bio || '');
   const [editAvatar, setEditAvatar] = useState(profile?.avatar_url || '');
+  const [editWebsite, setEditWebsite] = useState(profile?.website || '');
+  const [editGithub, setEditGithub] = useState(profile?.github || '');
+  const [editLinkedin, setEditLinkedin] = useState(profile?.linkedin || '');
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -53,15 +61,43 @@ export default function ProfilePage() {
     loadData();
   }, [user, profile]);
 
+  /** Open the edit form with the CURRENT saved values (the profile may have loaded after this page did). */
+  const toggleEditor = () => {
+    if (!isEditing) {
+      setEditUsername(profile?.username || '');
+      setEditBio(profile?.bio || '');
+      setEditAvatar(profile?.avatar_url || '');
+      setEditWebsite(profile?.website || '');
+      setEditGithub(profile?.github || '');
+      setEditLinkedin(profile?.linkedin || '');
+    }
+    setIsEditing(!isEditing);
+  };
+
   const handleSaveProfile = async (e) => {
     e.preventDefault();
-    await updateProfile({
-      username: editUsername.trim(),
-      bio: editBio.trim(),
-      avatar_url: editAvatar.trim()
-    });
-    setIsEditing(false);
-    addToast('Profile updated successfully', 'success');
+    const username = editUsername.trim();
+    if (username.length < 2) {
+      addToast('Display name must be at least 2 characters', 'error');
+      return;
+    }
+    // links must be normal web addresses (blocks things like javascript:...)
+    const links = { website: safeUrl(editWebsite), github: safeUrl(editGithub), linkedin: safeUrl(editLinkedin) };
+    if ((editWebsite && !links.website) || (editGithub && !links.github) || (editLinkedin && !links.linkedin)) {
+      addToast('One of the links is not a valid web address', 'error');
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await updateProfile({ username, bio: editBio.trim(), avatar_url: editAvatar.trim() || null, ...links });
+      setIsEditing(false);
+      addToast('Profile updated successfully', 'success');
+    } catch (err) {
+      const taken = /duplicate|unique/i.test(err.message || '');
+      addToast(taken ? 'That display name is already taken' : `Could not save profile: ${err.message}`, 'error');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const displayName = profile?.username || user?.email?.split('@')[0] || 'Developer';
@@ -106,12 +142,22 @@ export default function ProfilePage() {
                   <Mail className="w-3.5 h-3.5" />
                   <span>{user?.email || 'No email'}</span>
                 </span>
+                {[
+                  { url: safeUrl(profile?.website), label: 'Website', Icon: Globe },
+                  { url: safeUrl(profile?.github), label: 'GitHub', Icon: Github },
+                  { url: safeUrl(profile?.linkedin), label: 'LinkedIn', Icon: Linkedin }
+                ].filter((link) => link.url).map(({ url, label, Icon }) => (
+                  <a key={label} href={url} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-accent transition-colors">
+                    <Icon className="w-3.5 h-3.5" />
+                    <span>{label}</span>
+                  </a>
+                ))}
               </div>
             </div>
           </div>
 
           <button
-            onClick={() => setIsEditing(!isEditing)}
+            onClick={toggleEditor}
             className="px-3.5 py-1.5 rounded-lg border border-line bg-white text-ink hover:bg-paper-2 text-xs font-semibold transition-colors cursor-pointer self-start sm:self-auto flex items-center gap-1.5 shadow-2xs"
           >
             <Edit3 className="w-3.5 h-3.5 text-pencil" />
@@ -152,12 +198,32 @@ export default function ProfilePage() {
               </div>
             </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {[
+                ['Website', editWebsite, setEditWebsite, 'https://your-site.com'],
+                ['GitHub', editGithub, setEditGithub, 'https://github.com/yourname'],
+                ['LinkedIn', editLinkedin, setEditLinkedin, 'https://linkedin.com/in/yourname']
+              ].map(([label, value, setValue, placeholder]) => (
+                <div key={label}>
+                  <label className="block text-xs font-semibold text-ink mb-1">{label}</label>
+                  <input
+                    type="text"
+                    value={value}
+                    onChange={(e) => setValue(e.target.value)}
+                    placeholder={placeholder}
+                    className="w-full px-3 py-2 text-xs rounded-lg border border-line text-ink focus:outline-none focus:border-accent"
+                  />
+                </div>
+              ))}
+            </div>
+
             <div className="flex justify-end">
               <button
                 type="submit"
+                disabled={isSaving}
                 className="px-4 py-2 rounded-lg bg-hl hover:bg-accent text-ink hover:text-white text-xs font-bold transition-all cursor-pointer shadow-2xs"
               >
-                Save profile
+                {isSaving ? 'Saving...' : 'Save profile'}
               </button>
             </div>
           </form>

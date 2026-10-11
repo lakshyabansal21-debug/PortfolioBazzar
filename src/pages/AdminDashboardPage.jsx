@@ -96,7 +96,7 @@ function AdminDashboardContent() {
             Platform Administration
           </h1>
           <p className="text-xs sm:text-sm text-soft mt-1">
-            Manage public portfolio templates, feature curation, and monitor database telemetry.
+            Manage templates, choose which ones are featured, and see how the site is used.
           </p>
         </div>
 

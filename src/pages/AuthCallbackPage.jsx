@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase/client.js';
 import { CheckCircle2, RefreshCw, AlertCircle } from 'lucide-react';
+import { KEYS, readText, removeKey } from '../services/localStore.js';
 
 export default function AuthCallbackPage() {
   const navigate = useNavigate();
@@ -51,8 +52,10 @@ export default function AuthCallbackPage() {
         }
 
         // Retrieve the page the user was on prior to signing in
-        const returnUrl = localStorage.getItem('portfoliohub_auth_return_url') || '/';
-        localStorage.removeItem('portfoliohub_auth_return_url');
+        const savedReturn = readText(KEYS.authReturnUrl) || '/';
+        // only ever go back to a page on this site (never to "//evil.com" or "https://...")
+        const returnUrl = savedReturn.startsWith('/') && !savedReturn.startsWith('//') ? savedReturn : '/';
+        removeKey(KEYS.authReturnUrl);
 
         // If session is found
         if (data?.session) {

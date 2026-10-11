@@ -12,6 +12,7 @@ import {
   Clock
 } from 'lucide-react';
 import { dbService } from '../../services/dbService.js';
+import { KEYS, readJson, writeJson } from '../../services/localStore.js';
 
 export default function SearchModal({ isOpen, onClose }) {
   const navigate = useNavigate();
@@ -21,13 +22,8 @@ export default function SearchModal({ isOpen, onClose }) {
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const [recentSearches, setRecentSearches] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('ph_recent_searches') || '["Developer", "Minimal", "Terminal"]');
-    } catch {
-      return ["Developer", "Minimal", "Terminal"];
-    }
-  });
+  // real recent searches only (before, three made-up ones were shown to new visitors)
+  const [recentSearches, setRecentSearches] = useState(() => readJson(KEYS.recentSearches, []));
 
   const popularStyles = ['Developer', 'Minimal', 'Editorial', '3D Interactive', 'Terminal', 'Creative Studio'];
   const popularTech = ['HTML5', 'CSS3', 'JavaScript', 'Tailwind CSS', 'Vite'];
@@ -69,11 +65,7 @@ export default function SearchModal({ isOpen, onClose }) {
     if (!term.trim()) return;
     const updated = [term.trim(), ...recentSearches.filter((s) => s.toLowerCase() !== term.trim().toLowerCase())].slice(0, 5);
     setRecentSearches(updated);
-    try {
-      localStorage.setItem('ph_recent_searches', JSON.stringify(updated));
-    } catch {
-      // ignore
-    }
+    writeJson(KEYS.recentSearches, updated);
   };
 
   const handleSelectTemplate = (template) => {

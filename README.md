@@ -1,114 +1,92 @@
-# PortfolioHub AI 🚀
+# PortfolioHub
 
-A high-performance, community-driven portfolio website generator and template marketplace. Create, customize, upload, remix, like, and download 100% responsive, offline-ready portfolio websites in pure HTML, CSS, and JavaScript.
+Pick a portfolio template, make it yours, and host it free. Every template is plain HTML, CSS and
+JavaScript (no framework, no build step), exported as a ZIP or a single HTML file.
 
----
+**What you can do:** browse 24 built-in templates and community uploads, build one from a form (Generator),
+customise any template with a live preview (Editor: form, click-to-edit text, sections, fonts and colours, raw code),
+publish your own template (Upload), like / favorite / review templates, and manage the site from an Admin dashboard.
+Light and dark mode are built in.
 
-## 🌟 Key Features
+**Stack:** React 19, React Router 7, Tailwind CSS 4, Vite 6, Supabase (login + database). Without Supabase the app
+still runs in a local demo mode (data stays in the browser).
 
-- **12 Bespoke Templates**: Minimal, Developer, Student, Corporate, Designer, Luxury, Cyberpunk, Glassmorphism, Creative, Photographer, Dark, and 3D.
-- **Instant Offline ZIP Export**: Downloads complete packages containing `index.html`, `style.css`, and `script.js` ready to double-click or host on GitHub Pages / Vercel / Netlify.
-- **Split-Screen Live Editor**: Reorder sections with drag/reorder controls, toggle visibility, customize typography, tweak color palettes, and preview live across Desktop, Tablet, and Mobile viewports.
-- **Multi-Step Generator**: Effortlessly collect personal details, education, experience, unlimited projects, skills, achievements, contact, and social links.
-- **Community & Social**: Like, favorite, comment, view counters, download tracking, and **Remix** (fork templates while crediting the original creator).
-- **Template Upload & Marketplace**: Users can submit custom designs with live code and preview screenshots.
-- **Admin Dashboard**: Analytics, content moderation, featuring standout templates, and user status controls.
-- **Supabase & PostgreSQL**: Seamless integration for Authentication (Google OAuth & Email/Password), Storage buckets, and Row Level Security (RLS).
-
----
-
-## 🛠️ Tech Stack
-
-- **Frontend**: React 19, Vite, JavaScript (.jsx), Tailwind CSS, React Router DOM, Framer Motion, Lucide React
-- **Backend & Database**: Supabase, PostgreSQL, Supabase Auth, Supabase Storage, Row Level Security (RLS)
-- **Utilities**: JSZip, FileSaver, Canvas Confetti
-
----
-
-## 🚀 Quick Start Guide
-
-### 1. Installation
-
-Clone the repository and install all required dependencies:
+## Quick start
 
 ```bash
-npm install
+npm install               # also creates package-lock.json: commit it
+cp .env.example .env      # then fill in your Supabase URL and anon key (optional)
+npm run dev               # http://localhost:3000
 ```
 
-### 2. Configure Environment Variables
+| Command | What it does |
+|---|---|
+| `npm run dev` | start the dev server |
+| `npm run build` | production build into `dist/` |
+| `npm run preview` | serve the production build locally |
+| `npm run check` | find dead files, unused code, missing imports and undeclared packages (same as `npm run lint`) |
 
-Create a `.env` file in the root directory (copy from `.env.example`):
+Run `npm run check` before every commit. It fails when something is wrong.
 
-```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-public-key
+## Settings (`.env`)
+
+See `.env.example`. Nothing is required. Footer links and the site name come from these variables; an empty link is not shown.
+On Vercel add the same variables under **Project Settings > Environment Variables**.
+
+## Supabase setup
+
+1. Create a Supabase project and copy the **Project URL** and **anon key** into `.env`.
+2. **New project:** run `sql/schema.sql` once in the SQL editor. It already contains all security hardening, limits, the
+   privacy fix and `set_site_admin`. Then, optionally, run `supabase/setup.sql` (it only adds what is missing: like counter, view/download counters).
+3. **Existing project** (made from an older schema): run these in order, each one is safe to run twice:
+   `supabase/check.sql` (read-only look first) -> `supabase/setup.sql` -> `sql/security_fixes.sql` -> `sql/security_limits.sql` -> `sql/002_privacy_and_comments.sql`.
+   Deploy this version of the website **before** `002` (it reads profiles with explicit columns, which the privacy step needs).
+   Dry run any file by putting `BEGIN;` on its first line and `ROLLBACK;` on its last.
+4. Under **Authentication > URL Configuration** add your site URL and `https://your-site/auth/callback` (needed for Google / GitHub login).
+
+### Choosing the admin
+
+The admin is the one account whose profile has `role = 'admin'`. Sign in on the website once with that account, then run this in the SQL editor:
+
+```sql
+SELECT public.set_site_admin('you@example.com');
 ```
 
-*(Note: PortfolioHub AI includes local persistent fallback mode so all 12 templates, generator, live editor, and ZIP exports work immediately out-of-the-box even before connecting Supabase).*
+That account now sees an **Admin** button in the top bar (icon-only on smaller laptops) and can open `/admin`. Running it again with another email moves
+the role (there is only ever one admin). If you prefer plain SQL, `sql/make_single_admin.sql` does the same.
+Nobody can give themselves admin from the website: the database blocks it.
 
-### 3. Start Development Server
+In demo mode (no Supabase) the admin is the email in `VITE_DEMO_ADMIN_EMAIL`, and only while running `npm run dev`.
 
-```bash
-npm run dev
+## Deploy to Vercel
+
+Import the repository. The build command (`npm run build`) and output folder (`dist`) are detected automatically. `vercel.json` adds the
+single-page-app rewrite, security headers and long-lived caching for built assets. Add the `.env` variables in the Vercel dashboard.
+
+## Project layout
+
+See `docs/ARCHITECTURE.md` for how the pieces fit together.
+
+```
+src/
+  pages/        one file per screen
+  components/   Navbar, Footer, TemplateCard, ErrorBoundary, editor tabs, ...
+  services/     dbService (all data), templateEngines (the 24 generators), localStore
+  utils/        preview + export + the HTML editing engine, safe URLs
+  context/      login state, theme, popup messages
+  config/       siteConfig: site name and links
+sql/            schema.sql (new project) + patches for existing projects
+supabase/       setup.sql and check.sql (counters, comments, read-only inspection)
+scripts/        check.mjs
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+## Security notes
 
----
-
-## 🗄️ Supabase & PostgreSQL Setup
-
-1. Go to [supabase.com](https://supabase.com) and create a new project.
-2. In the left navigation, open the **SQL Editor**.
-3. Copy the entire contents of `sql/schema.sql` located in this repository.
-4. Paste and click **Run**. This will create:
-   - `profiles`, `templates`, `likes`, `downloads`, `views`, `favorites`, `remixes`, `comments`, and `followers` tables.
-   - Optimized indexes for search, filtering, and sorting.
-   - Row Level Security (RLS) policies.
-   - Storage buckets: `avatars`, `thumbnails`, `previews`, `templates`, and `resumes`.
-
-5. Run `supabase/setup.sql` (comments table, like counter, view/download counters).
-6. Run `sql/security_fixes.sql` (locks down roles, templates, counters and storage; see the file header).
-7. Make yourself the single admin: sign up on the site, then run `sql/make_single_admin.sql`
-   (put your email in it). After you sign in again, an **Admin** button appears in the top bar.
-
-> Roles can only be changed from the Supabase SQL editor, never from the website, and the
-> database allows at most one admin. Never put the `service_role` key in `.env` or the frontend.
-
-### Google OAuth Configuration
-
-1. In Supabase Dashboard, go to **Authentication** -> **Providers**.
-2. Enable **Google**.
-3. Supply your Google Cloud OAuth Client ID and Secret.
-4. Add the Supabase callback URL to your authorized redirect URIs in Google Cloud Console:
-   `https://<your-project-ref>.supabase.co/auth/v1/callback`
-
----
-
-## 📦 Build & Deploy on Vercel
-
-```bash
-# Build production bundle
-npm run build
-
-# Preview build locally
-npm run preview
-```
-
-### Deploy to Vercel:
-
-1. Push code to GitHub.
-2. Import project into Vercel.
-3. Configure Build Settings:
-   - **Framework Preset**: Vite
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
-4. Add Environment Variables:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
-5. Click **Deploy**.
-
----
-
-## 📄 License
-MIT License. Built for the developer community with ❤️.
+* Uploaded templates run JavaScript, so every preview is a sandboxed iframe **without** `allow-same-origin` (and without popups/modals):
+  a template cannot read the visitor's login session or open windows that escape the sandbox.
+* The login popup never sends tokens to other windows; the site only listens to messages from its own origin.
+* The admin check in the browser only decides which buttons to show. The real protection is the database (row level security + triggers in `sql/`).
+* Users cannot read other users' email addresses, change their own role / ban flag / counters, or publish more than 20 templates per hour.
+* Links typed by users (profile, thumbnail) must be http(s); `javascript:` links are rejected.
+* **Known limit:** `vercel.json` does not restrict `script-src`, because previews use `srcdoc` iframes that inherit the page's policy and a strict one
+  would break every template preview. The complete fix is to serve previews from a separate domain.
