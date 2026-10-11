@@ -101,6 +101,7 @@ html[data-theme='dark'][data-palette='plum'] {
 
 @layer base {
   html {
+    overflow-x: clip; /* safety net: nothing may make the page scroll sideways */
     background: var(--color-paper);
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
@@ -113,7 +114,7 @@ html[data-theme='dark'][data-palette='plum'] {
     line-height: 1.55;
     background-color: var(--color-paper);
     color: var(--text-main);
-    overflow-x: hidden;
+    overflow-x: clip;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -283,6 +284,8 @@ button.bg-white.border.rounded-lg:active, a.bg-white.border.rounded-lg:active {
 
 /* Hero: fanned stack of template sheets */
 .hero-stage { perspective: 1100px; }
+/* The fanned sheets shift right/up with transforms; clip them sideways so they can never widen the page on phones */
+.hero-wrap { overflow-x: clip; }
 .hero-sheet {
   position: absolute;
   inset: 0;
