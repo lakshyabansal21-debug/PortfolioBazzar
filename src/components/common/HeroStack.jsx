@@ -84,7 +84,7 @@ export default function HeroStack() {
   };
 
   return (
-    <div className="w-full max-w-[28rem] mx-auto lg:mx-0 pt-16 pr-16 pb-2">
+    <div className="hero-wrap w-full max-w-[28rem] mx-auto lg:mx-0 pt-16 pr-16 pb-2">
       <div className="hero-stage">
         <div
           ref={tiltRef}
