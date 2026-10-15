@@ -470,7 +470,7 @@ export default function LiveEditorPage() {
               <select
                 value={selectValue}
                 onChange={(e) => handleTemplateSwitch(e.target.value)}
-                className="font-semibold text-xs text-ink bg-transparent border-0 focus:outline-none cursor-pointer underline decoration-hl decoration-2 max-w-[220px]"
+                className="font-semibold text-xs text-ink bg-white border-0 focus:outline-none cursor-pointer underline decoration-hl decoration-2 max-w-[220px]"
               >
                 <optgroup label="Built-in engines">
                   {TEMPLATE_CATEGORIES.map(cat => (
