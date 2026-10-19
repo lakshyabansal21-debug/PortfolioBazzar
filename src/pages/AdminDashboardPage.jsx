@@ -71,9 +71,13 @@ function AdminDashboardContent() {
   };
 
   const handleToggleFeatured = async (id, currentFeatured) => {
-    await dbService.updateTemplate(id, { is_featured: !currentFeatured });
-    setTemplates(templates.map(t => t.id === id ? { ...t, is_featured: !currentFeatured } : t));
-    addToast(`Template ${!currentFeatured ? 'promoted to Featured' : 'reverted to Standard'}`, 'info');
+    try {
+      await dbService.updateTemplate(id, { is_featured: !currentFeatured });
+      setTemplates(templates.map(t => t.id === id ? { ...t, is_featured: !currentFeatured } : t));
+      addToast(`Template ${!currentFeatured ? 'promoted to Featured' : 'reverted to Standard'}`, 'info');
+    } catch (err) {
+      addToast(err.message || 'Could not change the featured state.', 'error');
+    }
   };
 
   const handleDelete = async (id, title) => {

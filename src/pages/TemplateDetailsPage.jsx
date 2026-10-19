@@ -29,7 +29,7 @@ import {
   Linkedin
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { dbService } from '../services/dbService.js';
+import { dbService, FAVORITES_EVENT } from '../services/dbService.js';
 import { generatePortfolioCode, DEFAULT_USER_DATA, TEMPLATE_CATEGORIES } from '../services/templateEngines.js';
 import { downloadPortfolioZip } from '../utils/zipExport.js';
 import { assemblePreviewHtml } from '../utils/previewHelper.js';
@@ -37,11 +37,13 @@ import { extractProfileFromHtml, personalizeHtml, getInitials } from '../utils/t
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import TemplateCard, { CATEGORY_BADGE_STYLES } from '../components/common/TemplateCard.jsx';
+import Seo, { clip } from '../components/common/Seo.jsx';
+import { getSiteUrl } from '../config/siteConfig.js';
 
 export default function TemplateDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
+  const { user, profile, isAdmin } = useAuth();
   const { addToast } = useToast();
 
   const [template, setTemplate] = useState(null);
@@ -63,8 +65,14 @@ export default function TemplateDetailsPage() {
     dbService.isLiked(template.id, user?.id).then((liked) => {
       if (!cancelled) setIsLiked(liked);
     });
-    setIsFav(dbService.isFavorite(template.id, user?.id));
-    return () => { cancelled = true; };
+    const refreshFav = () => setIsFav(dbService.isFavorite(template.id, user?.id));
+    refreshFav();
+    // favourites arrive from Supabase a moment after sign-in: update when they do
+    window.addEventListener(FAVORITES_EVENT, refreshFav);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(FAVORITES_EVENT, refreshFav);
+    };
   }, [template?.id, user?.id]);
 
   // Reviews state
@@ -118,8 +126,16 @@ export default function TemplateDetailsPage() {
     setIsEditModalOpen(true);
   };
 
+  // Only the owner (or the admin) may change a template; built-in ones are admin-only.
+  // The database enforces this again, this just stops showing buttons that cannot work.
+  const canEditTemplate = template ? dbService.canEdit(template, user, isAdmin) : false;
+
   const handleSaveEdit = async () => {
     if (!template) return;
+    if (!canEditTemplate) {
+      addToast('You can only edit your own templates. Open it in the editor and save your own copy.', 'error');
+      return;
+    }
     setIsSavingEdit(true);
     try {
       const oldExtracted = extractProfileFromHtml(template.html_code, {
@@ -247,9 +263,13 @@ export default function TemplateDetailsPage() {
 
   const handleFavorite = async () => {
     if (!template) return;
-    const fav = await dbService.toggleFavorite(template.id, user?.id);
-    setIsFav(fav);
-    addToast(fav ? 'Saved to your favorites' : 'Removed from favorites', 'info');
+    try {
+      const fav = await dbService.toggleFavorite(template.id, user?.id);
+      setIsFav(fav);
+      addToast(fav ? 'Saved to your favorites' : 'Removed from favorites', 'info');
+    } catch (err) {
+      addToast(err.message || 'Could not update your favorites.', 'error');
+    }
   };
 
   const handleDownloadZip = async () => {
@@ -307,6 +327,18 @@ export default function TemplateDetailsPage() {
     setSubmittingComment(false);
   };
 
+  // Wrong or removed template: say so (and keep it out of search results) instead of an endless spinner
+  if (!loading && !template) {
+    return (
+      <div className="max-w-xl mx-auto px-4 py-24 text-center space-y-4">
+        <Seo title="Template not found" noindex />
+        <h1 className="text-xl font-bold text-ink">This template could not be found</h1>
+        <p className="text-sm text-soft">It may have been removed, or the link is mistyped.</p>
+        <Link to="/explore" className="inline-block px-4 py-2 rounded-lg bg-hl text-ink text-sm font-bold">Browse templates</Link>
+      </div>
+    );
+  }
+
   if (loading || !template) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
@@ -318,6 +350,36 @@ export default function TemplateDetailsPage() {
     );
   }
 
+  // ---- SEO for this template ----
+  const siteBase = getSiteUrl();
+  const pageUrl = `${siteBase}/template/${template.id}`;
+  const tagList = Array.isArray(template.tags) ? template.tags : [];
+  const seoImage = /^https?:\/\//i.test(template.thumbnail_url || '') ? template.thumbnail_url : undefined;
+  const seoJsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'CreativeWork',
+        name: template.title,
+        description: clip(template.description, 300),
+        url: pageUrl,
+        image: seoImage,
+        genre: template.category,
+        keywords: tagList.join(', ') || undefined,
+        author: template.creator_name ? { '@type': 'Person', name: template.creator_name } : undefined,
+        dateModified: template.updated_at || template.created_at || undefined
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: `${siteBase}/` },
+          { '@type': 'ListItem', position: 2, name: 'Explore', item: `${siteBase}/explore` },
+          { '@type': 'ListItem', position: 3, name: template.title, item: pageUrl }
+        ]
+      }
+    ]
+  };
+
   const techStack = template.tags 
     ? (Array.isArray(template.tags) ? template.tags.join(' · ') : template.tags)
     : 'HTML5 · CSS3 · Vanilla JS';
@@ -326,6 +388,13 @@ export default function TemplateDetailsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-7">
+      <Seo
+        title={`${template.title}: ${template.category || 'Developer'} Portfolio Template`}
+        description={template.description || undefined}
+        path={`/template/${template.id}`}
+        image={seoImage}
+        jsonLd={seoJsonLd}
+      />
       
       {/* 1. TOP BREADCRUMB & UTILITY ACTIONS */}
       <div className="flex items-center justify-between">
@@ -347,12 +416,14 @@ export default function TemplateDetailsPage() {
           </button>
           <button
             onClick={handleFavorite}
-            className={`p-2 rounded-md border transition-colors cursor-pointer shadow-2xs ${
-              isFav ? 'bg-hl-soft text-accent border-hl' : 'bg-white text-pencil hover:text-ink border-line hover:bg-paper-2'
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border text-xs font-semibold transition-colors cursor-pointer shadow-2xs ${
+              isFav ? 'bg-hl text-ink border-accent' : 'bg-white text-pencil hover:text-ink border-line hover:bg-paper-2'
             }`}
-            title="Favorite"
+            title={isFav ? 'Saved: click to remove' : 'Save to your favorites'}
+            aria-pressed={isFav}
           >
-            <Star className={`w-3.5 h-3.5 ${isFav ? 'fill-hl' : ''}`} />
+            <Star className={`w-3.5 h-3.5 ${isFav ? 'fill-ink text-ink' : ''}`} />
+            <span>{isFav ? 'Saved' : 'Save'}</span>
           </button>
           <button
             onClick={handleLike}
@@ -419,13 +490,15 @@ export default function TemplateDetailsPage() {
             <span>Open Live Portfolio Site</span>
           </a>
 
-          <button
-            onClick={handleOpenEditModal}
-            className="w-full text-center px-4 py-2.5 rounded-lg bg-paper hover:bg-paper-2 text-ink text-xs font-bold transition-all shadow-2xs border border-line flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <Edit3 className="w-3.5 h-3.5 text-accent" />
-            <span>Edit Details & Name</span>
-          </button>
+          {canEditTemplate && (
+            <button
+              onClick={handleOpenEditModal}
+              className="w-full text-center px-4 py-2.5 rounded-lg bg-paper hover:bg-paper-2 text-ink text-xs font-bold transition-all shadow-2xs border border-line flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Edit3 className="w-3.5 h-3.5 text-accent" />
+              <span>Edit Details & Name</span>
+            </button>
+          )}
 
           <Link
             to={`/editor?templateId=${template.id}`}

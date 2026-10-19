@@ -17,7 +17,7 @@
 import { supabase, isSupabaseConfigured } from '../supabase/client.js';
 import { generatePortfolioCode, DEFAULT_USER_DATA } from './templateEngines.js';
 import { SEED_TEMPLATES, SEED_IDS } from '../data/seedTemplates.js';
-import { KEYS, readJson, writeJson } from './localStore.js';
+import { KEYS, readJson, writeJson, readText, writeText } from './localStore.js';
 import { SITE, DEFAULT_UPLOAD_THUMBNAIL } from '../config/siteConfig.js';
 
 /* ------------------------------------------------------------------ */
@@ -157,16 +157,17 @@ function filterTemplates(items, { category, difficulty, search }) {
   if (difficulty && difficulty !== 'All') {
     result = result.filter((t) => t.difficulty && t.difficulty.toLowerCase() === difficulty.toLowerCase());
   }
-  if (search && search.trim()) {
-    const q = search.trim().toLowerCase();
-    result = result.filter(
-      (t) =>
-        (t.title && t.title.toLowerCase().includes(q)) ||
-        (t.description && t.description.toLowerCase().includes(q)) ||
-        (t.creator_name && t.creator_name.toLowerCase().includes(q)) ||
-        (Array.isArray(t.tags) && t.tags.some((tag) => String(tag).toLowerCase().includes(q))) ||
-        (typeof t.tags === 'string' && t.tags.toLowerCase().includes(q))
-    );
+  // Every typed word must appear somewhere in: title, description, creator, category, level or tags.
+  const words = String(search || '').toLowerCase().split(/\s+/).filter(Boolean);
+  if (words.length > 0) {
+    result = result.filter((t) => {
+      const tags = Array.isArray(t.tags) ? t.tags.join(' ') : String(t.tags || '');
+      const haystack = [t.title, t.description, t.creator_name, t.category, t.difficulty, tags]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return words.every((w) => haystack.includes(w));
+    });
   }
   return result;
 }
@@ -184,22 +185,80 @@ function sortTemplates(items, sort) {
   return [...items].sort(sorters[sort] || sorters.popular);
 }
 
-/** Add +1 to a counter (views_count / downloads_count / remixes_count), locally and in Supabase. */
+/**
+ * Add +1 to a counter (views_count / downloads_count / remixes_count), locally and in Supabase.
+ * Views and downloads go through record_template_event() (sql/003_engagement_fixes.sql), which counts
+ * each person once per template per day, so refreshing or looping cannot inflate the numbers.
+ */
 async function bumpCounter(templateId, field) {
   if (!templateId) return;
   patchLocalTemplate(templateId, (t) => ({ ...t, [field]: (t[field] || 0) + 1 }));
 
   if (!isCloudTemplate(templateId)) return;
   try {
-    // Preferred: the SQL function from supabase/setup.sql (works even when RLS blocks plain updates)
-    const { error } = await supabase.rpc('increment_template_stat', { p_template_id: templateId, p_field: field });
-    if (!error) return;
-
-    // Fallback: read the number, then write number + 1
-    const { data } = await supabase.from('templates').select(field).eq('id', templateId).maybeSingle();
-    if (data) await supabase.from('templates').update({ [field]: (data[field] || 0) + 1 }).eq('id', templateId);
+    const kind = field === 'views_count' ? 'view' : field === 'downloads_count' ? 'download' : null;
+    if (kind) {
+      const { error } = await supabase.rpc('record_template_event', { p_template_id: String(templateId), p_kind: kind });
+      if (!error) return;
+      console.warn('record_template_event notice (is sql/003_engagement_fixes.sql installed?):', error.message);
+    }
+    // Older databases (and remix counts): the original counter function
+    const { error: oldError } = await supabase.rpc('increment_template_stat', { p_template_id: String(templateId), p_field: field });
+    if (oldError) console.warn(`Supabase ${field} update notice:`, oldError.message);
   } catch (e) {
     console.warn(`Supabase ${field} update notice:`, e);
+  }
+}
+
+/* ---- Cloud list cache --------------------------------------------------
+ * getTemplates() used to download the whole `templates` table on EVERY call (every keystroke,
+ * every page change). Now the cloud rows are fetched once, kept for a short time, and shared by
+ * all callers that ask at the same moment. Anything that changes data calls invalidateCloudCache(). */
+const CLOUD_CACHE_MS = 30000;
+let cloudCache = { at: 0, rows: null, promise: null };
+
+function invalidateCloudCache() {
+  cloudCache = { at: 0, rows: null, promise: null };
+}
+
+async function fetchCloudRows() {
+  if (!isSupabaseConfigured) return [];
+  if (cloudCache.rows && Date.now() - cloudCache.at < CLOUD_CACHE_MS) return cloudCache.rows;
+  if (cloudCache.promise) return cloudCache.promise;
+
+  const promise = (async () => {
+    try {
+      // List pages only need the card data, not the (large) html/css/js code.
+      let { data, error } = await supabase.from('templates').select(LIST_COLUMNS).eq('is_approved', true);
+      if (error) {
+        console.warn('Supabase list notice (using a wider query):', error.message);
+        ({ data, error } = await supabase.from('templates').select('*').eq('is_approved', true));
+      }
+      if (error || !Array.isArray(data)) {
+        // A failed request is NOT cached, so the next call simply tries again
+        cloudCache = { at: 0, rows: null, promise: null };
+        return [];
+      }
+      data.forEach((row) => cloudIds.add(row.id));
+      cloudCache = { at: Date.now(), rows: data, promise: null };
+      return data;
+    } catch (e) {
+      console.warn('Supabase templates fetch notice:', e);
+      cloudCache = { at: 0, rows: null, promise: null };
+      return [];
+    }
+  })();
+  cloudCache.promise = promise;
+  return promise;
+}
+
+/** Tell every open page that the favourites list changed (cards and the template page listen). */
+export const FAVORITES_EVENT = 'ph-favorites-changed';
+function emitFavoritesChanged() {
+  try {
+    window.dispatchEvent(new Event(FAVORITES_EVENT));
+  } catch {
+    /* no window (tests / SSR): nothing to notify */
   }
 }
 
@@ -238,20 +297,7 @@ export const dbService = {
       }
     };
 
-    if (isSupabaseConfigured) {
-      try {
-        // List pages only need the card data, not the (large) html/css/js code.
-        // If the live table is missing one of these columns, fall back to select('*').
-        let { data, error } = await supabase.from('templates').select(LIST_COLUMNS).eq('is_approved', true);
-        if (error) ({ data, error } = await supabase.from('templates').select('*').eq('is_approved', true));
-        if (!error && Array.isArray(data)) {
-          data.forEach((row) => cloudIds.add(row.id));
-          data.forEach(add);
-        }
-      } catch (e) {
-        console.warn('Supabase templates fetch notice:', e);
-      }
-    }
+    (await fetchCloudRows()).forEach(add);
     loadLocalTemplates().forEach(add);
     SEED_TEMPLATES.forEach(add);
 
@@ -349,6 +395,7 @@ export const dbService = {
         if (activeUserId) payload.user_id = activeUserId;
 
         const { data, error } = await supabase.from('templates').insert(payload).select().maybeSingle();
+        invalidateCloudCache();
         if (!error && data) {
           cloudIds.add(data.id);
           // keep the local copy in sync with the real row (new id etc.)
@@ -377,6 +424,24 @@ export const dbService = {
     if (!templateId) return null;
     const stamp = { updated_at: new Date().toISOString() };
 
+    // 1) Cloud first. If the database refuses (not your template), stop and say so:
+    //    nothing is changed in this browser either, so the screen never lies about what was saved.
+    let cloudRow = null;
+    if (isCloudTemplate(templateId)) {
+      const payload = pickCloudFields(updates);
+      if (Object.keys(payload).length > 0) {
+        const { data, error } = await supabase.from('templates').update(payload).eq('id', templateId).select();
+        if (error) throw new Error(error.message || 'The database refused this change.');
+        if (!Array.isArray(data) || data.length === 0) {
+          // RLS filters rows you do not own: no error, but also no row updated
+          throw new Error('You can only change your own templates. Use "Save as my copy" instead.');
+        }
+        cloudRow = data[0];
+      }
+      invalidateCloudCache();
+    }
+
+    // 2) Local copy (also creates one when the template only exists as a built-in)
     let updated = patchLocalTemplate(templateId, (t) => ({ ...t, ...updates, ...stamp }));
     if (!updated) {
       const original = await this.getTemplateById(templateId);
@@ -385,20 +450,22 @@ export const dbService = {
         saveLocalTemplates([updated, ...loadLocalTemplates()]);
       }
     }
+    return cloudRow ? { ...updated, ...cloudRow } : updated;
+  },
 
-    if (isCloudTemplate(templateId)) {
-      const payload = pickCloudFields(updates);
-      if (Object.keys(payload).length > 0) {
-        try {
-          const { data, error } = await supabase.from('templates').update(payload).eq('id', templateId).select().maybeSingle();
-          if (!error && data) updated = { ...updated, ...data };
-          else if (error) console.warn('Supabase updateTemplate notice:', error.message);
-        } catch (e) {
-          console.warn('Supabase updateTemplate error:', e);
-        }
-      }
-    }
-    return updated;
+  /**
+   * Can this person change this template? (the buttons use it; the database enforces it again)
+   *  - the admin: always
+   *  - built-in templates: admin only
+   *  - everything else: only the person who made it
+   */
+  canEdit(template, user, isAdmin = false) {
+    if (!template || !user?.id) return false;
+    if (isAdmin) return true;
+    if (SEED_IDS.has(template.id) || String(template.id).startsWith('tmpl-')) return false;
+    const owner = template.user_id || template.creator_id;
+    if (owner && owner !== GUEST) return String(owner) === String(user.id);
+    return !isCloudTemplate(template.id); // made in this browser while signed out: still local only
   },
 
   /**
@@ -449,6 +516,7 @@ export const dbService = {
           })
           .select()
           .maybeSingle();
+        invalidateCloudCache();
         if (!error && data) {
           cloudIds.add(data.id);
           const synced = { ...remix, ...data };
@@ -471,6 +539,7 @@ export const dbService = {
     if (isSupabaseConfigured) {
       try {
         const { error } = await supabase.from('templates').delete().eq('id', templateId);
+        invalidateCloudCache();
         if (error) console.warn('Supabase delete notice:', error.message);
       } catch (e) {
         console.warn('Supabase delete error', e);
@@ -507,6 +576,7 @@ export const dbService = {
         // keep the number on the template row fresh too (needs permission; ignored if blocked)
         supabase.from('templates').update({ likes_count: count }).eq('id', templateId).then(() => {}, () => {});
         writeUserList(KEYS.likes, map, userId, alreadyLiked ? list.filter((id) => id !== templateId) : [...list, templateId]);
+        invalidateCloudCache();
         return { hasLiked: !alreadyLiked, count };
       } catch (e) {
         console.warn('Supabase like error', e);
@@ -543,16 +613,110 @@ export const dbService = {
     return false;
   },
 
-  /** Save / un-save a template to this user's favorites (stored in this browser). Returns the new state. */
+  /**
+   * Save / un-save a template as `userId`. Returns the new state (true = saved).
+   * The browser copy changes instantly; for a signed-in user the `favorites` table in Supabase is
+   * updated too, so the list follows the account to other devices. If Supabase refuses, the
+   * browser copy is put back and an error is thrown so the screen can say so.
+   */
   async toggleFavorite(templateId, userId = GUEST) {
     const { map, list } = readUserList(KEYS.favorites, userId);
-    const isFav = list.includes(templateId);
-    writeUserList(KEYS.favorites, map, userId, isFav ? list.filter((id) => id !== templateId) : [...list, templateId]);
-    return !isFav;
+    const wasFav = list.includes(templateId);
+    const next = wasFav ? list.filter((id) => id !== templateId) : [...list, templateId];
+    writeUserList(KEYS.favorites, map, userId, next);
+    emitFavoritesChanged();
+
+    if (isSupabaseConfigured && isUuid(userId)) {
+      try {
+        const { error } = wasFav
+          ? await supabase.from('favorites').delete().eq('user_id', userId).eq('template_id', String(templateId))
+          : await supabase
+              .from('favorites')
+              .upsert({ user_id: userId, template_id: String(templateId) }, { onConflict: 'user_id,template_id', ignoreDuplicates: true });
+        if (error) throw error;
+      } catch (e) {
+        // The favorites table (or its policies) is not set up yet: sql/003_engagement_fixes.sql was not run.
+        // Keep the browser copy so the star still works; it is uploaded on a later sign-in.
+        const notReady =
+          ['42P01', 'PGRST205', 'PGRST204', '23503'].includes(e?.code) ||
+          /does not exist|schema cache|foreign key/i.test(String(e?.message || ''));
+        if (notReady) {
+          console.warn('Favorites table not ready (run sql/003_engagement_fixes.sql). Saved in this browser only.', e?.message);
+          return !wasFav;
+        }
+        console.warn('Supabase favorite error', e);
+        writeUserList(KEYS.favorites, readUserList(KEYS.favorites, userId).map, userId, list); // put it back
+        emitFavoritesChanged();
+        throw new Error(e?.message || 'Could not save your favorite. Please try again.');
+      }
+    }
+    return !wasFav;
   },
 
   isFavorite(templateId, userId = GUEST) {
     return readUserList(KEYS.favorites, userId).list.includes(templateId);
+  },
+
+  /**
+   * Call once after sign-in. Pulls this account's favourites from Supabase into the browser copy.
+   * The first time on a device, favourites that were saved here while signed in are uploaded
+   * (so nothing saved before this fix is lost); after that the cloud list is the truth.
+   */
+  async syncFavorites(userId) {
+    if (!isSupabaseConfigured || !isUuid(userId)) return;
+    try {
+      const { data, error } = await supabase.from('favorites').select('template_id').eq('user_id', userId);
+      if (error) throw error;
+      const cloud = (data || []).map((r) => r.template_id);
+      const { map, list: local } = readUserList(KEYS.favorites, userId);
+      const flagKey = `ph_favorites_migrated_${userId}`;
+
+      let merged = cloud;
+      if (!readText(flagKey)) {
+        const onlyLocal = local.filter((id) => !cloud.includes(id));
+        merged = [...cloud, ...onlyLocal]; // never drop what this browser already has
+        let uploaded = true;
+        if (onlyLocal.length > 0) {
+          const { error: upErr } = await supabase
+            .from('favorites')
+            .upsert(onlyLocal.map((id) => ({ user_id: userId, template_id: String(id) })), { onConflict: 'user_id,template_id', ignoreDuplicates: true });
+          if (upErr) {
+            uploaded = false; // try again on the next sign-in
+            console.warn('Favorite upload notice:', upErr.message);
+          }
+        }
+        if (uploaded) writeText(flagKey, '1');
+      }
+      writeUserList(KEYS.favorites, map, userId, [...new Set(merged)]);
+      emitFavoritesChanged();
+    } catch (e) {
+      console.warn('Favorites sync notice:', e?.message || e);
+    }
+  },
+
+  /**
+   * The signed-in person's own recent actions (saved + downloaded templates), newest first.
+   * Reads Supabase only (`favorites` and `downloads` rows are private to their owner).
+   * Returns [{ type: 'favorite' | 'download', template_id, at }].
+   */
+  async getMyActivity(userId, limit = 10) {
+    if (!isSupabaseConfigured || !isUuid(userId)) return [];
+    const read = async (table, type) => {
+      try {
+        const { data, error } = await supabase
+          .from(table)
+          .select('template_id, created_at')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(limit);
+        if (error) return [];
+        return (data || []).map((row) => ({ type, template_id: row.template_id, at: row.created_at }));
+      } catch {
+        return [];
+      }
+    };
+    const [favorites, downloads] = await Promise.all([read('favorites', 'favorite'), read('downloads', 'download')]);
+    return [...favorites, ...downloads].sort((x, y) => new Date(y.at) - new Date(x.at)).slice(0, limit);
   },
 
   /** Count a view (once per browser session per template). */

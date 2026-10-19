@@ -31,6 +31,7 @@ import {
   generatePortfolioCode 
 } from '../services/templateEngines.js';
 import { dbService } from '../services/dbService.js';
+import { useAuth } from '../context/AuthContext.jsx';
 import { assemblePreviewHtml, buildVisualOverrides } from '../utils/previewHelper.js';
 import { downloadPortfolioZip, downloadSingleHtml } from '../utils/zipExport.js';
 import ContentEditor from '../components/portfolio/ContentEditor.jsx';
@@ -58,6 +59,7 @@ import { useToast } from '../context/ToastContext.jsx';
 export default function LiveEditorPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { addToast } = useToast();
+  const { user, isAdmin } = useAuth();
 
   const initialTemplate = searchParams.get('template') || 'Minimal';
   const [template, setTemplate] = useState(initialTemplate);
@@ -257,9 +259,16 @@ export default function LiveEditorPage() {
     }
   };
 
+  // Only the owner (or the admin) can write to a stored template; everyone else saves their own copy.
+  const canEditLoaded = loadedCustomTemplate ? dbService.canEdit(loadedCustomTemplate, user, isAdmin) : false;
+
   // Save changes to database (updates Supabase & local storage)
   const handleSaveToDatabase = async () => {
     if (!loadedCustomTemplate) return;
+    if (!canEditLoaded) {
+      addToast('This is not your template. Use "Save as New Portfolio in Catalog" to keep your own copy.', 'error');
+      return;
+    }
     setIsSavingDb(true);
     try {
       const updates = {
@@ -490,7 +499,7 @@ export default function LiveEditorPage() {
               </select>
               {loadedCustomTemplate && (
                 <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-paper text-soft border border-line">
-                  Community Template
+                  {canEditLoaded ? 'Your Template' : 'Read-only: save your own copy'}
                 </span>
               )}
             </div>
@@ -501,6 +510,7 @@ export default function LiveEditorPage() {
         <div className="flex flex-wrap items-center gap-2">
           {loadedCustomTemplate && (
             <>
+              {canEditLoaded && (
               <button
                 onClick={handleSaveToDatabase}
                 disabled={isSavingDb}
@@ -510,6 +520,7 @@ export default function LiveEditorPage() {
                 <Save className="w-3.5 h-3.5 text-hl" />
                 <span className="hidden sm:inline">{isSavingDb ? 'Saving...' : 'Save Changes'}</span>
               </button>
+              )}
 
               <a
                 href={`/site/${loadedCustomTemplate.id}`}
@@ -634,7 +645,7 @@ export default function LiveEditorPage() {
                 </button>
               )}
 
-              {loadedCustomTemplate && (
+              {loadedCustomTemplate && canEditLoaded && (
                 <button
                   onClick={() => setActiveSidebarTab('metadata')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
@@ -812,7 +823,7 @@ export default function LiveEditorPage() {
                     <span>Apply Changes to Live Preview</span>
                   </button>
 
-                  {loadedCustomTemplate ? (
+                  {loadedCustomTemplate && canEditLoaded ? (
                     <button
                       type="button"
                       onClick={handleSaveToDatabase}
@@ -837,7 +848,7 @@ export default function LiveEditorPage() {
             )}
 
             {/* TEMPLATE SETTINGS METADATA TAB */}
-            {activeSidebarTab === 'metadata' && loadedCustomTemplate && (
+            {activeSidebarTab === 'metadata' && loadedCustomTemplate && canEditLoaded && (
               <TemplateInfoTab
                 templateMeta={templateMeta}
                 setTemplateMeta={setTemplateMeta}

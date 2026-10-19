@@ -12,6 +12,8 @@ import { ToastProvider } from './context/ToastContext.jsx';
 import MainLayout from './layouts/MainLayout.jsx';
 import ErrorBoundary from './components/common/ErrorBoundary.jsx';
 import PageLoader from './components/common/PageLoader.jsx';
+import NavigationProgress from './components/common/NavigationProgress.jsx';
+import RouteSeo from './components/common/RouteSeo.jsx';
 
 const LandingPage = lazy(() => import('./pages/LandingPage.jsx'));
 const ExplorePage = lazy(() => import('./pages/ExplorePage.jsx'));
@@ -33,6 +35,8 @@ export default function App() {
         <AuthProvider>
           <ToastProvider>
             <ErrorBoundary>
+              <NavigationProgress />
+              <RouteSeo />
               <Suspense fallback={<PageLoader />}>
                 <Routes>
                   {/* Dedicated OAuth popup callback handler */}

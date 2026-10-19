@@ -283,7 +283,10 @@ export default function Navbar() {
 
         {/* Mobile Drawer */}
         {isMobileNavOpen && (
-          <div className="lg:hidden border-b border-line bg-white p-4 space-y-3 shadow-md animate-in fade-in duration-150">
+          <div
+            className="lg:hidden absolute left-0 right-0 top-full z-50 border-b border-line p-4 space-y-3 shadow-lg max-h-[calc(100dvh-4rem)] overflow-y-auto animate-in fade-in duration-150"
+            style={{ backgroundColor: 'var(--surface)' }}
+          >
             <div className="flex flex-col space-y-1">
               {navLinks.map((item) => {
                 const isActive = location.pathname === item.path;

@@ -1,15 +1,16 @@
 /**
  * TemplateCard.jsx: One template card used in grids: thumbnail, badges, buttons, tags, creator and counters.
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Download,
   ExternalLink,
+  Heart,
   Star,
   Wand2
 } from 'lucide-react';
-import { dbService } from '../../services/dbService.js';
+import { dbService, FAVORITES_EVENT } from '../../services/dbService.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import useTilt from '../../hooks/useTilt.js';
@@ -35,14 +36,26 @@ export default function TemplateCard({ template, index = 0, scrollReveal = false
 
   const likesCount = template.likes_count || 0;
   const [isFav, setIsFav] = useState(dbService.isFavorite(template.id, user?.id));
+
+  // Stay correct after sign-in (favourites arrive from Supabase) and when another card changes them
+  useEffect(() => {
+    const refresh = () => setIsFav(dbService.isFavorite(template.id, user?.id));
+    refresh();
+    window.addEventListener(FAVORITES_EVENT, refresh);
+    return () => window.removeEventListener(FAVORITES_EVENT, refresh);
+  }, [template.id, user?.id]);
   const tiltRef = useTilt(5);
 
   const handleFavorite = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const newFav = await dbService.toggleFavorite(template.id, user?.id);
-    setIsFav(newFav);
-    addToast(newFav ? `Added "${template.title}" to saved` : `Removed from saved`, 'info');
+    try {
+      const newFav = await dbService.toggleFavorite(template.id, user?.id);
+      setIsFav(newFav);
+      addToast(newFav ? `Added "${template.title}" to saved` : `Removed from saved`, 'info');
+    } catch (err) {
+      addToast(err.message || 'Could not update saved templates.', 'error');
+    }
   };
 
   const handleUseTemplate = (e) => {
@@ -102,11 +115,13 @@ export default function TemplateCard({ template, index = 0, scrollReveal = false
           <button
             onClick={handleFavorite}
             className={`p-1.5 rounded-md bg-white/90 backdrop-blur-sm border border-line transition-all duration-200 pointer-events-auto cursor-pointer shadow-2xs hover:scale-110 active:scale-95 ${
-              isFav ? 'text-accent' : 'text-pencil hover:text-ink'
+              isFav ? 'text-ink bg-hl border-accent' : 'text-pencil hover:text-ink'
             }`}
-            title={isFav ? 'Saved' : 'Save to favorites'}
+            title={isFav ? 'Saved: click to remove' : 'Save to favorites'}
+            aria-label={isFav ? 'Remove from saved' : 'Save to favorites'}
+            aria-pressed={isFav}
           >
-            <Star className={`w-3.5 h-3.5 ${isFav ? 'fill-hl text-accent' : ''}`} />
+            <Star className={`w-3.5 h-3.5 ${isFav ? 'fill-ink text-ink' : ''}`} />
           </button>
         </div>
 
@@ -184,7 +199,7 @@ export default function TemplateCard({ template, index = 0, scrollReveal = false
               <span>{template.downloads_count || 0}</span>
             </span>
             <span className="flex items-center gap-1" title="Likes">
-              <Star className="w-3 h-3 text-hl fill-hl" />
+              <Heart className="w-3 h-3 text-rose-500 fill-rose-500" />
               <span>{likesCount}</span>
             </span>
           </div>
