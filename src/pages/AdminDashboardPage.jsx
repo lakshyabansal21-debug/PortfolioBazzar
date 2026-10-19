@@ -126,7 +126,7 @@ function AdminDashboardContent() {
           <div className="p-4 rounded-xl bg-white border border-line space-y-1">
             <div className="text-[10px] text-pencil">Downloads</div>
             <p className="text-2xl font-bold text-ink">{stats.totalDownloads.toLocaleString()}</p>
-            <p className="text-[10px] text-pencil">{stats.totalViews.toLocaleString()} views</p>
+            <p className="text-[10px] text-pencil">{stats.totalRemixes.toLocaleString()} remixes</p>
           </div>
 
           <div className="p-4 rounded-xl bg-white border border-line space-y-1">

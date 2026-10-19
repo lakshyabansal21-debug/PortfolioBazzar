@@ -10,7 +10,7 @@
  *   1. helpers
  *   2. reading templates      (getTemplates, getTemplateById)
  *   3. writing templates      (uploadTemplate, updateTemplate, remixTemplate, deleteTemplate)
- *   4. engagement             (likes, favorites, views, downloads)
+ *   4. engagement             (likes, favorites, downloads)
  *   5. comments
  *   6. platform stats + admin tools
  */
@@ -35,9 +35,6 @@ const EDITABLE_CLOUD_FIELDS = [
   'title', 'description', 'category', 'difficulty', 'tags', 'creator_name', 'thumbnail_url',
   'html_code', 'css_code', 'js_code', 'is_featured', 'is_approved', 'is_public'
 ];
-
-/** Views counted in this browser session (so a refresh does not add another view). */
-const viewedThisSession = new Set();
 
 /** True if `id` looks like a UUID (real Supabase row ids and user ids are UUIDs). */
 function isUuid(id) {
@@ -175,10 +172,10 @@ function filterTemplates(items, { category, difficulty, search }) {
   return result;
 }
 
-/** Sort used by getTemplates. "popular" = likes x3 + downloads x2 + views x0.1. */
+/** Sort used by getTemplates. "popular" = likes x3 + downloads x2. */
 function sortTemplates(items, sort) {
   const n = (value) => value || 0;
-  const popularity = (t) => n(t.likes_count) * 3 + n(t.downloads_count) * 2 + n(t.views_count) * 0.1;
+  const popularity = (t) => n(t.likes_count) * 3 + n(t.downloads_count) * 2;
   const sorters = {
     newest: (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0),
     downloads: (a, b) => n(b.downloads_count) - n(a.downloads_count),
@@ -514,8 +511,9 @@ export const dbService = {
             js_code: remix.js_code || '',
             remixed_from_id: isCloudTemplate(originalTemplate.id) ? originalTemplate.id : null,
             user_id: user.id,
-            is_approved: true,
-            is_public: true
+            // A remix is the person's own PRIVATE copy. It is never put in the public catalog.
+            is_approved: false,
+            is_public: false
           })
           .select()
           .maybeSingle();
@@ -722,13 +720,6 @@ export const dbService = {
     return [...favorites, ...downloads].sort((x, y) => new Date(y.at) - new Date(x.at)).slice(0, limit);
   },
 
-  /** Count a view (once per browser session per template). */
-  async incrementViews(templateId) {
-    if (!templateId || viewedThisSession.has(templateId)) return;
-    viewedThisSession.add(templateId);
-    await bumpCounter(templateId, 'views_count');
-  },
-
   /** Count a download. */
   async incrementDownloads(templateId) {
     await bumpCounter(templateId, 'downloads_count');
@@ -841,7 +832,6 @@ export const dbService = {
       featuredTemplates: templates.filter((t) => t.is_featured).length,
       totalDownloads: sum('downloads_count'),
       totalLikes: sum('likes_count'),
-      totalViews: sum('views_count'),
       totalRemixes: sum('remixes_count'),
       contributors: new Set(community.map((t) => t.creator_id || t.creator_name)).size,
       registeredUsers,

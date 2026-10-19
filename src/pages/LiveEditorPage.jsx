@@ -266,7 +266,7 @@ export default function LiveEditorPage() {
   const handleSaveToDatabase = async () => {
     if (!loadedCustomTemplate) return;
     if (!canEditLoaded) {
-      addToast('This is not your template. Use "Save as New Portfolio in Catalog" to keep your own copy.', 'error');
+      addToast('This is not your template. Use "Save my own private copy" to keep your own version.', 'error');
       return;
     }
     setIsSavingDb(true);
@@ -308,7 +308,7 @@ export default function LiveEditorPage() {
           js_code: activeJs
         });
         confetti({ particleCount: 70, spread: 60 });
-        addToast('Saved as new portfolio in your collection!', 'success');
+        addToast('Saved as your own private copy.', 'success');
         refreshCatalog();
       }
     } catch (err) {
@@ -841,7 +841,7 @@ export default function LiveEditorPage() {
                     className="w-full py-2 px-3 rounded-lg bg-white hover:bg-paper-2 text-ink text-xs font-medium border border-line transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-accent" />
-                    <span>Save as New Portfolio in Catalog</span>
+                    <span>Save my own private copy</span>
                   </button>
                 </div>
               </div>

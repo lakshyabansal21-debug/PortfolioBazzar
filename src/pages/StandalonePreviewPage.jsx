@@ -39,9 +39,6 @@ export default function StandalonePreviewPage() {
         if (isMounted) {
           if (data) {
             setTemplate(data);
-            try {
-              dbService.incrementViews(data.id);
-            } catch (e) {}
           } else {
             addToast('Template not found', 'error');
             navigate('/explore');

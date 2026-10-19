@@ -188,12 +188,6 @@ export default function TemplateDetailsPage() {
             }
 
             try {
-              dbService.incrementViews(data.id);
-            } catch (e) {
-              console.warn('Views increment notice:', e);
-            }
-
-            try {
               const relatedRes = await dbService.getTemplates({ category: data.category, limit: 3 });
               setRelatedTemplates((relatedRes.templates || []).filter((t) => t.id !== data.id));
             } catch (e) {
