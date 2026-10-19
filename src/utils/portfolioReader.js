@@ -597,6 +597,18 @@ export function moveBlock(html, index, dir) {
   return serialize(doc, html);
 }
 
+/**
+ * Preview only: tag one block with data-ph-focus so the preview can scroll to it and flash it
+ * (after a move). Never saved or exported: the editor adds it to the preview copy only.
+ */
+export function markBlock(html, index) {
+  const doc = parse(html);
+  const el = pageBlockEls(doc)[index];
+  if (!el) return html;
+  el.setAttribute('data-ph-focus', '1');
+  return serialize(doc, html);
+}
+
 /** Hide / show one page block (adds display:none to the element, so the exported site hides it too). */
 export function toggleBlock(html, index) {
   const doc = parse(html);

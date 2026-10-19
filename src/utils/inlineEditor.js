@@ -218,6 +218,16 @@ const SCROLL_BRIDGE_SCRIPT = String.raw`
     if (e.source !== parent) return;
     var d = e.data;
     if (d && d.source === 'ph-scroll' && d.type === 'restore') window.scrollTo(0, Number(d.y) || 0);
+    if (d && d.source === 'ph-scroll' && d.type === 'focus') {
+      var el = document.querySelector('[data-ph-focus]');
+      if (!el) return;
+      el.removeAttribute('data-ph-focus');
+      try { el.scrollIntoView({ block: 'start', behavior: 'auto' }); } catch (err) {}
+      var prevOutline = el.style.outline, prevOffset = el.style.outlineOffset;
+      el.style.outline = '3px solid #FACC15';
+      el.style.outlineOffset = '-3px';
+      setTimeout(function () { el.style.outline = prevOutline; el.style.outlineOffset = prevOffset; }, 1300);
+    }
   });
 })();
 `;

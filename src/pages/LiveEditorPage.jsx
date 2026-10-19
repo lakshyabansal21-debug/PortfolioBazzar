@@ -50,7 +50,8 @@ import {
   moveItem,
   listPageBlocks,
   moveBlock,
-  toggleBlock
+  toggleBlock,
+  markBlock
 } from '../utils/portfolioReader.js';
 import { injectInlineEditor, injectScrollBridge } from '../utils/inlineEditor.js';
 import { extractProfileFromHtml, personalizeHtml, getInitials } from '../utils/templatePersonalizer.js';
@@ -181,11 +182,22 @@ export default function LiveEditorPage() {
 
   // Sections tab data + actions (work on the real HTML, so they also work for uploaded templates)
   const pageBlocks = useMemo(() => listPageBlocks(activeHtml), [activeHtml]);
+  // After a move the preview scrolls to the moved section and flashes it (otherwise the change can
+  // happen out of sight and look like the button did nothing). A ref, not state: no extra reload.
+  const focusBlockRef = useRef(null);
   const handleMoveBlock = (index, dir) => {
-    setCustomHtml(moveBlock(activeHtml, index, dir));
-    addToast('Section moved', 'info');
+    const next = moveBlock(activeHtml, index, dir);
+    if (next === activeHtml) return; // already at the top / bottom
+    focusBlockRef.current = index + dir;
+    skipUntilRef.current = 0; // structure changed: always reload the preview
+    setCustomHtml(next);
+    addToast(dir < 0 ? 'Section moved up' : 'Section moved down', 'info');
   };
-  const handleToggleBlock = (index) => setCustomHtml(toggleBlock(activeHtml, index));
+  const handleToggleBlock = (index) => {
+    focusBlockRef.current = index;
+    skipUntilRef.current = 0;
+    setCustomHtml(toggleBlock(activeHtml, index));
+  };
 
   // CSS / JS used for downloads = template code + the Visual tab choices (so the file matches the preview)
   const visualOverrides = useMemo(() => buildVisualOverrides({ accentColor, customFont }), [accentColor, customFont]);
@@ -327,7 +339,8 @@ export default function LiveEditorPage() {
 
   const computedSrcDoc = useMemo(() => {
     const isStub = !activeHtml || activeHtml.trim().length < 35;
-    const source = editOnPage && !isStub ? tagForEditing(activeHtml) : activeHtml;
+    const marked = focusBlockRef.current !== null && !isStub ? markBlock(activeHtml, focusBlockRef.current) : activeHtml;
+    const source = editOnPage && !isStub ? tagForEditing(marked) : marked;
     const doc = assemblePreviewHtml(source, activeCss, activeJs, {
       fallbackCategory: template,
       accentColor,
@@ -349,7 +362,10 @@ export default function LiveEditorPage() {
   // The preview iframe has no same-origin access, so scroll position travels by postMessage.
   const handleIframeLoad = () => {
     try {
-      if (scrollRef.current) {
+      if (focusBlockRef.current !== null) {
+        focusBlockRef.current = null;
+        iframeRef.current?.contentWindow?.postMessage({ source: 'ph-scroll', type: 'focus' }, '*');
+      } else if (scrollRef.current) {
         iframeRef.current?.contentWindow?.postMessage({ source: 'ph-scroll', type: 'restore', y: scrollRef.current }, '*');
       }
     } catch {
