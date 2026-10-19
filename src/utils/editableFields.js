@@ -203,28 +203,13 @@ export function suggestFields(rawHtml) {
     (h1 && h1.parentElement && h1.parentElement.querySelector('p'));
   if (roleEl) add({ id: 'headline', label: 'Headline / role', type: 'text', old: roleEl.textContent.replace(/\s+/g, ' ') });
 
-  // Bio: the longest paragraph of the "about" area. If the page has no about area, use the intro
-  // area around the <h1>. We never fall back to "any paragraph on the page", because that picked
-  // project descriptions as the person's bio.
-  const NOT_BIO = /project|work|card|skill|experience|quest|item|stack|testimonial|review|service|blog|post|article|tool|timeline|education|award|footer|nav/i;
-  const classOf = (el) => (typeof el.className === 'string' ? el.className : '');
-  const aboutArea = body.querySelector('#about, [id*="about"], [class*="about"], [id*="bio"], [class*="bio"]');
-  const introArea = h1 ? h1.closest('header, section') || h1.parentElement : null;
-  const bioScope = aboutArea || introArea;
-  if (bioScope) {
-    const insideOtherContent = (p) => {
-      for (let el = p; el && el !== bioScope; el = el.parentElement) {
-        if (NOT_BIO.test(`${el.id || ''} ${classOf(el)}`)) return true;
-      }
-      return false;
-    };
-    const paras = [...bioScope.querySelectorAll('p')]
-      .filter((p) => p !== roleEl && !insideOtherContent(p))
-      .map((p) => p.textContent.replace(/\s+/g, ' ').trim())
-      .filter((t) => t.length > 50)
-      .sort((a, b) => b.length - a.length);
-    if (paras[0]) add({ id: 'bio', label: 'About / bio', type: 'textarea', old: paras[0] });
-  }
+  // Bio: longest paragraph in an about section, else the longest paragraph on the page
+  const aboutScope = body.querySelector('#about, [class*="about"]') || body;
+  const paras = [...aboutScope.querySelectorAll('p')]
+    .map((p) => p.textContent.replace(/\s+/g, ' ').trim())
+    .filter((t) => t.length > 50)
+    .sort((a, b) => b.length - a.length);
+  if (paras[0]) add({ id: 'bio', label: 'About / bio', type: 'textarea', old: paras[0] });
 
   // Email
   const mail = body.querySelector('a[href^="mailto:"]');

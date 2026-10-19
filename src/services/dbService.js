@@ -25,7 +25,7 @@ import { SITE, DEFAULT_UPLOAD_THUMBNAIL } from '../config/siteConfig.js';
 /* ------------------------------------------------------------------ */
 
 /** Bump this when the seed data changes shape or values. Old seed copies in localStorage are then reset. */
-const STORE_VERSION = 2;
+const STORE_VERSION = 3;
 
 /** Likes / favorites of people who are not signed in are kept under this name. */
 const GUEST = 'guest';
@@ -76,8 +76,11 @@ function loadLocalTemplates() {
 
   let changed = false;
   if (readJson(KEYS.storeVersion, 0) !== STORE_VERSION) {
-    // drop old copies of built-in templates (they may carry old fake counters); user-made ones stay
-    list = list.filter((t) => !SEED_IDS.has(t.id));
+    // drop old copies of built-in templates, and zero the counters of every other stored template
+    // (they may carry old fake numbers). The templates themselves, their code and titles stay.
+    list = list
+      .filter((t) => !SEED_IDS.has(t.id))
+      .map((t) => ({ ...t, likes_count: 0, downloads_count: 0, views_count: 0, remixes_count: 0 }));
     writeJson(KEYS.storeVersion, STORE_VERSION);
     changed = true;
   }

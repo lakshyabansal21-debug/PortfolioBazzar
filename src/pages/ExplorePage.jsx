@@ -1,7 +1,7 @@
 /**
  * ExplorePage.jsx: Browse all templates with search, category, difficulty, sort and pagination (state is kept in the URL).
  */
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   Search,
@@ -15,125 +15,103 @@ import { dbService } from '../services/dbService.js';
 import { TEMPLATE_CATEGORIES } from '../data/categories.js';
 import TemplateCard from '../components/common/TemplateCard.jsx';
 
-const DIFFICULTIES = ['Beginner', 'Intermediate', 'Advanced'];
-const SORTS = ['popular', 'newest', 'downloads', 'likes'];
-const PAGE_SIZE = 9;
-
-/**
- * The address bar is the single source of truth for this page.
- * category / difficulty / sort / search / page are READ from the URL on every render and
- * changed ONLY by writing the URL (useSearchParams). There is no copy of them in useState, so the
- * browser Back / Forward buttons, shared links and reloads always show exactly what the URL says.
- * (Only the text typed in the search box is kept locally for a moment, so typing stays smooth.)
- */
 export default function ExplorePage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // ---- read the URL (with safe defaults: a bad value in the URL falls back instead of breaking) ----
-  const rawCategory = searchParams.get('category') || 'All';
-  const category = rawCategory === 'All' || TEMPLATE_CATEGORIES.includes(rawCategory) ? rawCategory : 'All';
-  const rawDifficulty = searchParams.get('difficulty') || 'All';
-  const difficulty = DIFFICULTIES.includes(rawDifficulty) ? rawDifficulty : 'All';
-  const rawSort = searchParams.get('sort') || 'popular';
-  const sort = SORTS.includes(rawSort) ? rawSort : 'popular';
-  const search = searchParams.get('search') || '';
-  const pageFromUrl = parseInt(searchParams.get('page') || '1', 10);
-  const page = Number.isFinite(pageFromUrl) && pageFromUrl > 0 ? pageFromUrl : 1;
+  const [category, setCategory] = useState(searchParams.get('category') || 'All');
+  const [difficulty, setDifficulty] = useState(searchParams.get('difficulty') || 'All');
+  const [search, setSearch] = useState(searchParams.get('search') || '');
+  const [sort, setSort] = useState(searchParams.get('sort') || 'popular');
+  const [page, setPage] = useState(parseInt(searchParams.get('page') || '1', 10));
 
   const [templates, setTemplates] = useState([]);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
 
-  // ---- write the URL ----
-  // `replace` = true  -> edit the current history entry (used while typing, so Back is not flooded)
-  // `replace` = false -> a new history entry (filters and pages: Back goes to the previous view)
-  const updateUrl = useCallback(
-    (changes, { replace = false } = {}) => {
-      const next = new URLSearchParams(searchParams);
-      Object.entries(changes).forEach(([key, value]) => {
-        const isDefault =
-          value === undefined || value === null || value === '' ||
-          (key === 'category' && value === 'All') ||
-          (key === 'difficulty' && value === 'All') ||
-          (key === 'sort' && value === 'popular') ||
-          (key === 'page' && Number(value) <= 1);
-        if (isDefault) next.delete(key);
-        else next.set(key, String(value));
-      });
-      setSearchParams(next, { replace });
-    },
-    [searchParams, setSearchParams]
-  );
-
-  // ---- search box: local text, copied to the URL 350 ms after the person stops typing ----
-  const [searchText, setSearchText] = useState(search);
-  const typingTimer = useRef(null);
-
-  // Back / Forward / Reset / a link: the URL changed, so the box shows what the URL says
+  // Sync state with URL params
   useEffect(() => {
-    setSearchText(search);
-  }, [search]);
+    const urlCat = searchParams.get('category');
+    if (urlCat) setCategory(urlCat);
+    const urlSearch = searchParams.get('search');
+    if (urlSearch !== null) setSearch(urlSearch);
+    const urlSort = searchParams.get('sort');
+    if (urlSort) setSort(urlSort);
+    const urlDiff = searchParams.get('difficulty');
+    if (urlDiff) setDifficulty(urlDiff);
+    const urlPage = searchParams.get('page');
+    if (urlPage) setPage(parseInt(urlPage, 10));
+  }, [searchParams]);
 
-  useEffect(() => () => clearTimeout(typingTimer.current), []);
-
-  const handleSearchInput = (value) => {
-    setSearchText(value);
-    clearTimeout(typingTimer.current);
-    typingTimer.current = setTimeout(() => {
-      updateUrl({ search: value.trim(), page: 1 }, { replace: true });
-    }, 350);
-  };
-
-  const flushSearch = (value) => {
-    clearTimeout(typingTimer.current);
-    setSearchText(value);
-    updateUrl({ search: value.trim(), page: 1 }, { replace: true });
-  };
-
-  // ---- load whatever the URL asks for ----
+  // Load templates on filter change
   useEffect(() => {
-    let cancelled = false;
     async function load() {
       setLoading(true);
-      const res = await dbService.getTemplates({ category, difficulty, search, sort, page, limit: PAGE_SIZE });
-      if (cancelled) return;
-      // asked for a page that does not exist (old link, filters changed): go to the last real page
-      if (page > (res.totalPages || 1)) {
-        updateUrl({ page: res.totalPages || 1 }, { replace: true });
-        return;
-      }
+      const res = await dbService.getTemplates({
+        category,
+        difficulty,
+        search,
+        sort,
+        page,
+        limit: 9
+      });
       setTemplates(res.templates || []);
       setTotal(res.total || 0);
       setTotalPages(res.totalPages || 1);
       setLoading(false);
     }
     load();
-    return () => { cancelled = true; };
-    // updateUrl changes with the URL on purpose-free reads; the five values below are the real inputs
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category, difficulty, search, sort, page]);
 
-  // new page / filter: start at the top
-  useEffect(() => {
-    window.scrollTo({ top: 0 });
-  }, [page, category, difficulty, search, sort]);
+  const handleCategoryChange = (cat) => {
+    setCategory(cat);
+    setPage(1);
+    const p = new URLSearchParams(searchParams);
+    if (cat === 'All') p.delete('category');
+    else p.set('category', cat);
+    p.set('page', '1');
+    setSearchParams(p);
+  };
 
-  const handleCategoryChange = (cat) => updateUrl({ category: cat, page: 1 });
-  const handleSortChange = (newSort) => updateUrl({ sort: newSort, page: 1 });
-  const handleDifficultyChange = (diff) => updateUrl({ difficulty: diff, page: 1 });
-  const goToPage = (n) => updateUrl({ page: Math.min(Math.max(1, n), totalPages) });
+  const handleSortChange = (newSort) => {
+    setSort(newSort);
+    setPage(1);
+    const p = new URLSearchParams(searchParams);
+    p.set('sort', newSort);
+    p.set('page', '1');
+    setSearchParams(p);
+  };
+
+  const handleDifficultyChange = (diff) => {
+    setDifficulty(diff);
+    setPage(1);
+    const p = new URLSearchParams(searchParams);
+    if (diff === 'All') p.delete('difficulty');
+    else p.set('difficulty', diff);
+    p.set('page', '1');
+    setSearchParams(p);
+  };
+
+  const handleSearchChange = (val) => {
+    setSearch(val);
+    setPage(1);
+    const p = new URLSearchParams(searchParams);
+    if (val.trim()) p.set('search', val.trim());
+    else p.delete('search');
+    p.set('page', '1');
+    setSearchParams(p);
+  };
 
   const clearFilters = () => {
-    clearTimeout(typingTimer.current);
-    setSearchText('');
+    setCategory('All');
+    setDifficulty('All');
+    setSearch('');
+    setSort('popular');
+    setPage(1);
     setSearchParams({});
   };
 
-  const hasActiveFilters = useMemo(
-    () => category !== 'All' || difficulty !== 'All' || search.trim() !== '' || sort !== 'popular',
-    [category, difficulty, search, sort]
-  );
+  const hasActiveFilters = category !== 'All' || difficulty !== 'All' || search.trim() !== '' || sort !== 'popular';
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
@@ -176,14 +154,13 @@ export default function ExplorePage() {
             <input
               type="text"
               placeholder="Search by keywords, tech stack, or persona..."
-              value={searchText}
-              onChange={(e) => handleSearchInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') flushSearch(e.currentTarget.value); }}
+              value={search}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="w-full pl-9 pr-9 py-2.5 text-xs rounded-lg bg-white border border-line text-ink placeholder-pencil focus:outline-none focus:border-accent focus:ring-2 focus:ring-hl/20 transition-all shadow-2xs"
             />
-            {searchText && (
+            {search && (
               <button
-                onClick={() => flushSearch('')}
+                onClick={() => handleSearchChange('')}
                 className="absolute right-3 top-3 text-pencil hover:text-ink cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
@@ -292,7 +269,7 @@ export default function ExplorePage() {
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-1.5 pt-8 border-t border-line">
           <button
-            onClick={() => goToPage(page - 1)}
+            onClick={() => setPage(Math.max(1, page - 1))}
             disabled={page === 1}
             className="p-2 rounded-md border border-line bg-white text-pencil hover:text-ink disabled:opacity-40 cursor-pointer shadow-2xs"
             title="Previous Page"
@@ -304,7 +281,7 @@ export default function ExplorePage() {
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((pNum) => (
               <button
                 key={pNum}
-                onClick={() => goToPage(pNum)}
+                onClick={() => setPage(pNum)}
                 className={`w-8 h-8 rounded-md text-xs font-semibold transition-all cursor-pointer ${
                   page === pNum
                     ? 'bg-hl text-ink border border-accent shadow-2xs'
@@ -317,7 +294,7 @@ export default function ExplorePage() {
           </div>
 
           <button
-            onClick={() => goToPage(page + 1)}
+            onClick={() => setPage(Math.min(totalPages, page + 1))}
             disabled={page === totalPages}
             className="p-2 rounded-md border border-line bg-white text-pencil hover:text-ink disabled:opacity-40 cursor-pointer shadow-2xs"
             title="Next Page"

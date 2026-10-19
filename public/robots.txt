@@ -1,16 +1,3 @@
 User-agent: *
 Allow: /
-# private or tool pages (they are also marked noindex inside the page)
 Disallow: /admin
-Disallow: /profile
-Disallow: /editor
-Disallow: /auth/
-Disallow: /reset-password
-# full-screen previews of templates: same content as the template page
-Disallow: /site/
-Disallow: /preview/
-# search results are not pages worth indexing
-Disallow: /*?search=
-
-# A "Sitemap:" line is added here automatically by `npm run sitemap` (runs before every build)
-# once VITE_SITE_URL is set.

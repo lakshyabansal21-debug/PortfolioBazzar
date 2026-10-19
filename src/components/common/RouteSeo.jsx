@@ -12,7 +12,16 @@ import Seo from './Seo.jsx';
 import { SITE, getSiteUrl } from '../../config/siteConfig.js';
 import { TEMPLATE_CATEGORIES } from '../../data/categories.js';
 
-const PRIVATE_PREFIXES = ['/profile', '/editor', '/admin', '/auth', '/reset-password', '/site/', '/preview/'];
+// path prefix -> the tab title. These pages are never indexed by search engines.
+const PRIVATE_PAGES = [
+  ['/profile', 'My Profile'],
+  ['/editor', 'Live Editor'],
+  ['/admin', 'Admin Dashboard'],
+  ['/auth', 'Signing in'],
+  ['/reset-password', 'Reset Password'],
+  ['/site/', 'Template Preview'],
+  ['/preview/', 'Template Preview']
+];
 
 const PUBLIC_PAGES = {
   '/generator': {
@@ -31,9 +40,13 @@ export default function RouteSeo() {
   const { pathname, search } = useLocation();
   const path = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname;
 
-  // ---- private / utility pages: never indexed ----
-  if (PRIVATE_PREFIXES.some((p) => path === p || path.startsWith(p.endsWith('/') ? p : `${p}/`) || path === p.replace(/\/$/, ''))) {
-    return <Seo title={SITE.name} suffix={false} noindex />;
+  // ---- private / utility pages: own tab title, never indexed ----
+  const privatePage = PRIVATE_PAGES.find(([p]) => {
+    const base = p.replace(/\/$/, '');
+    return path === base || path.startsWith(`${base}/`);
+  });
+  if (privatePage) {
+    return <Seo title={privatePage[1]} noindex />;
   }
 
   // ---- home ----

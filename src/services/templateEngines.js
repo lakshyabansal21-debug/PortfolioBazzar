@@ -108,7 +108,7 @@ export const DEFAULT_USER_DATA = {
     }
   ],
   contact: {
-    email: 'alex.vance@example.com',
+    email: 'alex.vance.dev@gmail.com',
     phone: '+1 (555) 382-9104',
     location: 'San Francisco, California'
   },

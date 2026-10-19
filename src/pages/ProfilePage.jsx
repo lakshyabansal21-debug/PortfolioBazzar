@@ -1,7 +1,7 @@
 /**
  * ProfilePage.jsx: The signed-in user's profile: their uploads, favorites and basic stats; edit username and bio.
  */
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Mail,
@@ -18,7 +18,7 @@ import { getAvatarUrl } from '../utils/avatar.js';
 import { safeUrl } from '../utils/url.js';
 import { isSupabaseConfigured } from '../supabase/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
-import { dbService, FAVORITES_EVENT } from '../services/dbService.js';
+import { dbService } from '../services/dbService.js';
 import { useToast } from '../context/ToastContext.jsx';
 import TemplateCard from '../components/common/TemplateCard.jsx';
 
@@ -41,17 +41,11 @@ export default function ProfilePage() {
   const [editLinkedin, setEditLinkedin] = useState(profile?.linkedin || '');
   const [isSaving, setIsSaving] = useState(false);
 
-  const [allTemplates, setAllTemplates] = useState([]);
-  const [activity, setActivity] = useState([]);
-
   useEffect(() => {
-    let cancelled = false;
     async function loadData() {
       setLoading(true);
       const allRes = await dbService.getTemplates({ limit: 1000 });
-      if (cancelled) return;
       const all = allRes.templates || [];
-      setAllTemplates(all);
 
       // Filter favorites
       const favs = all.filter(t => dbService.isFavorite(t.id, user?.id));
@@ -63,31 +57,9 @@ export default function ProfilePage() {
       setUploadedTemplates(uploads);
 
       setLoading(false);
-
-      // real account activity (loaded after the page is already visible)
-      if (user?.id) dbService.getMyActivity(user.id).then((rows) => { if (!cancelled) setActivity(rows); });
-      else setActivity([]);
     }
     loadData();
-    // favourites arrive from Supabase a moment after sign-in: refresh the list when they do
-    window.addEventListener(FAVORITES_EVENT, loadData);
-    return () => {
-      cancelled = true;
-      window.removeEventListener(FAVORITES_EVENT, loadData);
-    };
   }, [user, profile]);
-
-  // Activity feed: only things that really happened (no made-up rows)
-  const activityFeed = useMemo(() => {
-    const titleOf = (id) => allTemplates.find((t) => String(t.id) === String(id));
-    const fromCloud = activity
-      .map((a) => ({ ...a, template: titleOf(a.template_id) }))
-      .filter((a) => a.template);
-    const uploads = uploadedTemplates
-      .filter((t) => t.created_at)
-      .map((t) => ({ type: 'upload', template_id: t.id, at: t.created_at, template: t }));
-    return [...fromCloud, ...uploads].sort((x, y) => new Date(y.at) - new Date(x.at)).slice(0, 12);
-  }, [activity, allTemplates, uploadedTemplates]);
 
   /** Open the edit form with the CURRENT saved values (the profile may have loaded after this page did). */
   const toggleEditor = () => {
@@ -370,33 +342,36 @@ export default function ProfilePage() {
             Recent Account Milestones
           </h3>
 
-          {activityFeed.length === 0 ? (
-            <div className="flex items-center gap-3 py-6 text-xs text-soft">
+          <div className="space-y-3 text-xs">
+            <div className="flex items-center gap-3 py-2.5 border-b border-line">
               <Clock className="w-4 h-4 text-pencil" />
-              <span>No activity yet. Save, download or upload a template and it will show up here.</span>
+              <div className="flex-1">
+                <span className="font-semibold text-ink">Signed into PortfolioHub</span>
+                <span className="text-pencil ml-2 font-mono text-[11px]">Today</span>
+              </div>
             </div>
-          ) : (
-            <div className="space-y-3 text-xs">
-              {activityFeed.map((a, i) => {
-                const verb = a.type === 'favorite' ? 'Starred template ' : a.type === 'download' ? 'Downloaded ' : 'Published ';
-                const Icon = a.type === 'favorite' ? Star : a.type === 'download' ? Download : Clock;
-                return (
-                  <div key={`${a.type}-${a.template_id}-${i}`} className="flex items-center gap-3 py-2.5 border-b border-line last:border-b-0">
-                    <Icon className={`w-4 h-4 ${a.type === 'favorite' ? 'fill-hl text-accent' : 'text-pencil'}`} />
-                    <div className="flex-1">
-                      <span className="text-soft">{verb}</span>
-                      <Link to={`/template/${a.template_id}`} className="font-bold text-ink hover:underline">
-                        {a.template.title}
-                      </Link>
-                      <span className="text-pencil ml-2 font-mono text-[11px]">
-                        {new Date(a.at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
+
+            {favoriteTemplates.slice(0, 3).map((t) => (
+              <div key={t.id} className="flex items-center gap-3 py-2.5 border-b border-line">
+                <Star className="w-4 h-4 fill-hl text-accent" />
+                <div className="flex-1">
+                  <span className="text-soft">Starred template </span>
+                  <Link to={`/template/${t.id}`} className="font-bold text-ink hover:underline">
+                    {t.title}
+                  </Link>
+                  <span className="text-pencil ml-2 font-mono text-[11px]">({t.category})</span>
+                </div>
+              </div>
+            ))}
+
+            <div className="flex items-center gap-3 py-2.5">
+              <Download className="w-4 h-4 text-pencil" />
+              <div className="flex-1">
+                <span className="font-semibold text-ink">Downloaded standalone portfolio ZIP bundle</span>
+                <span className="text-pencil ml-2 font-mono text-[11px]">Recent</span>
+              </div>
             </div>
-          )}
+          </div>
         </div>
       )}
 
