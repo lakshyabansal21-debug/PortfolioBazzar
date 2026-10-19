@@ -7,6 +7,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '../supabase/client.js';
 import { SITE } from '../config/siteConfig.js';
 import { KEYS, readText, writeText, removeKey } from '../services/localStore.js';
+import { dbService } from '../services/dbService.js';
 
 const AuthContext = createContext(null);
 
@@ -24,6 +25,11 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null);
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // After sign-in, bring this account's saved (starred) templates from Supabase into the browser
+  useEffect(() => {
+    if (user?.id && isSupabaseConfigured) dbService.syncFavorites(user.id);
+  }, [user?.id]);
 
   // Load user session on mount
   useEffect(() => {
@@ -238,7 +244,7 @@ export function AuthProvider({ children }) {
     } else {
       const demoUser = {
         id: 'google-demo-user',
-        email: 'alex.creator@gmail.com',
+        email: 'alex.creator@example.com',
         username: 'Alex Vance',
         full_name: 'Alex Vance',
         role: 'user',

@@ -124,8 +124,10 @@ function classifyKind(el, body) {
 function sectionLabel(el, kind, body) {
   if (el === body) return 'Page';
   if (kind !== 'other' && KIND_LABELS[kind]) return KIND_LABELS[kind];
-  const heading = el.querySelector('h1,h2,h3');
+  // h2/h3 name a section; an h1 is usually the person's name, so it is never used as the label
+  const heading = el.querySelector('h2,h3');
   if (heading && heading.textContent.trim()) return heading.textContent.trim().slice(0, 32);
+  if (el.querySelector('h1')) return KIND_LABELS.hero;
   if (el.id) return el.id.replace(/[-_]/g, ' ');
   return KIND_LABELS.other;
 }
@@ -522,15 +524,51 @@ export function buildSingleFileHtml(html, css = '', js = '') {
 const BLOCK_SKIP = new Set(['SCRIPT', 'STYLE', 'LINK', 'NOSCRIPT', 'TEMPLATE', 'META']);
 
 /** The top-level parts of the page (header, hero, skills, projects, footer ...). */
-function pageBlockEls(doc) {
-  const body = doc.body;
-  const kids = [...body.children].filter((el) => !BLOCK_SKIP.has(tagOf(el)));
-  // a single wrapper (<main>, <div id="app">) that holds the real sections
-  if (kids.length === 1) {
-    const inner = [...kids[0].children].filter((el) => !BLOCK_SKIP.has(tagOf(el)));
-    if (inner.length >= 2) return inner;
+const SEMANTIC_TAGS = new Set(['HEADER', 'NAV', 'FOOTER', 'ASIDE', 'SECTION', 'MAIN', 'ARTICLE']);
+const REAL_CONTENT = 'img,picture,video,canvas,iframe,input,textarea,select,button,a,svg,object,embed';
+
+/** Empty overlays (scanlines, noise, glow, grid backgrounds) are not sections the person edits. */
+function isDecorative(el) {
+  if (el.getAttribute('aria-hidden') === 'true') return true;
+  return !el.textContent.trim() && !el.querySelector(REAL_CONTENT);
+}
+const realKids = (el) => [...el.children].filter((c) => !BLOCK_SKIP.has(tagOf(c)) && !isDecorative(c));
+
+/** Go down through wrappers that hold exactly one real child, and return the children of the first element that holds more. */
+function unwrapSingle(el) {
+  let current = el;
+  for (let i = 0; i < 6; i += 1) {
+    const kids = realKids(current);
+    if (kids.length !== 1) return kids;
+    current = kids[0];
   }
-  return kids;
+  return realKids(current);
+}
+
+/**
+ * The page's top-level blocks (what the Sections tab lists).
+ * Many templates wrap everything: <div class="wrapper"><div class="window"><titlebar/><body>...sections...</body>.
+ * We walk down through such wrappers (and tiny "chrome" like a title bar) until we reach the real sections.
+ */
+function pageBlockEls(doc) {
+  let level = realKids(doc.body);
+  for (let depth = 0; depth < 5; depth += 1) {
+    let next = null;
+    if (level.length === 1) {
+      next = unwrapSingle(level[0]);
+    } else if (level.length <= 3) {
+      // one big child plus small non-semantic leftovers (title bar, status line): go into the big one
+      const size = (el) => el.textContent.trim().length;
+      const total = level.reduce((n, el) => n + size(el), 0);
+      const big = level.find((el) => size(el) >= total * 0.85);
+      const othersAreChrome =
+        big && level.every((el) => el === big || (!SEMANTIC_TAGS.has(tagOf(el)) && size(el) < 80));
+      if (othersAreChrome) next = realKids(big);
+    }
+    if (!next || next.length < 2) break;
+    level = next;
+  }
+  return level;
 }
 
 export function listPageBlocks(html) {

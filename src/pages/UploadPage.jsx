@@ -12,6 +12,7 @@ import confetti from 'canvas-confetti';
 import { TEMPLATE_CATEGORIES } from '../data/categories.js';
 import { safeUrl } from '../utils/url.js';
 import { dbService } from '../services/dbService.js';
+import { detectTech, mergeTags } from '../utils/techDetect.js';
 import { assemblePreviewHtml } from '../utils/previewHelper.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
@@ -194,6 +195,9 @@ body {
     setTags(tags.filter(t => t !== tagToRemove));
   };
 
+  // The Publish button stays disabled until the two required things exist
+  const canPublish = title.trim() !== '' && htmlCode.trim() !== '';
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim()) {
@@ -230,7 +234,7 @@ body {
         difficulty,
         description: description.trim() || 'A bespoke community-crafted developer portfolio template.',
         thumbnail_url: thumbnail,
-        tags: tags.slice(0, MAX_TAGS),
+        tags: mergeTags(tags, detectTech(htmlCode, cssCode, jsCode), MAX_TAGS),
         html_code: embedFieldDefs(htmlCode, editableFields),
         css_code: cssCode,
         js_code: jsCode,
@@ -521,10 +525,11 @@ body {
 
           <button
             type="submit"
-            disabled={isSubmitting}
-            className="px-5 py-2.5 rounded-lg bg-hl hover:bg-accent text-ink hover:text-white text-xs font-bold transition-all cursor-pointer disabled:opacity-50 flex items-center gap-1.5 shadow-2xs"
+            disabled={isSubmitting || !canPublish}
+            title={canPublish ? 'Publish this template' : 'Add a title and your HTML code first'}
+            className="px-5 py-2.5 rounded-lg bg-hl hover:bg-accent text-ink hover:text-white text-xs font-bold transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 shadow-2xs"
           >
-            <span>{isSubmitting ? 'Publishing...' : 'Publish to Catalog'}</span>
+            <span>{isSubmitting ? 'Publishing...' : canPublish ? 'Publish to Catalog' : 'Add title & HTML to publish'}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
