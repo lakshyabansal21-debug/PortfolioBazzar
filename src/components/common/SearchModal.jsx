@@ -26,7 +26,7 @@ export default function SearchModal({ isOpen, onClose }) {
   const [recentSearches, setRecentSearches] = useState(() => readJson(KEYS.recentSearches, []));
 
   const popularStyles = ['Developer', 'Minimal', 'Editorial', '3D Interactive', 'Terminal', 'Creative Studio'];
-  const popularTech = ['HTML5', 'CSS3', 'JavaScript', 'Tailwind CSS', 'Vite'];
+  const popularTech = ['HTML5', 'CSS3', 'JavaScript'];
 
   useEffect(() => {
     if (isOpen) {
